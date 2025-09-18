@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Production Dashboard</title>
+<style>
+ :root {
+   --bg: #0f1115;
+   --card-radius: 14px;
+   --grad-a: linear-gradient(135deg,#2a69ff,#6d28ff);
+   --grad-b: linear-gradient(135deg,#1fa2ff,#12d8fa,#a6ffcb);
+   --grad-c: linear-gradient(135deg,#ff512f,#dd2476);
+   --grad-d: linear-gradient(135deg,#11998e,#38ef7d);
+   --grad-e: linear-gradient(135deg,#f7971e,#ffd200);
+   --grad-f: linear-gradient(135deg,#7f00ff,#e100ff);
+   --panel-bg: #1c2027cc;
+   --border: #2b313b;
+   --text-light:#f5f7fa;
+   --muted:#9aa4b1;
+ }
+ body { margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background: var(--bg); color: var(--text-light);
+        -webkit-font-smoothing: antialiased; }
+ header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.75rem; background:#161a20; position:sticky; top:0; z-index:10; box-shadow:0 2px 4px rgba(0,0,0,.4); }
+ header h1 { font-size:1.25rem; margin:0; font-weight:600; letter-spacing:.5px; }
+ .run-btn { background:var(--grad-c); border:none; color:#fff; padding:.7rem 1.15rem; font-size:.9rem; border-radius:40px; cursor:pointer; font-weight:600; letter-spacing:.5px; box-shadow:0 4px 12px -2px rgba(255,81,47,.4); transition:.25s; }
+ .run-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px -4px rgba(255,81,47,.55); }
+ .grid { display:grid; gap:1.15rem; padding:1.5rem; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+ .card { position:relative; border-radius:var(--card-radius); overflow:hidden; padding:1rem 1.1rem 1rem; min-height:130px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 4px 18px -6px rgba(0,0,0,.55); }
+ .card:before { content:""; position:absolute; inset:0; opacity:.92; background:var(--grad-a); }
+ .card.alt1:before { background:var(--grad-b); }
+ .card.alt2:before { background:var(--grad-c); }
+ .card.alt3:before { background:var(--grad-d); }
+ .card.alt4:before { background:var(--grad-e); }
+ .card.alt5:before { background:var(--grad-f); }
+ .card > * { position:relative; z-index:1; }
+ .metric-label { font-size:.72rem; text-transform:uppercase; font-weight:600; letter-spacing:1px; opacity:.85; }
+ .metric-value { font-size:2.05rem; font-weight:700; line-height:1.1; margin-top:.15rem; }
+ .metric-sub { font-size:.7rem; margin-top:.2rem; opacity:.85; }
+ .panel { background:var(--panel-bg); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:1.4rem 1.6rem 2rem; margin:1rem 1.5rem 2rem; border:1px solid var(--border); border-radius:18px; box-shadow:0 10px 38px -12px rgba(0,0,0,.55); }
+ .panel h2 { margin-top:0; font-size:1rem; letter-spacing:.5px; font-weight:600; }
+ .divider { height:1px; background:linear-gradient(90deg,transparent,#39414d,transparent); margin:1.1rem 0 1.35rem; }
+ .hidden { display:none; }
+ .report-actions { text-align:right; margin:-.4rem 0 1.2rem; }
+ button, select, input[type=text], input[type=range] { border-radius:6px; border:1px solid #303741; background:#1f252d; color:#f4f7fa; padding:.5rem .65rem; font-size:.8rem; }
+ button { cursor:pointer; font-weight:600; letter-spacing:.4px; }
+ button:hover { background:#2c343f; }
+ table { border-collapse: collapse; width: 100%; margin-top:1rem; font-size:.72rem; }
+ th, td { border:1px solid #2e3640; padding:0.35rem 0.5rem; text-align:left; }
+ th { background:#25303b; position:sticky; top:0; }
+ .totals table { width:auto; }
+ a.inline-link { color:#66c2ff; text-decoration:none; }
+ a.inline-link:hover { text-decoration:underline; }
+ .legend-swatch { display:inline-block; width:18px; height:14px; border:1px solid #2e3640; }
+ .flex { display:flex; align-items:center; }
+ .gap { gap:.55rem; }
+ .note { font-size:.65rem; color:var(--muted); margin-top:.65rem; }
+ @media (max-width:760px){ .metric-value { font-size:1.6rem; } }
+ </style>
+ <script>
+ function toggleReport(){
+   const sec = document.getElementById('reportSection');
+   if(sec.classList.contains('hidden')){ sec.classList.remove('hidden'); window.scrollTo({top:sec.offsetTop-20,behavior:'smooth'}); }
+   else { sec.classList.add('hidden'); }
+ }
+ </script>
+</head>
+<body>
+  <header>
+    <h1>Production Dashboard</h1>
+    <button class="run-btn" onclick="toggleReport()">Run Report</button>
+  </header>
+  <section class="grid">
+    <div class="card alt1">
+      <div class="metric-label">Total Labor Rows</div>
+      <div class="metric-value">{{ labor_total or 0 }}</div>
+      <div class="metric-sub">Range {{ labor_min_date or '—' }} → {{ labor_max_date or '—' }}</div>
+    </div>
+  <div class="card alt2">
+    <div class="metric-label">Today Rows</div>
+    <div class="metric-value">{{ labor_today or 0 }}</div>
+    <div class="metric-sub">{% if labor_max_date and labor_max_date == today_iso %}Current{% endif %}</div>
+  </div>
+    <div class="card alt3">
+      <div class="metric-label">Distinct Employees</div>
+      <div class="metric-value">{{ distinct_emps or 0 }}</div>
+      <div class="metric-sub">All time</div>
+    </div>
+    <div class="card alt4">
+      <div class="metric-label">Active COMs (7d)</div>
+      <div class="metric-value">{{ active_com_7 or 0 }}</div>
+      <div class="metric-sub">Last 7 days</div>
+    </div>
+    <div class="card alt5">
+      <div class="metric-label">Sched Rows</div>
+      <div class="metric-value">{{ sched_rows or 0 }}</div>
+      <div class="metric-sub">Changes Last Run: {{ sched_changed_last_run or 0 }}</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Data Freshness</div>
+      <div class="metric-value" style="font-size:1.35rem; line-height:1.25;">{{ labor_max_date or '—' }}</div>
+      <div class="metric-sub">Most recent Labor date</div>
+    </div>
+  </section>
+
+  <!-- 45-Day COM Gantt (Per Dept Rows) -->
+  <div class="panel" style="margin-top:0.5rem;">
+    <h2 style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+  <span>COM Activity Last 45 Days</span>
+      <span style="font-size:.65rem; font-weight:500; opacity:.75;">Window {{ gantt_start }} → {{ gantt_end }}</span>
+    </h2>
+    <div class="divider"></div>
+  {% if gantt_groups %}
+    <div style="overflow:auto; max-height:55vh; border:1px solid var(--border); border-radius:10px;">
+      <table style="font-size:.6rem; min-width:1200px;">
+        <thead>
+          <tr>
+            <th style="position:sticky; left:0; z-index:3; background:#25303b;">COM#</th>
+            {% for d in gantt_days %}
+              <th class="gantt-day{% if gantt_weekend_map[d] %} weekend{% endif %}{% if loop.last %} today-col{% endif %}">{{ d[5:] }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for group in gantt_groups %}
+            {% for drow in group.dept_rows %}
+              <tr>
+                {% if loop.first %}
+                  <td style="position:sticky; left:0; background:#1f252d; font-weight:600;">{{ group.com }} / {{ drow.dept }}</td>
+                {% else %}
+                  <td style="position:sticky; left:0; background:#1a2129; font-weight:500; color:#9aa4b1;">{{ drow.dept }}</td>
+                {% endif %}
+                {% for cell in drow.cells %}
+          <td class="gantt-cell{% if (cell.weekend and cell.hrs<=0) %} weekend{% endif %}{% if cell.hrs>0 %} has{% endif %}{% if loop.last %} today-col{% endif %}"
+            {% if cell.color %}style="background:{{ cell.color }};"{% endif %}
+            title="{{ cell.date }} | {{ drow.dept }} {{ cell.hrs }}h"></td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+            <tr><td colspan="{{ 1 + gantt_days|length }}" style="height:32px; background:#0f1115; padding:0; border:0;"></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem; margin-top:.5rem; font-size:.6rem; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:.25rem;"><span style="display:inline-block; width:14px; height:10px; background:#f87171;"></span><span>Today Column Border</span></div>
+      <div style="opacity:.65;">All days use uniform colors (weekend highlighting disabled)</div>
+    </div>
+  {% else %}
+    <p style="font-size:.75rem; opacity:.7;">No qualifying COM labor in the last 30 days.</p>
+  {% endif %}
+  </div>
+
+  {% if scatter_points_by_band %}
+  <div class="panel" style="margin-top:0.5rem;">
+    <h2>Full-Cycle Scatter: Calendar Cycle Days vs SqFt (30-Day Buffer Both Ends)</h2>
+    <div class="divider"></div>
+    {% if scatter_error %}<div style="color:#f87171; font-size:.65rem;">Error: {{ scatter_error }}</div>{% endif %}
+    <canvas id="scatterChart" height="140"></canvas>
+    <div class="note">Points include only COMs whose first and last charged days are at least 30 days inside the dataset bounds ensuring complete cycles. X = calendar days (last-first+1). Y = sqft. Regression line shows overall linear fit.</div>
+    {% if regression_stats %}
+      <div style="font-size:.6rem; opacity:.75; margin-top:.25rem;">Fit: y = {{ regression_stats.slope }}x + {{ regression_stats.intercept }} | r = {{ regression_stats.r }} | R² = {{ regression_stats.r2 }} | n={{ regression_stats.n }}</div>
+    {% endif %}
+  </div>
+  <script id="scatter-data" type="application/json">{{ scatter_points_by_band|tojson }}</script>
+  <script id="regression-line" type="application/json">{{ regression_line_points|tojson }}</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (function(){
+      const byBand = JSON.parse(document.getElementById('scatter-data').textContent||'{}');
+      const regPts = JSON.parse(document.getElementById('regression-line').textContent||'[]');
+      const colors = { XS:'#3b82f6', SM:'#10b981', MD:'#6366f1', LG:'#f59e0b', XL:'#ef4444' };
+      const datasets = Object.keys(byBand).map(k=>({
+        label:k,
+        data:byBand[k].map(p=>({x:p.x,y:p.y,com:p.com})),
+        backgroundColor:colors[k]||'#fff',
+        borderColor:colors[k]||'#fff',
+        showLine:false,
+        pointRadius:4,
+        pointHoverRadius:6
+      }));
+      if(regPts.length===2){
+        datasets.push({
+          label:'Fit',
+          data:regPts,
+          type:'line',
+          borderColor:'#ffffffaa',
+          backgroundColor:'transparent',
+          borderWidth:2,
+          pointRadius:0,
+          tension:0
+        });
+      }
+      if(!datasets.length){ return; }
+      const ctx = document.getElementById('scatterChart').getContext('2d');
+      new Chart(ctx,{type:'scatter',data:{datasets},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#ddd'}},tooltip:{callbacks:{label:(c)=> c.dataset.label==='Fit' ? `Fit y=${c.raw.y}` : `COM ${c.raw.com} | Days ${c.raw.x} | SqFt ${c.raw.y}` }}},scales:{x:{title:{display:true,text:'Calendar Cycle Days',color:'#bbb'},ticks:{color:'#aaa'},grid:{color:'#1f252d'}},y:{title:{display:true,text:'SqFt',color:'#bbb'},ticks:{color:'#aaa'},grid:{color:'#1f252d'}}}}});
+    })();
+  </script>
+  {% endif %}
+
+  <style>
+  .gantt-day { padding:2px; background:#25303b; position:relative; }
+  .gantt-day.weekend { background:#25303b; }
+    .gantt-day.today-col { border-right:2px solid #f87171; }
+  .gantt-cell { padding:0; background:#10151b; height:14px; }
+  .gantt-cell.weekend { background:#10151b; }
+  .gantt-cell.has { outline:1px solid #00000022; }
+  .gantt-cell.today-col { border-right:2px solid #f87171; }
+  /* no inner bars; full-cell coloring */
+  </style>
+
+  <div class="panel hidden" id="reportSection">
+    <div class="report-actions"><button onclick="toggleReport()">Close Report</button></div>
+    <h2>Labor & Scheduling Reports</h2>
+    <div class="divider"></div>
+    <!-- Original content starts here -->
+  <h3 style="margin-top:0;">DR# Labor Lookup</h3>
+  <form method="POST">
+    <input type="hidden" name="form_type" value="dr_lookup" />
+    <label for="dr">DR#:</label>
+    <input id="dr" name="dr" type="text" maxlength="5" pattern="\d{5}" value="{{ dr }}" required />
+    <button type="submit">Lookup DR</button>
+  </form>
+
+  <form method="POST" style="margin-top:1rem;">
+    <input type="hidden" name="form_type" value="com_lookup" />
+    <label for="comnumber">COMNumber:</label>
+    <input id="comnumber" name="comnumber" type="text" pattern="\d+" value="{{ comnumber }}" />
+    <label for="dept">Dept:</label>
+    <select id="dept" name="dept">
+      <option value="ALL" {% if dept_filter=='ALL' %}selected{% endif %}>ALL</option>
+      {% for name, code in dept_options %}
+        <option value="{{ code }}" {% if dept_filter==code %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Lookup COM</button>
+  </form>
+  <form method="POST" style="margin-top:0.5rem;">
+    <input type="hidden" name="form_type" value="global_heatmap" />
+    <label for="area_filter">Area:</label>
+    <select id="area_filter" name="area_filter">
+      {% set af = gh_area_filter if gh_area_filter else 'ALL' %}
+      <option value="ALL" {% if af=='ALL' %}selected{% endif %}>ALL</option>
+      <option value="OL" {% if af=='OL' %}selected{% endif %}>OL</option>
+      <option value="FLOW" {% if af=='FLOW' %}selected{% endif %}>FLOW</option>
+      <option value="MED" {% if af=='MED' %}selected{% endif %}>MED</option>
+    </select>
+  <label for="day_threshold">Min COMs per Day:</label>
+  <input type="range" id="day_threshold" name="day_threshold" min="0" max="100" value="{{ gh_day_threshold or 0 }}" oninput="document.getElementById('dtVal').innerText=this.value" />
+  <span id="dtVal">{{ gh_day_threshold or 0 }}</span>
+    <button type="submit">Build 60-Day COM Heatmap</button>
+  </form>
+  {% if dr and not rows %}
+    <p>No labor records found for DR# {{ dr }}.</p>
+  {% endif %}
+  {% if rows %}
+  <table>
+    <thead>
+      <tr>
+        <th>Employee Name</th>
+        <th>Dept Code</th>
+        <th>Dept Name</th>
+        <th>Hours</th>
+      </tr>
+    .legend-color { display:inline-block; width:14px; height:10px; border-radius:2px; background:#2d3845; }
+    </thead>
+  <script>
+    (function(){
+      document.querySelectorAll('.gantt-bar[data-color]').forEach(el=>{ el.style.background = el.dataset.color; });
+      document.querySelectorAll('.dept-legend[data-color]').forEach(el=>{ el.style.background = el.dataset.color; });
+  })();
+  </script>
+    <tbody>
+      {% for name, dept, dname, hrs in rows %}
+      <tr>
+        <td>{{ name }}</td>
+        <td>{{ dept }}</td>
+        <td>{{ dname or 'UNKNOWN' }}</td>
+        <td>{{ '%.2f'|format(hrs|float if hrs else 0) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="totals">
+    <h2>Totals by Department</h2>
+    <table>
+      <thead><tr><th>Department</th><th>Total Hours</th></tr></thead>
+      <tbody>
+        {% for dept, total in totals.items() %}
+        <tr><td>{{ dept }}</td><td>{{ '%.2f'|format(total) }}</td></tr>
+        {% endfor %}
+        <tr><td>Grand Total</td><td>{{ '%.2f'|format(grand_total) }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if comnumber %}
+    <h2>COMNumber Results {{ comnumber }}</h2>
+    {% if dept_filter != 'ALL' %}
+      {% if com_first_date %}
+        <p>First Work Date: {{ com_first_date }} | Unique Days Worked: {{ com_unique_days }}</p>
+      {% else %}
+        <p>No data for this COMNumber / Department.</p>
+      {% endif %}
+    {% else %}
+      {% if dept_summary %}
+        <table>
+          <thead><tr><th>Dept</th><th>First Date</th><th>Unique Days</th></tr></thead>
+          <tbody>
+          {% for s in dept_summary %}
+            <tr><td>{{ s.DeptName }}</td><td>{{ s.FirstDate }}</td><td>{{ s.UniqueDays }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No labor data for this COMNumber.</p>
+      {% endif %}
+    {% endif %}
+
+    {% if gantt_headers %}
+      <h3>Department Day Heatmap (Single COM)</h3>
+      <div style="overflow:auto; max-width:100%;">
+      <table>
+        <thead>
+          <tr>
+            <th>Dept</th>
+            {% for d in gantt_headers %}<th style="writing-mode:vertical-rl; font-size:0.65rem;">{{ d[5:] }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in gantt_rows %}
+            <tr>
+              <td>{{ row.label }}</td>
+              {% for cell in row.cells %}
+                {% if cell.count > 0 %}
+                  <td title="{{ cell.count }}" data-bg="{{ cell.bg }}" style="width:10px;"></td>
+                {% else %}
+                  <td style="background:#ffffff; width:10px;"></td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if global_heatmap %}
+    <h2>60-Day Department Activity Heatmap (Aligned Day 1 Per COM)</h2>
+    <p>Rows = Departments. Day N column shows how many COMNumbers (17/18/19) have time in that department N days after their own first charge date. Darker = more COMs. Area filter keeps only COMs whose dominant area is selected.</p>
+  {% if gh_rows %}
+      <div style="overflow:auto; max-height:70vh; border:1px solid #ccc;">
+        <table>
+          <thead>
+            <tr>
+        <th>Department</th>
+        {% for off in gh_day_offsets %}<th style="font-size:0.6rem;">{{ off + 1 }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in gh_rows %}
+              <tr>
+                <td>{{ row.dept_name }}</td>
+                {% for cell in row.cells %}
+                  {% if cell.count > 0 %}
+                    <td title="Day {{ loop.index }}: {{ cell.count }} COM(s)" data-bg="{{ cell.bg }}"></td>
+                  {% else %}
+                    <td style="background:#fff;"></td>
+                  {% endif %}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if gh_color_legend %}
+      <div style="margin-top:0.75rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; font-size:0.75rem;">
+        <strong>Legend:</strong>
+        {% for item in gh_color_legend %}
+          <div style="display:flex; align-items:center; gap:0.25rem;">
+            <span class="legend-swatch" data-bg="{{ item.color }}"></span>
+            <span>&ge; {{ item.count }}</span>
+          </div>
+        {% endfor %}
+        <span>(Counts of COMs)</span>
+      </div>
+      {% endif %}
+    {% else %}
+      <p>No data for selected filter.</p>
+    {% endif %}
+  {% endif %}
+  <!-- Original content ends -->
+  <div class="note">Close Report to return to the main dashboard. All data auto-updates on refresh.</div>
+  </div>
+<script>
+// Apply dynamic colors after template render (avoids lint complaints about Jinja in inline CSS)
+document.querySelectorAll('[data-bg]').forEach(el=>{ const c=el.getAttribute('data-bg'); if(c) el.style.background=c; });
+</script>
+</body>
+</html>

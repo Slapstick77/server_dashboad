@@ -1,0 +1,20 @@
+# Git ignore file
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite
+SCHLabor.db
+*.db
+*.log
+/*.csv
+/download_archive/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.bak
+.idea/
+.vscode/
+
