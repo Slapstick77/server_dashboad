@@ -353,58 +353,86 @@ body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;backgr
 header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
 h1{margin:0;font-size:1.05rem}
 button{background:#238636;border:1px solid #2ea043;color:#fff;padding:.55rem .9rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer}button:hover{background:#2ea043}
-main{padding:1rem 1.3rem}
-details{background:#151a20;border:1px solid #30363d;border-radius:8px;margin:.45rem 0;padding:.55rem .8rem}details[open]{box-shadow:0 0 0 1px #1f6feb55}
-summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
-.mono{font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:.65rem}
-.fade{opacity:.65}.warn{color:#ffa657}
+main{padding:1rem 1.1rem}
 .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.45rem .75rem;font-size:.6rem;letter-spacing:.5px;margin:.25rem .4rem .6rem 0}
-.dept-grid{display:grid;gap:.55rem;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));margin-top:.6rem}
-.dept-card{background:#1d232a;border:1px solid #2d333b;padding:.5rem .6rem;border-radius:6px;font-size:.58rem}
-.dept-card h4{margin:.1rem 0 .3rem;font-size:.58rem;font-weight:600}
-.mini-bar{height:6px;background:#30363d;border-radius:3px;overflow:hidden;margin:.35rem 0 .25rem}
-.mini-bar span{display:block;height:100%;background:linear-gradient(90deg,#d29922,#ffa657);width:0}
-.mini-bar span.done{background:linear-gradient(90deg,#238636,#3fb950)}
-.badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:.5rem;font-weight:600;letter-spacing:.5px;margin-top:.25rem}
-.badge.inprog{background:#bb800933;color:#ffa657;border:1px solid #ffa65755}
-.badge.done{background:#11632955;color:#3fb950;border:1px solid #23863655}
+.unit{display:grid;border:1px solid #30363d;border-radius:10px;margin:.6rem 0;overflow:hidden;background:#151a20;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s}
+.unit.complete{background:#10291a;border-color:#2e8045}
+.unit-col1{grid-row:1 / span 4;padding:.7rem .9rem;border-right:1px solid #30363d;display:flex;flex-direction:column;gap:.55rem}
+.title{font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:.75rem;font-weight:600}
+.job{opacity:.7;font-size:.55rem;line-height:1.2}
+.daysbox{display:flex;gap:.4rem;font-size:.55rem}
+.daysbox span{background:#1d272f;padding:2px 6px;border:1px solid #2d3842;border-radius:6px}
+.dept-row{display:flex;flex-wrap:wrap;gap:.4rem;padding:.35rem .55rem .45rem;border-bottom:1px solid #222b33}
+.dept{flex:0 0 auto;background:#1d232a;border:1px solid #2d333b;padding:.45rem .55rem;border-radius:6px;min-width:120px;position:relative;transition:background .25s,border-color .25s}
+.dept.complete{background:#142f1d;border-color:#2e8045}
+.dept-name{font-size:.55rem;font-weight:600;margin-bottom:.25rem}
+.bars{display:flex;flex-direction:column;gap:2px}
+.bar{height:10px;background:#262c33;border-radius:5px;position:relative;overflow:hidden}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ff914d,#ffcd3c)}
+.bar.eff span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
+.bar.comp span{background:linear-gradient(90deg,#4373d9,#6da8ff)}
+.bar.eff.over span{background:linear-gradient(90deg,#52d96d,#2f9e44)}
+.bar.comp.over span{background:linear-gradient(90deg,#6da8ff,#4373d9)}
+.dept.complete .bar.comp span,.unit.complete .bar.comp span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
+.dept.complete .bar.eff span,.unit.complete .bar.eff span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
+.ovr-rows{display:flex;flex-direction:column;gap:4px;padding:.5rem .6rem .6rem}
+.metrics{font-size:.52rem;opacity:.8;display:flex;flex-wrap:wrap;gap:.6rem}
+.pct-label{font-size:.48rem;position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;font-weight:600;text-shadow:0 0 2px #000}
 </style></head><body><header><h1>Incomplete AHUs</h1><div><button onclick='loadData()'>Refresh</button></div></header><main>
 <div id='loading' style='font-size:.7rem;opacity:.7;'>Loading...</div><div id='summary'></div><div id='units'></div>
 </main><script>
+function pctText(v){if(v>100){return '100%+'}return v.toFixed(1)+'%'}
+function makeBar(pct,cls){const div=document.createElement('div');div.className='bar '+cls+(pct>100?' over':'');const span=document.createElement('span');span.style.width=Math.min(pct,100)+'%';div.appendChild(span);const lab=document.createElement('div');lab.className='pct-label';lab.textContent=pctText(pct);div.appendChild(lab);return div}
 async function loadData(){
-  const l=document.getElementById('loading');l.style.display='block';
-  const r=await fetch('/api/incomplete');const data=await r.json();
-  const uDiv=document.getElementById('units');const sDiv=document.getElementById('summary');
-  uDiv.innerHTML='';sDiv.innerHTML='';
-  let tEff=0,tComp=0;data.units.forEach(u=>{tEff+=u.overall_efficiency;tComp+=u.overall_completion});
-  const avgEff=data.count?(tEff/data.count).toFixed(1):'0.0';
-  const avgComp=data.count?(tComp/data.count).toFixed(1):'0.0';
-  sDiv.innerHTML=`<span class='pill'>${data.count} Units Incomplete</span><span class='pill'>Avg Eff ${avgEff}%</span><span class='pill'>Avg Completion ${avgComp}%</span>`;
+    const l=document.getElementById('loading');l.style.display='block';
+    const r=await fetch('/api/incomplete');const data=await r.json();
+    const unitsDiv=document.getElementById('units');const sDiv=document.getElementById('summary');
+    unitsDiv.innerHTML='';sDiv.innerHTML='';
+    let tEff=0,tComp=0;data.units.forEach(u=>{tEff+=u.overall_efficiency;tComp+=u.overall_completion});
+    const avgEff=data.count?(tEff/data.count).toFixed(1):'0.0';
+    const avgComp=data.count?(tComp/data.count).toFixed(1):'0.0';
+    sDiv.innerHTML=`<span class='pill'>${data.count} Units</span><span class='pill'>Avg Eff ${avgEff}%</span><span class='pill'>Avg Comp ${avgComp}%</span>`;
     data.units.forEach(u=>{
-    const det=document.createElement('details');
-    const sum=document.createElement('summary');
-        const remStd=(u.overall_std-Math.min(u.overall_act,u.overall_std)).toFixed(2);
-    const effUsed = (u.overall_eff_actual!==undefined?` EH ${u.overall_eff_actual}h |`:'');
-    sum.innerHTML=`<span class='mono'>${u.com}</span> <span class='fade'>${u.jobname||''}</span> | Std ${u.overall_std}h Act ${u.overall_act}h |${effUsed} Eff ${u.overall_efficiency}% | Done ${u.overall_completion}% <span class='warn'>Rem ${remStd}h</span>`;
-    det.appendChild(sum);
-    const grid=document.createElement('div');grid.className='dept-grid';
-        u.departments.forEach(d=>{if(d.std<=0) return;const card=document.createElement('div');card.className='dept-card';
-            const effActLine = d.eff_actual!==undefined?`<div class='mono'>EH ${d.eff_actual}h</div>`:'';
-            let dayLines='';
-            if(d.days_active!==undefined){dayLines+=`<div class='mono'>Days Act ${d.days_active}</div>`;}
-            if(d.days_span!==undefined){dayLines+=`<div class='mono'>Span ${d.days_span}</div>`;}
-            card.innerHTML=`<h4>${d.name}</h4><div class='mono'>Std ${d.std}h</div><div class='mono'>Act ${d.act}h</div>${effActLine}${dayLines}<div style='font-size:.5rem;'>Eff ${d.efficiency}%</div><div style='font-size:.5rem;'>Done ${d.completion}%</div>`;
-      const bar=document.createElement('div');bar.className='mini-bar';
-      const span=document.createElement('span');span.style.width=Math.min(100,d.completion)+'%';if(d.completion>=100) span.classList.add('done');
-      bar.appendChild(span);card.appendChild(bar);
-      const badge=document.createElement('div');badge.className='badge '+(d.status==='COMPLETE'?'done':'inprog');badge.textContent=d.status;card.appendChild(badge);
-      grid.appendChild(card);
+        const unit=document.createElement('div');unit.className='unit'+(u.overall_completion>=100?' complete':'');
+        // Left merged column
+        const c1=document.createElement('div');c1.className='unit-col1';
+        const title=document.createElement('div');title.className='title';title.textContent=u.com; c1.appendChild(title);
+        const job=document.createElement('div');job.className='job';job.textContent=u.jobname||'';c1.appendChild(job);
+        // Days (aggregate unique across departments where available)
+        let daysAct=null, span=null;
+        u.departments.forEach(d=>{if(d.days_active!==undefined){if(daysAct===null||d.days_active>daysAct) daysAct=d.days_active;}if(d.days_span!==undefined){if(span===null||d.days_span>span) span=d.days_span;}});
+        const daysBox=document.createElement('div');daysBox.className='daysbox';
+        if(daysAct!==null) daysBox.innerHTML+=`<span>Days ${daysAct}</span>`;
+        if(span!==null) daysBox.innerHTML+=`<span>Span ${span}</span>`;
+        c1.appendChild(daysBox);
+        const metrics=document.createElement('div');metrics.className='metrics';
+        metrics.textContent=`Std ${u.overall_std}h  Act ${u.overall_act}h  EH ${u.overall_eff_actual}h`;
+        c1.appendChild(metrics);
+        unit.appendChild(c1);
+        // Row 1: departments (dual bars per dept)
+        const deptRow=document.createElement('div');deptRow.className='dept-row';
+    u.departments.forEach(d=>{if(d.std<=0) return; const box=document.createElement('div');box.className='dept'+(d.completion>=100?' complete':'');
+                const name=document.createElement('div');name.className='dept-name';name.textContent=d.name;box.appendChild(name);
+                const bars=document.createElement('div');bars.className='bars';
+                // Efficiency bar top
+                bars.appendChild(makeBar(d.efficiency,'eff'));
+                // Completion bar bottom
+                bars.appendChild(makeBar(d.completion,'comp'));
+                box.appendChild(bars);
+                deptRow.appendChild(box);
+        });
+        unit.appendChild(deptRow);
+        // Overall bars rows (2 rows)
+        const overallWrap=document.createElement('div');overallWrap.className='ovr-rows';
+        const effBar=makeBar(u.overall_efficiency,'eff');
+        const compBar=makeBar(u.overall_completion,'comp');
+        const effLabel=document.createElement('div');effLabel.style.cssText='font-size:.5rem;margin-top:2px;';effLabel.textContent='Overall Efficiency';
+        const compLabel=document.createElement('div');compLabel.style.cssText='font-size:.5rem;margin-top:6px;';compLabel.textContent='Overall Completion';
+        overallWrap.appendChild(effLabel);overallWrap.appendChild(effBar);overallWrap.appendChild(compLabel);overallWrap.appendChild(compBar);
+        unit.appendChild(overallWrap);
+        unitsDiv.appendChild(unit);
     });
-        const footer=document.createElement('div');footer.style.cssText='margin-top:.5rem;font-size:.55rem;opacity:.75;';
-    footer.textContent=`Totals: Std ${u.overall_std}h | Act ${u.overall_act}h | EH ${u.overall_eff_actual}h`;
-        det.appendChild(grid);det.appendChild(footer);uDiv.appendChild(det);
-  });
-  l.style.display='none';
+    l.style.display='none';
 }
 loadData();
 </script></body></html>"""
