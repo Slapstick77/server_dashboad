@@ -375,8 +375,8 @@ main{padding:1rem 1.1rem}
 .bar.comp span{background:linear-gradient(90deg,#4373d9,#6da8ff)}
 .bar.eff.over span{background:linear-gradient(90deg,#52d96d,#2f9e44)}
 .bar.comp.over span{background:linear-gradient(90deg,#6da8ff,#4373d9)}
+/* Only recolor completion bars on complete items; keep efficiency threshold colors */
 .dept.complete .bar.comp span,.unit.complete .bar.comp span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
-.dept.complete .bar.eff span,.unit.complete .bar.eff span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
 .ovr-rows{display:flex;flex-direction:column;gap:4px;padding:.5rem .6rem .6rem}
 .metrics{font-size:.52rem;opacity:.8;display:flex;flex-wrap:wrap;gap:.6rem}
 .pct-label{font-size:.48rem;position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;font-weight:600;text-shadow:0 0 2px #000}
