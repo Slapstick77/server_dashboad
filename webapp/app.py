@@ -384,10 +384,10 @@ main{padding:1rem 1.1rem}
 <div id='loading' style='font-size:.7rem;opacity:.7;'>Loading...</div><div id='summary'></div><div id='units'></div>
 </main><script>
 function pctText(v){if(v>100){return '100%+'}return v.toFixed(1)+'%'}
-function makeBar(pct,cls,isComplete){
+function makeBar(pct,cls){
     let extra='';
-    if(cls==='eff' && !isComplete){
-        if(pct<=45) extra=' low'; else if(pct<60) extra=' mid';
+    if(cls==='eff'){
+        if(pct<45) extra=' low'; else if(pct<65) extra=' mid';
     }
     const div=document.createElement('div');div.className='bar '+cls+extra+(pct>100?' over':'');
     const span=document.createElement('span');span.style.width=Math.min(pct,100)+'%';div.appendChild(span);
@@ -423,18 +423,18 @@ async function loadData(){
     u.departments.forEach(d=>{if(d.std<=0) return; const isDeptComplete=d.completion>=100; const box=document.createElement('div');box.className='dept'+(isDeptComplete?' complete':'');
                 const name=document.createElement('div');name.className='dept-name';name.textContent=d.name;box.appendChild(name);
                 const bars=document.createElement('div');bars.className='bars';
-    // Efficiency bar top (suppress low/mid coloring if dept complete)
-    bars.appendChild(makeBar(d.efficiency,'eff',isDeptComplete));
+    // Efficiency bar top (always threshold-based coloring)
+    bars.appendChild(makeBar(d.efficiency,'eff'));
     // Completion bar bottom
-    bars.appendChild(makeBar(d.completion,'comp',false));
+    bars.appendChild(makeBar(d.completion,'comp'));
                 box.appendChild(bars);
                 deptRow.appendChild(box);
         });
         unit.appendChild(deptRow);
         // Overall bars rows (2 rows)
         const overallWrap=document.createElement('div');overallWrap.className='ovr-rows';
-        const effBar=makeBar(u.overall_efficiency,'eff',u.overall_completion>=100);
-        const compBar=makeBar(u.overall_completion,'comp',false);
+        const effBar=makeBar(u.overall_efficiency,'eff');
+        const compBar=makeBar(u.overall_completion,'comp');
         const effLabel=document.createElement('div');effLabel.style.cssText='font-size:.5rem;margin-top:2px;';effLabel.textContent='Overall Efficiency';
         const compLabel=document.createElement('div');compLabel.style.cssText='font-size:.5rem;margin-top:6px;';compLabel.textContent='Overall Completion';
         overallWrap.appendChild(effLabel);overallWrap.appendChild(effBar);overallWrap.appendChild(compLabel);overallWrap.appendChild(compBar);
