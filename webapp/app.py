@@ -370,6 +370,8 @@ main{padding:1rem 1.1rem}
 .bar{height:10px;background:#262c33;border-radius:5px;position:relative;overflow:hidden}
 .bar span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ff914d,#ffcd3c)}
 .bar.eff span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
+.bar.eff.low span{background:linear-gradient(90deg,#b32020,#ff5959)}
+.bar.eff.mid span{background:linear-gradient(90deg,#c28a00,#ffd43b)}
 .bar.comp span{background:linear-gradient(90deg,#4373d9,#6da8ff)}
 .bar.eff.over span{background:linear-gradient(90deg,#52d96d,#2f9e44)}
 .bar.comp.over span{background:linear-gradient(90deg,#6da8ff,#4373d9)}
@@ -382,7 +384,14 @@ main{padding:1rem 1.1rem}
 <div id='loading' style='font-size:.7rem;opacity:.7;'>Loading...</div><div id='summary'></div><div id='units'></div>
 </main><script>
 function pctText(v){if(v>100){return '100%+'}return v.toFixed(1)+'%'}
-function makeBar(pct,cls){const div=document.createElement('div');div.className='bar '+cls+(pct>100?' over':'');const span=document.createElement('span');span.style.width=Math.min(pct,100)+'%';div.appendChild(span);const lab=document.createElement('div');lab.className='pct-label';lab.textContent=pctText(pct);div.appendChild(lab);return div}
+function makeBar(pct,cls){
+    let extra='';
+    if(cls==='eff'){
+        if(pct<=45) extra=' low'; else if(pct<60) extra=' mid';
+    }
+    const div=document.createElement('div');div.className='bar '+cls+extra+(pct>100?' over':'');
+    const span=document.createElement('span');span.style.width=Math.min(pct,100)+'%';div.appendChild(span);
+    const lab=document.createElement('div');lab.className='pct-label';lab.textContent=pctText(pct);div.appendChild(lab);return div}
 async function loadData(){
     const l=document.getElementById('loading');l.style.display='block';
     const r=await fetch('/api/incomplete');const data=await r.json();
