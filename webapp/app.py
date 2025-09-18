@@ -361,8 +361,8 @@ main{padding:1rem 1.1rem}
 .unit.eff-band-mid:before{background:linear-gradient(#9a7300,#d6a400)}
 .unit.eff-band-high:before{background:linear-gradient(#1d7f36,#28c14f)}
 .unit.complete{background:#10291a;border-color:#2e8045;box-shadow:0 0 0 1px #2e8045,0 0 4px -1px #184d2b}
-.unit-col1{grid-row:1 / span 4;padding:.7rem .9rem;border-right:1px solid #30363d;display:flex;flex-direction:column;gap:.55rem}
-.com-card{background:#0f161d;border:1px solid #2d3842;border-radius:10px;padding:.55rem .65rem .65rem;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 0 0 1px #121a21,0 2px 4px -2px #000 inset}
+.unit-col1{grid-row:1 / span 4;padding:.75rem .95rem;border-right:1px solid #30363d;display:flex;flex-direction:column;gap:.55rem;background:linear-gradient(145deg,#12181f,#151e27 55%,#10161c)}
+.com-card{background:linear-gradient(160deg,#0b141b,#0e1d28);border:1px solid #3a4a59;border-radius:12px;padding:.6rem .7rem .7rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:0 2px 4px -2px #000,0 0 0 1px #18232c,0 0 10px -4px #0d3044}
 .title{font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:.83rem;font-weight:700;letter-spacing:.12rem;background:#0f161d;border:1px solid #2d3842;padding:.3rem .55rem .32rem;border-radius:8px;display:inline-block;box-shadow:0 0 0 1px #121a21,0 0 4px #0b0f13 inset}
 .job{opacity:.7;font-size:.55rem;line-height:1.2}
 .daysbox{display:flex;gap:.4rem;font-size:.55rem}
