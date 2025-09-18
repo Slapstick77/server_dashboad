@@ -355,13 +355,14 @@ h1{margin:0;font-size:1.05rem}
 button{background:#238636;border:1px solid #2ea043;color:#fff;padding:.55rem .9rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer}button:hover{background:#2ea043}
 main{padding:1rem 1.1rem}
 .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.45rem .75rem;font-size:.6rem;letter-spacing:.5px;margin:.25rem .4rem .6rem 0}
-.unit{display:grid;border:1px solid #30363d;border-radius:10px;margin:1rem 0;overflow:hidden;background:#151a20;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s;position:relative}
+.unit{display:grid;border:1px solid #39424b;border-radius:10px;margin:1rem 0;overflow:hidden;background:#151a20;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s;position:relative;box-shadow:0 0 0 1px #202831}
 .unit:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#30363d}
 .unit.eff-band-low:before{background:linear-gradient(#8b1111,#d53030)}
 .unit.eff-band-mid:before{background:linear-gradient(#9a7300,#d6a400)}
 .unit.eff-band-high:before{background:linear-gradient(#1d7f36,#28c14f)}
-.unit.complete{background:#10291a;border-color:#2e8045}
+.unit.complete{background:#10291a;border-color:#2e8045;box-shadow:0 0 0 1px #2e8045,0 0 4px -1px #184d2b}
 .unit-col1{grid-row:1 / span 4;padding:.7rem .9rem;border-right:1px solid #30363d;display:flex;flex-direction:column;gap:.55rem}
+.com-card{background:#0f161d;border:1px solid #2d3842;border-radius:10px;padding:.55rem .65rem .65rem;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 0 0 1px #121a21,0 2px 4px -2px #000 inset}
 .title{font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:.83rem;font-weight:700;letter-spacing:.12rem;background:#0f161d;border:1px solid #2d3842;padding:.3rem .55rem .32rem;border-radius:8px;display:inline-block;box-shadow:0 0 0 1px #121a21,0 0 4px #0b0f13 inset}
 .job{opacity:.7;font-size:.55rem;line-height:1.2}
 .daysbox{display:flex;gap:.4rem;font-size:.55rem}
@@ -413,20 +414,22 @@ async function loadData(){
         // Efficiency band accent
         if(u.overall_efficiency<45) unit.classList.add('eff-band-low'); else if(u.overall_efficiency<65) unit.classList.add('eff-band-mid'); else unit.classList.add('eff-band-high');
         // Left merged column
-        const c1=document.createElement('div');c1.className='unit-col1';
-        const title=document.createElement('div');title.className='title';title.textContent=u.com; c1.appendChild(title);
-        const job=document.createElement('div');job.className='job';job.textContent=u.jobname||'';c1.appendChild(job);
-        // Days (aggregate unique across departments where available)
-        let daysAct=null, span=null;
-        u.departments.forEach(d=>{if(d.days_active!==undefined){if(daysAct===null||d.days_active>daysAct) daysAct=d.days_active;}if(d.days_span!==undefined){if(span===null||d.days_span>span) span=d.days_span;}});
-        const daysBox=document.createElement('div');daysBox.className='daysbox';
-        if(daysAct!==null) daysBox.innerHTML+=`<span>Days ${daysAct}</span>`;
-        if(span!==null) daysBox.innerHTML+=`<span>Span ${span}</span>`;
-        c1.appendChild(daysBox);
-        const metrics=document.createElement('div');metrics.className='metrics';
-        metrics.textContent=`Std ${u.overall_std}h  Act ${u.overall_act}h  EH ${u.overall_eff_actual}h`;
-        c1.appendChild(metrics);
-        unit.appendChild(c1);
+    const c1=document.createElement('div');c1.className='unit-col1';
+    const card=document.createElement('div');card.className='com-card';
+    const title=document.createElement('div');title.className='title';title.textContent=u.com; card.appendChild(title);
+    const job=document.createElement('div');job.className='job';job.textContent=u.jobname||'';card.appendChild(job);
+    // Days (aggregate unique across departments where available)
+    let daysAct=null, span=null;
+    u.departments.forEach(d=>{if(d.days_active!==undefined){if(daysAct===null||d.days_active>daysAct) daysAct=d.days_active;}if(d.days_span!==undefined){if(span===null||d.days_span>span) span=d.days_span;}});
+    const daysBox=document.createElement('div');daysBox.className='daysbox';
+    if(daysAct!==null) daysBox.innerHTML+=`<span>Days ${daysAct}</span>`;
+    if(span!==null) daysBox.innerHTML+=`<span>Span ${span}</span>`;
+    card.appendChild(daysBox);
+    const metrics=document.createElement('div');metrics.className='metrics';
+    metrics.textContent=`Std ${u.overall_std}h  Act ${u.overall_act}h  EH ${u.overall_eff_actual}h`;
+    card.appendChild(metrics);
+    c1.appendChild(card);
+    unit.appendChild(c1);
         // Row 1: departments (dual bars per dept)
         const deptRow=document.createElement('div');deptRow.className='dept-row';
     u.departments.forEach(d=>{if(d.std<=0) return; const isDeptComplete=d.completion>=100; const box=document.createElement('div');box.className='dept'+(isDeptComplete?' complete':'');
