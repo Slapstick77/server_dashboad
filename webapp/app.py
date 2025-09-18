@@ -355,7 +355,8 @@ h1{margin:0;font-size:1.05rem}
 button{background:#238636;border:1px solid #2ea043;color:#fff;padding:.55rem .9rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer}button:hover{background:#2ea043}
 main{padding:1rem 1.1rem}
 .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.45rem .75rem;font-size:.6rem;letter-spacing:.5px;margin:.25rem .4rem .6rem 0}
-.unit{display:grid;border:1px solid #39424b;border-radius:10px;margin:1rem 0;overflow:hidden;background:#151a20;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s;position:relative;box-shadow:0 0 0 1px #202831}
+.unit{display:grid;border:1px solid #3f4751;border-radius:14px;margin:1.25rem 0;overflow:hidden;background:#141a21;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s;position:relative;box-shadow:0 2px 5px -2px #000,0 0 0 1px #212a33}
+.unit.alt{background:#10161c}
 .unit:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#30363d}
 .unit.eff-band-low:before{background:linear-gradient(#8b1111,#d53030)}
 .unit.eff-band-mid:before{background:linear-gradient(#9a7300,#d6a400)}
@@ -383,8 +384,8 @@ main{padding:1rem 1.1rem}
 /* Only recolor completion bars on complete items; keep efficiency threshold colors */
 .dept.complete .bar.comp span,.unit.complete .bar.comp span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
 .ovr-rows{display:flex;flex-direction:column;gap:4px;padding:.6rem .7rem .7rem}
-.unit-sep{height:10px;margin:-.2rem 0 .4rem;position:relative}
-.unit-sep:after{content:"";position:absolute;left:0;right:0;top:4px;height:2px;background:linear-gradient(90deg,#1e2630,#3a4552,#1e2630);opacity:.9}
+.unit-sep{height:16px;margin:-.4rem 0 .2rem;position:relative}
+.unit-sep:after{content:"";position:absolute;left:0;right:0;top:6px;height:4px;background:linear-gradient(90deg,#141b22,#3d4a57,#141b22);opacity:.85;border-radius:2px}
 .metrics{font-size:.52rem;opacity:.8;display:flex;flex-wrap:wrap;gap:.6rem}
 .pct-label{font-size:.48rem;position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;font-weight:600;text-shadow:0 0 2px #000}
 </style></head><body><header><h1>Incomplete AHUs</h1><div><button onclick='loadData()'>Refresh</button></div></header><main>
@@ -410,7 +411,7 @@ async function loadData(){
     sDiv.innerHTML=`<span class='pill'>${data.count} Units</span><span class='pill'>Avg Eff ${avgEff}%</span><span class='pill'>Avg Comp ${avgComp}%</span>`;
     data.units.forEach((u,idx)=>{
         if(idx>0){const sep=document.createElement('div');sep.className='unit-sep';unitsDiv.appendChild(sep);}        
-        const unit=document.createElement('div');unit.className='unit'+(u.overall_completion>=100?' complete':'');
+        const unit=document.createElement('div');unit.className='unit'+(idx%2===1?' alt':'')+(u.overall_completion>=100?' complete':'');
         // Efficiency band accent
         if(u.overall_efficiency<45) unit.classList.add('eff-band-low'); else if(u.overall_efficiency<65) unit.classList.add('eff-band-mid'); else unit.classList.add('eff-band-high');
         // Left merged column
