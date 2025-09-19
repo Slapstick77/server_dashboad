@@ -326,7 +326,8 @@ def api_incomplete():
     units = [u for u in units if u['overall_std'] > 0 and u['overall_act'] > 0 and (
         u['overall_completion'] < 99.999 or (u['overall_completion'] >= 99.999 and u.get('last_labor_day') and u['last_labor_day'] >= day_7)
     )]
-    units.sort(key=lambda u: (u['overall_completion'], -(u['overall_std'] - min(u['overall_act'], u['overall_std']))))
+    # Sort with completed units on top: primary by descending completion, then by remaining hours desc
+    units.sort(key=lambda u: (-u['overall_completion'], -(u['overall_std'] - min(u['overall_act'], u['overall_std']))))
     final_count = len(units)
 
     if request.args.get('debug') == '1':
