@@ -1,0 +1,24 @@
+﻿Assembly examples with a 20-day firstsecond cap (last 365 days)
+Rule: valid day if 2h OR 2 employees; two-employee override keeps first day even if gap>cap.
+
+Would DROP (gap>cap and first-day emps<2):
+  COM 18266: 2024-11-20 -> 2025-09-03 gap=287d | first hrs=2.50 emps=1 | employees: Garrard, David
+  COM 19405: 2025-02-27 -> 2025-04-24 gap=56d | first hrs=4.25 emps=1 | employees: Sellers, Paul
+  COM 19446: 2025-02-27 -> 2025-04-17 gap=49d | first hrs=4.00 emps=1 | employees: Loper, Scott
+  COM 19414: 2025-03-13 -> 2025-04-17 gap=35d | first hrs=2.50 emps=1 | employees: Coons, Rick T
+  COM 19431: 2024-12-17 -> 2025-01-14 gap=28d | first hrs=3.00 emps=1 | employees: Coons, Rick T
+  COM 19399: 2025-02-20 -> 2025-03-20 gap=28d | first hrs=2.00 emps=1 | employees: Peters, Ryan
+  COM 19143: 2024-12-17 -> 2025-01-10 gap=24d | first hrs=3.00 emps=1 | employees: Peters, Ryan
+  COM 19410: 2025-03-18 -> 2025-04-08 gap=21d | first hrs=4.00 emps=1 | employees: Garrard, David
+
+KEPT by override (gap>cap but first-day emps2):
+  COM 19458: 2025-01-08 -> 2025-02-27 gap=50d | first hrs=5.25 emps=2 | employees: Coons, Rick T, Peters, Ryan
+  COM 19706: 2025-08-22 -> 2025-09-16 gap=25d | first hrs=57.00 emps=6 | employees: Blakeney, Brian, Bolton, Darrell, Jackson, Jarvis J, Sands, Estus, Skaar, Dustin, Watson, Adam D
+
+Near threshold (gap 1820):
+  COM 19402: 2025-02-18 -> 2025-03-10 gap=20d | first hrs=4.17 emps=1 | employees: Robinson, Dexter W
+  COM 19597: 2025-06-27 -> 2025-07-17 gap=20d | first hrs=3.00 emps=1 | employees: Coons, Rick T
+  COM 19404: 2025-02-20 -> 2025-03-11 gap=19d | first hrs=5.00 emps=1 | employees: Peters, Ryan
+  COM 19141: 2025-01-25 -> 2025-02-12 gap=18d | first hrs=5.00 emps=1 | employees: Graves, Darren
+  COM 19455: 2025-01-27 -> 2025-02-14 gap=18d | first hrs=5.50 emps=1 | employees: Coons, Rick T
+

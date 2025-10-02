@@ -1,0 +1,13 @@
+﻿Universal 4-day cap impact (two-employee override ON)
+- Assembly: first drops 372/1096 (33.9%), last drops 201/1096 (18.3%)
+- BaseFormPaint: first drops 100/1319 (7.6%), last drops 194/1319 (14.7%)
+- Crating: first drops 136/635 (21.4%), last drops 93/635 (14.6%)
+- DoorFab: first drops 200/1625 (12.3%), last drops 206/1625 (12.7%)
+- Electrical: first drops 283/1877 (15.1%), last drops 311/1877 (16.6%)
+- Fab: first drops 194/2021 (9.6%), last drops 353/2021 (17.5%)
+- FanAssyTest: first drops 363/808 (44.9%), last drops 228/808 (28.2%)
+- InsulWallFab: first drops 218/1875 (11.6%), last drops 423/1875 (22.6%)
+- Paint: first drops 5/66 (7.6%), last drops 3/66 (4.5%)
+- Pipe: first drops 200/1381 (14.5%), last drops 191/1381 (13.8%)
+- Welding: first drops 192/1714 (11.2%), last drops 371/1714 (21.6%)
+
