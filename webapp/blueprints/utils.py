@@ -97,12 +97,53 @@ DEPARTMENT_RULES = {
 # Central definition of per-project rules governing department day filtering.
 # These rules are configurable via the /logic page.
 PROJECT_DAY_RULES = {
-    'min_total_hours': MIN_DAY_HOURS,  # Global default (can be overridden per department)
     'outlier_caps': OUTLIER_CAPS,
-    'min_employees_override': 2,  # Global default (can be overridden per department)
     'exclusion_employees': ['1205797'],  # Employee IDs to exclude from day selection logic
     'department_rules': DEPARTMENT_RULES,  # Per-department min_hours and min_employees
+    'max_gap_override': 30,  # Maximum gap in days - drops charges beyond this even with 2+ employees
 }
+
+# Load configuration from database on module import
+def _load_configuration():
+    """Load configuration from database and override defaults."""
+    import sys
+    import os
+    # Add parent directory to path for metrics_cache import
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    try:
+        from metrics_cache import load_configuration
+        
+        # Load OUTLIER_CAPS
+        saved_outlier_caps = load_configuration('OUTLIER_CAPS')
+        if saved_outlier_caps:
+            OUTLIER_CAPS.update(saved_outlier_caps)
+        
+        # Load DEPARTMENT_RULES
+        saved_dept_rules = load_configuration('DEPARTMENT_RULES')
+        if saved_dept_rules:
+            DEPARTMENT_RULES.update(saved_dept_rules)
+        
+        # Load EXCLUSION_EMPLOYEES
+        saved_exclusions = load_configuration('EXCLUSION_EMPLOYEES')
+        if saved_exclusions:
+            PROJECT_DAY_RULES['exclusion_employees'] = saved_exclusions
+        
+        # Load MAX_GAP_OVERRIDE
+        saved_max_gap = load_configuration('MAX_GAP_OVERRIDE')
+        if saved_max_gap is not None:
+            PROJECT_DAY_RULES['max_gap_override'] = saved_max_gap
+        
+        # Update PROJECT_DAY_RULES references
+        PROJECT_DAY_RULES['outlier_caps'] = OUTLIER_CAPS
+        PROJECT_DAY_RULES['department_rules'] = DEPARTMENT_RULES
+        
+        print("✅ Configuration loaded from database")
+    except Exception as e:
+        print(f"⚠️ Could not load configuration from database: {e}")
+        print("   Using default configuration values")
+
+# Load configuration on module import
+_load_configuration()
 
 
 def get_conn():
@@ -133,49 +174,87 @@ def normalize_com(v) -> str:
 
 
 def _filter_days_by_gap(label: str, ordered_days: list, daymap: dict, is_complete: bool = True, excl_employees: list = None, min_employees: int = 2) -> list:
-    """Drop stray first/last days if their adjacent gaps exceed the per-dept cap.
+    """Remove outlier days based on large gaps.
 
+    Approach: Find "clusters" of days separated by large gaps, then remove small/weak clusters.
+    
     Rules:
-    - Only consider first→second gap (always applied).
-    - Only consider prev→last gap if is_complete=True (department at 100%).
-    - If gap > cap and the day in question has < min_employees employees, drop it.
-    - If the day has ≥ min_employees employees, keep it regardless of gap (override).
+    - Split days into clusters based on gaps > max_gap_override or (gaps > cap AND weak cluster).
+    - Keep the largest/strongest cluster, remove the rest.
+    - Cluster strength = total hours + employee diversity.
     - Employee count excludes employees on the exclusion list.
     """
     cap = OUTLIER_CAPS.get(label)
-    if not cap or len(ordered_days) < 2:
+    max_gap_override = PROJECT_DAY_RULES.get('max_gap_override', 30)
+    if not cap or len(ordered_days) < 2 or not is_complete:
         return ordered_days
+    
     days = list(ordered_days)
     excl_set = set(excl_employees or [])
     
-    # First edge - ALWAYS apply
-    d0, d1 = days[0], days[1]
-    try:
-        gap_first = (datetime.date.fromisoformat(d1) - datetime.date.fromisoformat(d0)).days
-    except Exception:
-        gap_first = 0
-    # Count only non-excluded employees
-    all_emps = (daymap.get(d0) or {}).get('emps', set())
-    valid_emps = all_emps - excl_set
-    emps_first = len(valid_emps)
-    if gap_first > cap and emps_first < min_employees:
-        days = days[1:]
+    # Build clusters of consecutive days (separated by large gaps)
+    clusters = []
+    current_cluster = [days[0]]
     
-    # Last edge - ONLY apply if department is 100% complete
-    if is_complete and len(days) >= 2:
-        dl = days[-1]
-        dp = days[-2]
+    for i in range(1, len(days)):
+        prev_day = days[i-1]
+        curr_day = days[i]
+        
         try:
-            gap_last = (datetime.date.fromisoformat(dl) - datetime.date.fromisoformat(dp)).days
+            gap = (datetime.date.fromisoformat(curr_day) - datetime.date.fromisoformat(prev_day)).days
         except Exception:
-            gap_last = 0
-        # Count only non-excluded employees
-        all_emps_last = (daymap.get(dl) or {}).get('emps', set())
-        valid_emps_last = all_emps_last - excl_set
-        emps_last = len(valid_emps_last)
-        if gap_last > cap and emps_last < min_employees:
-            days = days[:-1]
-    return days
+            gap = 0
+        
+        # Check if this starts a new cluster
+        # New cluster if: gap > max_gap_override (hard limit)
+        #            OR: gap > cap AND both sides of gap are weak
+        prev_emps = len((daymap.get(prev_day) or {}).get('emps', set()) - excl_set)
+        curr_emps = len((daymap.get(curr_day) or {}).get('emps', set()) - excl_set)
+        
+        new_cluster = False
+        if gap > max_gap_override:
+            new_cluster = True
+        elif gap > cap and prev_emps < min_employees and curr_emps < min_employees:
+            new_cluster = True
+        
+        if new_cluster:
+            clusters.append(current_cluster)
+            current_cluster = [curr_day]
+        else:
+            current_cluster.append(curr_day)
+    
+    # Add the last cluster
+    if current_cluster:
+        clusters.append(current_cluster)
+    
+    # If only one cluster, return all days
+    if len(clusters) == 1:
+        return days
+    
+    # Score each cluster by total hours and number of days
+    cluster_scores = []
+    for cluster in clusters:
+        total_hours = sum((daymap.get(d) or {}).get('hours', 0) for d in cluster)
+        num_days = len(cluster)
+        all_emps = set()
+        for d in cluster:
+            all_emps.update((daymap.get(d) or {}).get('emps', set()) - excl_set)
+        num_emps = len(all_emps)
+        
+        # Score = hours + (days * 2) + (employees * 5)
+        score = total_hours + (num_days * 2) + (num_emps * 5)
+        cluster_scores.append((score, cluster, num_days, num_emps, total_hours))
+    
+    # Keep the highest-scoring cluster
+    cluster_scores.sort(reverse=True, key=lambda x: x[0])
+    best_score, best_cluster, best_days, best_emps, best_hours = cluster_scores[0]
+    
+    # If the best cluster is too weak, drop everything
+    # Weak = only 1 day OR (< min_employees AND < 10 hours)
+    if best_days == 1 or (best_emps < min_employees and best_hours < 10):
+        return []
+    
+    return best_cluster
 
 
 def _resolve_department_days(label: str, daymap: dict, is_complete: bool = True) -> tuple[list, dict]:

@@ -53,7 +53,12 @@ main{padding:1rem 1.1rem}
 .unit-sep:after{content:"";position:absolute;left:0;right:0;top:6px;height:4px;background:linear-gradient(90deg,#141b22,#3d4a57,#141b22);opacity:.85;border-radius:2px}
 .metrics{font-size:.52rem;opacity:.8;display:flex;flex-wrap:wrap;gap:.6rem}
 .pct-label{font-size:.48rem;position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;font-weight:600;text-shadow:0 0 2px #000}
-</style></head><body><header><h1>Recent Unit Completion</h1><div><nav><a href='/dash'>&larr; Dashboard</a></nav><button onclick='loadData()'>Refresh</button></div></header><main>
+.nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
+.nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
+.nav-links a:hover{text-decoration:underline}
+</style></head><body><header><h1>Recent Unit Completion</h1><div><button onclick='loadData()'>Refresh</button></div></header>
+<div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
+<main>
 <div id='loading' style='font-size:.7rem;opacity:.7;'>Loading...</div><div id='summary'></div><div id='units'></div>
 </main><script>
 function pctText(v){if(v>100){return '100%+'}return v.toFixed(1)+'%'}
@@ -70,12 +75,8 @@ async function loadData(){
     const r=await fetch('/api/incomplete');const data=await r.json();
     const unitsDiv=document.getElementById('units');const sDiv=document.getElementById('summary');
     unitsDiv.innerHTML='';sDiv.innerHTML='';
-    let tEff=0,tComp=0;data.units.forEach(u=>{tEff+=u.overall_efficiency;tComp+=u.overall_completion});
     const inProg = (typeof data.in_progress_count==='number') ? data.in_progress_count : data.units.filter(u=>u.overall_completion<99.999).length;
-    const denom = data.count||data.units.length||1;
-    const avgEff=denom?(tEff/denom).toFixed(1):'0.0';
-    const avgComp=denom?(tComp/denom).toFixed(1):'0.0';
-    sDiv.innerHTML=`<span class='pill'>${inProg} Units in Progress</span><span class='pill'>Avg Eff ${avgEff}%</span><span class='pill'>Avg Comp ${avgComp}%</span>`;
+    sDiv.innerHTML=`<span class='pill'>${inProg} Units in Progress</span>`;
     data.units.forEach((u,idx)=>{
         if(idx>0){const sep=document.createElement('div');sep.className='unit-sep';unitsDiv.appendChild(sep);}        
         const unit=document.createElement('div');unit.className='unit'+(idx%2===1?' alt':'')+(u.overall_completion>=100?' complete':'');
@@ -180,6 +181,10 @@ def dash():
             .legend-item.off{opacity:.5;border-color:#3a3f47}
             .legend-dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px #0007 inset}
             .legend-item:hover{filter:brightness(1.08)}
+            /* Chart button styling */
+            .chart-btn{background:#21262d;border:1px solid #30363d;color:#8b949e;padding:.4rem .75rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+            .chart-btn:hover{background:#30363d;border-color:#484f58;color:#c9d1d9}
+            .chart-btn.active{background:#238636;border-color:#2ea043;color:#fff}
         </style></head>
         <body>
             <header><h1>Production Dashboard</h1></header>
@@ -215,9 +220,37 @@ def dash():
                         <p>View daily hours trends across all departments with 7-day trailing average.</p>
                         <div class='actions'><a class='btn' href='/hours-chart'>View Chart</a></div>
                     </div>
+                    <div class='card'>
+                        <h2>📊 Unit Reports</h2>
+                        <p>Export detailed CSV reports with filtered and unfiltered department day analysis.</p>
+                        <div class='actions'><a class='btn' href='/reports' style='background: linear-gradient(135deg, #238636 0%, #2ea043 100%);'>Create Report</a></div>
+                    </div>
                 </div>
                 <div id='unitMetrics' class='metrics'>
                     <span class='pill'>Loading unit metrics…</span>
+                </div>
+                
+                <!-- Trailing Metrics Trend Chart -->
+                <div style='margin-top:2.5rem;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;'>
+                    <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;'>
+                        <h2 style='margin:0;font-size:1.1rem;'>📈 Metrics Trend (100% Complete Units)</h2>
+                        <div style='display:flex;gap:1rem;'>
+                            <div style='display:flex;gap:0.5rem;'>
+                                <button class='chart-btn' data-type='days' data-value='90'>90 Days</button>
+                                <button class='chart-btn active' data-type='days' data-value='120'>120 Days</button>
+                                <button class='chart-btn' data-type='days' data-value='365'>1 Year</button>
+                            </div>
+                            <div style='border-left:1px solid #30363d;padding-left:1rem;display:flex;gap:0.5rem;'>
+                                <button class='chart-btn active' data-type='trailing' data-value='10'>Trailing 10</button>
+                                <button class='chart-btn' data-type='trailing' data-value='30'>Trailing 30</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style='margin-bottom:1rem;'>
+                        <canvas id='trailingMetricsChart' width='1600' height='500'></canvas>
+                    </div>
+                    <div id='trailingLegend' class='legend' style='display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;'></div>
+                    <div id='trailingChartInfo' style='text-align:center;margin-top:1rem;font-size:0.75rem;opacity:0.6;'></div>
                 </div>
             </main>
             <script>
@@ -345,6 +378,98 @@ def dash():
                     });
                 });
             }
+            
+            // Trailing Metrics Chart
+            let trailingChartState = { days: 120, trailing: 10 };
+            let trailingMetricsSeries = [];
+            
+            function loadTrailingMetrics() {
+                const params = new URLSearchParams({
+                    days: trailingChartState.days,
+                    trailing: trailingChartState.trailing
+                });
+                
+                document.getElementById('trailingChartInfo').innerHTML = '<span style="opacity:0.8;">Loading...</span>';
+                
+                fetch('/api/metrics/trailing_trend?' + params)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('trailingChartInfo').innerHTML = `<span style="color:#f85149;">${data.error}</span>`;
+                            return;
+                        }
+                        
+                        // Format labels for display (show every Nth date)
+                        const displayLabels = data.labels.map(d => {
+                            const parts = d.split('-');
+                            return parts[1] + '/' + parts[2];  // MM/DD
+                        });
+                        
+                        // Build series data
+                        trailingMetricsSeries = [
+                            { 
+                                name: 'Avg Efficiency %', 
+                                data: data.avg_efficiency, 
+                                color: '#6ea8fe',
+                                visible: true 
+                            },
+                            { 
+                                name: 'Avg Act Days', 
+                                data: data.avg_act_days, 
+                                color: '#a8ff60',
+                                visible: true 
+                            },
+                            { 
+                                name: 'Avg Span Days', 
+                                data: data.avg_span, 
+                                color: '#ffd166',
+                                visible: true 
+                            }
+                        ];
+                        
+                        // Draw chart
+                        const canvas = document.getElementById('trailingMetricsChart');
+                        const ctx = canvas.getContext('2d');
+                        drawLineChart(ctx, displayLabels, trailingMetricsSeries);
+                        
+                        // Build legend
+                        buildLegend('trailingLegend', trailingMetricsSeries, () => {
+                            drawLineChart(ctx, displayLabels, trailingMetricsSeries);
+                        });
+                        
+                        // Update info
+                        document.getElementById('trailingChartInfo').innerHTML = 
+                            `Showing ${data.days} days | Trailing ${data.trailing} complete units per day | Uses logic page settings`;
+                    })
+                    .catch(err => {
+                        console.error('Failed to load trailing metrics:', err);
+                        document.getElementById('trailingChartInfo').innerHTML = 
+                            '<span style="color:#f85149;">Failed to load chart data</span>';
+                    });
+            }
+            
+            // Handle button clicks for trailing metrics chart
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.getAttribute('data-type');
+                    const value = parseInt(btn.getAttribute('data-value'));
+                    
+                    // Update state
+                    trailingChartState[type] = value;
+                    
+                    // Update button states
+                    document.querySelectorAll(`.chart-btn[data-type="${type}"]`).forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    
+                    // Reload chart
+                    loadTrailingMetrics();
+                });
+            });
+            
+            // Load initial chart
+            loadTrailingMetrics();
             </script>
         </body></html>
         """
@@ -364,12 +489,14 @@ def hours_chart():
     <head>
         <title>Total Daily Hours Charged Chart</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #0d1117; color: #c9d1d9; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #0d1117; color: #c9d1d9; }
             .container { max-width: 1400px; margin: 0 auto; }
-            header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            h1 { margin: 0; font-size: 1.5rem; }
-            .back-link { padding: 8px 16px; background: #21262d; border-radius: 6px; text-decoration: none; color: #58a6ff; }
-            .back-link:hover { background: #30363d; }
+            header { padding: 1rem 1.5rem; background: #161b22; border-bottom: 1px solid #30363d; }
+            h1 { margin: 0; font-size: 1.05rem; }
+            .nav-links { padding: 0.5rem 1.5rem; display: flex; gap: 1rem; background: #0d1117; }
+            .nav-links a { color: #8fb9ff; text-decoration: none; font-size: .85rem; }
+            .nav-links a:hover { text-decoration: underline; }
+            .content { padding: 20px; }
             .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
             .controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
             .btn-group { display: flex; gap: 5px; }
@@ -385,11 +512,10 @@ def hours_chart():
         </style>
     </head>
     <body>
+        <header><h1>Total Daily Hours Charged Chart</h1></header>
+        <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <div class="container">
-            <header>
-                <h1>Total Daily Hours Charged Chart</h1>
-                <a href="/dash" class="back-link">&larr; Back to Dashboard</a>
-            </header>
+            <div class="content">
             
             <div class="card">
                 <h2 style="margin: 0 0 15px; font-size: 1rem;" id="chartTitle">Daily Hours (Trailing 7-day average)</h2>
@@ -636,6 +762,8 @@ def hours_chart():
             document.getElementById('deptChart').parentElement.innerHTML = '<p style="color:#f85149;">Error loading chart data</p>';
         });
         </script>
+        </div>
+        </div>
     </body>
     </html>
     """
@@ -728,7 +856,7 @@ def dr_lookup():
             <!doctype html><html><head><meta charset='utf-8'><title>DR Labor Lookup</title>
             <style>
                 body{{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}}
-                header{{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}}
+                header{{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}}
                 h1{{margin:0;font-size:1.05rem}}
                 main{{padding:1rem 1.2rem}}
                 form input,form button{{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}}
@@ -736,9 +864,13 @@ def dr_lookup():
                 table{{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.8rem}}
                 th,td{{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left}}
                 th{{background:#1a2330}}
+                .nav-links{{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}}
+                .nav-links a{{color:#8fb9ff;text-decoration:none;font-size:.85rem}}
+                .nav-links a:hover{{text-decoration:underline}}
             </style></head>
             <body>
-                <header><h1>DR Labor Lookup</h1><div><a href='/dash' style='color:#8fb9ff;text-decoration:none'>&larr; Dashboard</a></div></header>
+                <header><h1>DR Labor Lookup</h1></header>
+                <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
                 <main>
                     <form method='GET'>
                         <label for='dr'>DR#:</label>
@@ -793,9 +925,13 @@ def employee_lookup():
     .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.35rem .6rem;font-size:.65rem;margin:.3rem .4rem 0 0}
     .miniBar{height:8px;background:#263040;border-radius:4px;position:relative;overflow:hidden}
     .miniBar > span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2f9e44,#52d96d)}
+    .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
+    .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
+    .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-        <header><h1>Employee Lookup</h1><div><a href='/dash' style='color:#8fb9ff;text-decoration:none'>&larr; Dashboard</a></div></header>
+        <header><h1>Employee Lookup</h1></header>
+        <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <main>
             <div class='row'>
                 <div class='sugg'>
@@ -929,9 +1065,13 @@ def parts_page():
         th,td{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left;vertical-align:top;max-width:420px;overflow:hidden;text-overflow:ellipsis}
         th{background:#1a2330}
         .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.35rem .6rem;font-size:.65rem;margin:.3rem .4rem 0 0}
+        .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
+        .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
+        .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-        <header><h1>Parts Tracker</h1><div><a href='/dash' style='color:#8fb9ff;text-decoration:none'>&larr; Dashboard</a></div></header>
+        <header><h1>Parts Tracker</h1></header>
+        <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <main>
             <div class='row'>
                 <div>
@@ -983,16 +1123,23 @@ def com_totals_page():
     <!doctype html><html><head><meta charset='utf-8'><title>COM# Totals by Employee</title>
     <style>
         body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+        header{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.9rem}
         th,td{border:1px solid #2a323c;padding:.5rem .7rem;text-align:left}
         th{background:#1a2330}
         .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.35rem .6rem;font-size:.65rem;margin:.3rem .4rem 0 0}
+        .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
+        .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
+        .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-    <header><h1>COM# Totals by Employee</h1><div><a id='backLink' href='/com' style='color:#8fb9ff;text-decoration:none'>&larr; Back to Charges</a></div></header>
+    <header><h1>COM# Totals by Employee</h1></header>
+    <div class='nav-links'>
+        <a href='/com'>&larr; Back to Charges</a>
+        <a href='/dash'>&larr; Dashboard</a>
+    </div>
         <main>
             <div id='summary'></div>
             <div id='results'></div>
@@ -1034,7 +1181,7 @@ def com_lookup():
     <!doctype html><html><head><meta charset='utf-8'><title>COM# Charges</title>
     <style>
         body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+        header{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         input,button{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}
@@ -1043,9 +1190,16 @@ def com_lookup():
         th,td{border:1px solid #2a323c;padding:.45rem .6rem;text-align:left}
         th{background:#1a2330}
         .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.35rem .6rem;font-size:.65rem;margin:.3rem .4rem 0 0}
+        .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
+        .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
+        .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-        <header><h1>COM# Charges</h1><div><a href='/dash' style='color:#8fb9ff;text-decoration:none'>&larr; Dashboard</a></div></header>
+        <header><h1>COM# Charges</h1></header>
+        <div class='nav-links'>
+            <a href='/recent'>&larr; Recent Units</a>
+            <a href='/dash'>&larr; Dashboard</a>
+        </div>
         <main>
             <div>
                 <label>COM#</label>
@@ -1068,19 +1222,29 @@ def com_lookup():
             .grow{display:flex;align-items:center;border-top:1px solid #1a2230}
             .grow:first-child{border-top:none}
             .glabel{flex:0 0 180px;padding:.35rem .5rem;border-right:1px solid #1a2230;background:#121922;font-size:.85rem}
+            .gstats{flex:0 0 120px;padding:.35rem .5rem;border-right:1px solid #1a2230;background:#0f161d;font-size:.75rem;display:flex;gap:.8rem;justify-content:center}
+            .gstat{display:flex;flex-direction:column;align-items:center}
+            .gstat-label{font-size:.6rem;color:#7b8a99;margin-bottom:2px}
+            .gstat-value{font-size:.8rem;font-weight:600;color:#c9d1d9}
             .ggrid{display:flex;gap:3px;padding:.3rem .5rem}
             .gcell{width:16px;height:16px;border:1px solid #263040;background:#141b22;border-radius:2px;position:relative}
             .gcell.on{border-color:#3fb950}
             .gcell.col{box-shadow:0 0 0 1px #3a78e0 inset}
             .grow.hl .glabel{background:#172233}
+            .grow.hl .gstats{background:#0d1419}
             .ghead{display:flex;align-items:center}
             .ghead .glabel{background:#0f161d;font-weight:700}
+            .ghead .gstats{background:#0a0e12;font-weight:700;font-size:.7rem;color:#8b949e}
             .gtick{width:16px;height:16px;display:flex;align-items:center;justify-content:center;color:#7b8a99;font-size:.6rem}
             .gtick.hl{color:#bcd0ff;font-weight:700}
             .gtt{position:fixed;z-index:1000;pointer-events:none;background:#111820;border:1px solid #2a3440;color:#e6edf3;padding:.35rem .5rem;border-radius:6px;font-size:.7rem;box-shadow:0 6px 18px rgba(0,0,0,.45);display:none}
             .glegend{display:flex;align-items:center;gap:.5rem;padding:.4rem .5rem;border-bottom:1px solid #1a2230;background:#0f161d}
             .glegend .lab{font-size:.65rem;color:#9bb0c8}
             .glegend .bar{width:180px;height:10px;border-radius:5px;background:linear-gradient(90deg,hsl(140,65%,22%),hsl(140,65%,52%));border:1px solid #2a3544}
+            .gunit{border-top:2px solid #2a4060}
+            .gunit .glabel{background:#1a2433;font-weight:700;color:#8fb4ff}
+            .gunit .gstats{background:#141d2a;border-top:1px solid #2a4060}
+            .gunit .gstat-value{color:#8fb4ff;font-weight:700}
         `;
         document.head.appendChild(G_STYLE);
         const TIP = document.createElement('div');TIP.className='gtt';document.body.appendChild(TIP);
@@ -1140,8 +1304,12 @@ def com_lookup():
             if(!minD || !maxD){ wrap.innerHTML=''; return; }
             // Build continuous day list
             const days=[]; for(let d=minD; d<=maxD; d=addDays(d,1)) days.push(ymd(d));
-            // Header row (ticks every 5 days)
-            let html = '<div class="grow ghead"><div class="glabel">Date</div><div class="ggrid">';
+            // Header row (ticks every 5 days) - only show Act Days/Span if unit is complete
+            let html = '<div class="grow ghead"><div class="glabel">Department</div>';
+            if(unitComplete){
+                html += '<div class="gstats">Act Days / Span</div>';
+            }
+            html += '<div class="ggrid">';
             for(let i=0;i<days.length;i++){
                 if(i%5===0){ html += `<div class='gtick' data-day='${days[i]}'>${days[i].slice(8)}</div>`; } else { html += `<div class='gtick' data-day='${days[i]}'></div>`; }
             }
@@ -1157,7 +1325,27 @@ def com_lookup():
             }));
             entries.sort((a,b)=> (a.label||'').localeCompare(b.label||'') || a.code.localeCompare(b.code));
             entries.forEach(ent=>{
-                html += `<div class='grow'><div class='glabel'>${ent.label}</div><div class='ggrid'>`;
+                // Calculate Act Days and Span for this department - ONLY from valid (green) days
+                let actDays = 0;
+                let span = 0;
+                if(unitComplete){
+                    // Only count days with valid (non-excluded, non-filtered) charges
+                    const validDays = Array.from(ent.status.keys()).filter(d => {
+                        const st = ent.status.get(d);
+                        return st.hasValid && ent.hours.get(d) > 0;
+                    }).sort();
+                    actDays = validDays.length;
+                    if(validDays.length > 0){
+                        const firstDay = ymdToDate(validDays[0]);
+                        const lastDay = ymdToDate(validDays[validDays.length - 1]);
+                        span = Math.floor((lastDay - firstDay) / (1000*60*60*24)) + 1;
+                    }
+                }
+                html += `<div class='grow'><div class='glabel'>${ent.label}</div>`;
+                if(unitComplete){
+                    html += `<div class='gstats'><div class='gstat'><div class='gstat-label'>Act</div><div class='gstat-value'>${actDays}</div></div><div class='gstat'><div class='gstat-label'>Span</div><div class='gstat-value'>${span}</div></div></div>`;
+                }
+                html += `<div class='ggrid'>`;
                 days.forEach(d=>{
                     const hrs = Number(ent.hours.get(d)||0);
                     const n = Number(ent.entries.get(d)||0);
@@ -1202,9 +1390,47 @@ def com_lookup():
                 });
                 html += '</div></div>';
             });
-            let legend = `<div class='glegend'><div class='lab'>Hours</div><div class='bar'></div><div class='lab'>${maxHours.toFixed(1)}h</div></div>`;
+            
+            // Add unit summary row (only if unit is complete)
             if(unitComplete){
-                legend += `<div class='glegend' style='margin-left:2rem;'><div style='width:20px;height:20px;background:#f0e68c;border-radius:3px;'></div><div class='lab'>Excluded Employee</div><div style='width:20px;height:20px;background:#ff6b6b;border-radius:3px;margin-left:1rem;'></div><div class='lab'>Filtered Out</div></div>`;
+                // Collect all valid days across all departments
+                const unitValidDays = new Set();
+                entries.forEach(ent => {
+                    Array.from(ent.status.keys()).forEach(d => {
+                        const st = ent.status.get(d);
+                        if(st.hasValid && ent.hours.get(d) > 0){
+                            unitValidDays.add(d);
+                        }
+                    });
+                });
+                
+                // Calculate unit-level Act Days and Span
+                const sortedValidDays = Array.from(unitValidDays).sort();
+                const unitActDays = sortedValidDays.length;
+                let unitSpan = 0;
+                if(sortedValidDays.length > 0){
+                    const firstDay = ymdToDate(sortedValidDays[0]);
+                    const lastDay = ymdToDate(sortedValidDays[sortedValidDays.length - 1]);
+                    unitSpan = Math.floor((lastDay - firstDay) / (1000*60*60*24)) + 1;
+                }
+                
+                // Build unit summary row
+                html += `<div class='grow gunit'><div class='glabel'>UNIT</div>`;
+                html += `<div class='gstats'><div class='gstat'><div class='gstat-label'>Act</div><div class='gstat-value'>${unitActDays}</div></div><div class='gstat'><div class='gstat-label'>Span</div><div class='gstat-value'>${unitSpan}</div></div></div>`;
+                html += `<div class='ggrid'>`;
+                days.forEach(d => {
+                    const hasValid = unitValidDays.has(d);
+                    const on = hasValid ? ' on' : '';
+                    const style = hasValid ? `style="background-color:hsl(200,70%,45%);"` : '';
+                    const title = hasValid ? `Unit — ${d}\nValid charges exist` : `Unit — ${d}\nNo valid charges`;
+                    html += `<div class='gcell${on}' data-day='${d}' data-dept='UNIT' title='${title}' ${style}></div>`;
+                });
+                html += '</div></div>';
+            }
+            
+            let legend = '';
+            if(unitComplete){
+                legend += `<div class='glegend'><div style='width:20px;height:20px;background:#f0e68c;border-radius:3px;'></div><div class='lab'>Excluded Employee</div><div style='width:20px;height:20px;background:#ff6b6b;border-radius:3px;margin-left:1rem;'></div><div class='lab'>Filtered Out</div></div>`;
             }
             wrap.innerHTML = `<div class='gantt'>${legend}${html}</div>`;
 

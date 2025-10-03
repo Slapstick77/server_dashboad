@@ -23,13 +23,28 @@ api = Blueprint('api', __name__)
 @api.route('/api/incomplete')
 def api_incomplete():
     """Return incomplete units (not 100% weighted complete) with recent labor.
-
-    Rules:
-      1. Start from scheduling summary rows whose COM is a 5‑digit number.
-      2. Weighted completion from department completion columns.
-      3. Labor recency: labor within 60 days AND last labor within 7 days (14 if relax=1 in debug).
-      4. Keep std>0, act>0, completion < ~100.
+    
+    Now uses cached metrics for instant loading. Cache is auto-refreshed after:
+    - Labor sync
+    - Schedule sync
+    - Logic rule updates
+    - Manual refresh
     """
+    import sys
+    import os
+    # Add parent directory to path for metrics_cache import
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from metrics_cache import get_cached_metrics
+    
+    # Try to get cached data first
+    cached = get_cached_metrics('incomplete_units')
+    
+    if cached and 'data' in cached:
+        # Return just the data portion (units, count, in_progress_count)
+        return jsonify(cached['data'])
+    
+    # Fallback: If cache miss, compute on the fly (shouldn't happen after initial setup)
+    # This is the original expensive logic kept as fallback
     with get_conn() as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
@@ -602,6 +617,244 @@ def api_unit_time_trends():
             'efficiency_delta': a10_eff - a90_eff,
         }
     })
+
+
+@api.route('/api/metrics/trailing_trend')
+def api_trailing_trend():
+    """
+    Return trailing metrics trend data for charting.
+    
+    NOW USES PRE-CACHED DATA - calculated during metrics refresh.
+    
+    Query params:
+        days: 90, 120, or 365 (time window)
+        trailing: 10 or 30 (number of trailing units to use per day)
+    
+    Returns cached chart data for instant loading.
+    """
+    import sys
+    import os
+    
+    # Add parent directory for imports
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from metrics_cache import get_cached_metrics
+    
+    # Get parameters
+    try:
+        days = int(request.args.get('days', 120))
+        if days not in [90, 120, 365]:
+            days = 120
+    except:
+        days = 120
+    
+    try:
+        trailing = int(request.args.get('trailing', 10))
+        if trailing not in [10, 30]:
+            trailing = 10
+    except:
+        trailing = 10
+    
+    # Get cached trailing trend charts
+    cached = get_cached_metrics('trailing_trend_charts')
+    
+    if not cached or 'data' not in cached:
+        return jsonify({
+            'labels': [],
+            'avg_efficiency': [],
+            'avg_act_days': [],
+            'avg_span': [],
+            'error': 'Chart data not cached yet - refresh metrics cache'
+        })
+    
+    # Get the specific chart requested
+    chart_key = f"{days}_{trailing}"
+    charts_data = cached['data']
+    
+    if chart_key not in charts_data:
+        return jsonify({
+            'labels': [],
+            'avg_efficiency': [],
+            'avg_act_days': [],
+            'avg_span': [],
+            'error': f'Chart {chart_key} not found in cache'
+        })
+    
+    chart = charts_data[chart_key]
+    
+    return jsonify({
+        'labels': chart['labels'],
+        'avg_efficiency': chart['avg_efficiency'],
+        'avg_act_days': chart['avg_act_days'],
+        'avg_span': chart['avg_span'],
+        'days': chart['days'],
+        'trailing': chart['trailing'],
+        '_cache': {
+            'computed_at': cached.get('_cache', {}).get('computed_at'),
+            'trigger_source': cached.get('_cache', {}).get('trigger_source')
+        }
+    })
+
+
+def _calculate_metrics_for_units(com_list):
+    """
+    Calculate avg efficiency, act days, and span for a list of COM numbers.
+    Uses the same logic as the main metrics calculation (applies logic page settings).
+    
+    Returns: {avg_efficiency, avg_act_days, avg_span}
+    """
+    if not com_list:
+        return {'avg_efficiency': 0, 'avg_act_days': 0, 'avg_span': 0}
+    
+    from datetime import date as dt_date
+    from collections import defaultdict
+    
+    # Map department codes
+    raw_code_to_label = {
+        '0120':'Fab','0140':'Welding','0180':'BaseFormPaint','0200':'FanAssyTest','0220':'InsulWallFab',
+        '0230':'Pipe','0260':'Assembly','0270':'DoorFab','0280':'Assembly','0300':'Electrical','0320':'Pipe',
+        '0340':'Paint','0360':'Test','0380':'Crating',
+    }
+    tracked_codes = sorted(raw_code_to_label.keys())
+    codes_sql = ','.join(f"'{c}'" for c in tracked_codes)
+    
+    # Load labor data for these units
+    placeholders = ','.join('?' for _ in com_list)
+    with get_conn() as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        
+        cur.execute(
+            f"""
+            SELECT CAST(COMNumber AS TEXT) com,
+                   DepartmentNumber dept,
+                   strftime('%Y-%m-%d', COALESCE(iso_logged_date, substr(LoggedDate,1,10))) day,
+                   EmployeeNumber1 emp,
+                   COALESCE(ActualHours,0) hrs
+            FROM SCHLabor
+            WHERE COALESCE(ActualHours,0) > 0
+              AND DepartmentNumber IN ({codes_sql})
+              AND CAST(COMNumber AS TEXT) IN ({placeholders})
+        """,
+            com_list
+        )
+        rows = cur.fetchall()
+        
+        # Also get scheduling summary for efficiency calculation
+        cur.execute('PRAGMA table_info(SCHSchedulingSummary)')
+        colset = {r[1] for r in cur.fetchall()}
+        base_needed = ['comnumber1']
+        for _, stdc, actc, compc, effc in TRACKED_DEPARTMENTS:
+            base_needed.extend([stdc, actc, compc, effc])
+        present = [c for c in base_needed if c in colset]
+        cols_sql = ','.join(f'"{c}"' for c in present) if present else 'comnumber1'
+        
+        cur.execute(
+            f'SELECT {cols_sql} FROM SCHSchedulingSummary WHERE CAST(comnumber1 AS TEXT) IN ({placeholders})',
+            com_list
+        )
+        sched_rows = [dict(r) for r in cur.fetchall()]
+    
+    # Aggregate department-day stats
+    day_emp = {}
+    for com, dept, day, emp, hrs in rows:
+        label = raw_code_to_label.get(dept)
+        if not label or day is None:
+            continue
+        key = (normalize_com(com), label)
+        dm = day_emp.setdefault(key, {})
+        rec = dm.setdefault(day, {'emps': set(), 'hours': 0.0})
+        if emp:
+            rec['emps'].add(str(emp).strip())
+        try:
+            rec['hours'] += float(hrs) if hrs is not None else 0.0
+        except:
+            pass
+    
+    # Build dept completion map (all units are complete, but need per-dept status)
+    dept_completion_map = {}
+    for r in sched_rows:
+        com_raw = r.get('comnumber1')
+        if not com_raw:
+            continue
+        com = normalize_com(str(com_raw))
+        
+        for label, stdc, actc, compc, effc in COMPLETION_CHECK_DEPARTMENTS:
+            std = fnum(r.get(stdc)) if stdc in r else 0.0
+            if std <= 0:
+                dept_completion_map[(com, label)] = False
+                continue
+            
+            comp = fnum(r.get(compc)) if compc in r else 0.0
+            dept_complete = True
+            if comp < 100.0:
+                act = fnum(r.get(actc)) if actc in r else 0.0
+                calc_comp = min(100.0, (act / std) * 100.0) if act > 0 else 0.0
+                if calc_comp < 100.0:
+                    dept_complete = False
+            
+            dept_completion_map[(com, label)] = dept_complete
+    
+    # Calculate per-unit metrics using filtering logic
+    tmp_by_com = defaultdict(lambda: {'days': set(), 'first': None, 'last': None})
+    for (com, label), daymap in day_emp.items():
+        is_dept_complete = dept_completion_map.get((com, label), False)
+        use_days, meta = _resolve_department_days(label, daymap, is_complete=is_dept_complete)
+        if not use_days:
+            continue
+        com_rec = tmp_by_com[com]
+        com_rec['days'].update(use_days)
+        first_day = min(use_days)
+        last_day = max(use_days)
+        if com_rec['first'] is None or first_day < com_rec['first']:
+            com_rec['first'] = first_day
+        if com_rec['last'] is None or last_day > com_rec['last']:
+            com_rec['last'] = last_day
+    
+    # Calculate act days and span for each unit
+    act_days_list = []
+    span_list = []
+    for com, rec in tmp_by_com.items():
+        ds = sorted(rec['days'])
+        if not ds:
+            continue
+        active_days = len(ds)
+        try:
+            span_days = (dt_date.fromisoformat(rec['last']) - dt_date.fromisoformat(rec['first'])).days + 1
+        except:
+            span_days = None
+        
+        act_days_list.append(active_days)
+        if span_days is not None:
+            span_list.append(span_days)
+    
+    # Calculate efficiency from scheduling summary
+    effs = []
+    for r in sched_rows:
+        total_std = total_act = total_eh = 0.0
+        for label, stdc, actc, compc, effc in TRACKED_DEPARTMENTS:
+            std = fnum(r.get(stdc)) if stdc in r else 0.0
+            act = fnum(r.get(actc)) if actc in r else 0.0
+            comp = fnum(r.get(compc)) if compc in r else 0.0
+            if (comp <= 0 or comp > 100.0) and std > 0:
+                comp = min(100.0, (act / std) * 100.0) if act > 0 else 0.0
+            comp = max(0.0, comp)
+            eh = (comp / 100.0) * std
+            total_std += std
+            total_act += act
+            total_eh += eh
+        if total_act > 0:
+            effs.append((total_eh / total_act) * 100.0)
+    
+    # Calculate averages
+    def avg(vals):
+        vals = [v for v in vals if v is not None]
+        return (sum(vals) / len(vals)) if vals else 0.0
+    
+    return {
+        'avg_efficiency': avg(effs),
+        'avg_act_days': avg(act_days_list),
+        'avg_span': avg(span_list)
+    }
 
 
 

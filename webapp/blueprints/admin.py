@@ -66,6 +66,64 @@ def refresh_metrics():
         </body>
         </html>"""
 
+@admin.route('/completion/refresh', methods=['POST'])
+def refresh_completion():
+    """Manually refresh the unit completion table."""
+    try:
+        parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        sys.path.insert(0, parent_dir)
+        from metrics_cache import refresh_unit_completion
+        
+        result = refresh_unit_completion()
+        
+        if result['success']:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Completion Refreshed</title>
+                <meta http-equiv="refresh" content="2;url=/tasks">
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                    .success {{ color: #3fb950; font-size: 24px; }}
+                </style>
+            </head>
+            <body>
+                <div class="success">✓ Unit completion refreshed!</div>
+                <p>Total: {result['total_units']} units | Complete: {result['complete']} | Incomplete: {result['incomplete']}</p>
+                <p>Redirecting back to tasks page...</p>
+            </body>
+            </html>"""
+        else:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Error</title>
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                    .error {{ color: #f85149; font-size: 18px; }}
+                </style>
+            </head>
+            <body>
+                <div class="error">Failed to refresh completion data</div>
+                <p><a href="/tasks" style="color: #8fb9ff;">Back to tasks page</a></p>
+            </body>
+            </html>"""
+    except Exception as e:
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error</title>
+            <style>
+                body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                .error {{ color: #f85149; font-size: 18px; }}
+            </style>
+        </head>
+        <body>
+            <div class="error">Error: {str(e)}</div>
+            <p><a href="/tasks" style="color: #8fb9ff;">Back to tasks page</a></p>
+        </body>
+        </html>"""
+
 @admin.route('/tasks')
 def list_tasks():
     """View and manage scheduled tasks."""
@@ -136,8 +194,11 @@ def list_tasks():
             
             <div class="header-actions">
                 <h1>Scheduled Tasks & Metrics</h1>
-                <form method="POST" action="/metrics/refresh" style="display:inline;">
+                <form method="POST" action="/metrics/refresh" style="display:inline;margin-right:10px;">
                     <button type="submit" class="btn-refresh">🔄 Refresh Metrics Cache</button>
+                </form>
+                <form method="POST" action="/completion/refresh" style="display:inline;">
+                    <button type="submit" class="btn-refresh">✅ Refresh Unit Completion</button>
                 </form>
             </div>
             
@@ -230,6 +291,11 @@ def logic_config():
     """Configuration page for project day filtering logic."""
     # Import utils module to modify its globals
     from . import utils
+    import sys
+    import os
+    # Add parent directory to path for metrics_cache import
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from metrics_cache import refresh_metrics_cache
     
     if request.method == 'POST':
         # Handle form submission - update the PROJECT_DAY_RULES
@@ -245,7 +311,12 @@ def logic_config():
                     if employee_id not in current_exclusions:
                         current_exclusions.append(employee_id)
                         utils.PROJECT_DAY_RULES['exclusion_employees'] = current_exclusions
-                        message = f"✅ Added exclusion employee: {employee_id}"
+                        # Save to database
+                        from metrics_cache import save_configuration
+                        save_configuration('EXCLUSION_EMPLOYEES', current_exclusions)
+                        # Refresh metrics cache since exclusions affect filtering
+                        refresh_metrics_cache(trigger='exclusion_update')
+                        message = f"✅ Added exclusion employee: {employee_id} (metrics refreshed)"
                     else:
                         message = f"⚠️ Employee {employee_id} already excluded"
                 else:
@@ -258,7 +329,12 @@ def logic_config():
                 if employee_id in current_exclusions:
                     current_exclusions.remove(employee_id)
                     utils.PROJECT_DAY_RULES['exclusion_employees'] = current_exclusions
-                    message = f"✅ Removed exclusion employee: {employee_id}"
+                    # Save to database
+                    from metrics_cache import save_configuration
+                    save_configuration('EXCLUSION_EMPLOYEES', current_exclusions)
+                    # Refresh metrics cache since exclusions affect filtering
+                    refresh_metrics_cache(trigger='exclusion_update')
+                    message = f"✅ Removed exclusion employee: {employee_id} (metrics refreshed)"
                 else:
                     message = f"❌ Employee {employee_id} not found in exclusions"
                     
@@ -266,35 +342,40 @@ def logic_config():
                 # Update all logic rules
                 new_min_hours = float(request.form.get('min_hours', utils.MIN_DAY_HOURS))
                 new_min_employees = int(request.form.get('min_employees_override', utils.PROJECT_DAY_RULES.get('min_employees_override', 2)))
+                new_max_gap_override = int(request.form.get('max_gap_override', utils.PROJECT_DAY_RULES.get('max_gap_override', 30)))
                 
-                # Update outlier caps for each department
-                new_outlier_caps = {}
-                for dept in utils.OUTLIER_CAPS.keys():
-                    cap_value = int(request.form.get(f'outlier_cap_{dept}', utils.OUTLIER_CAPS[dept]))
-                    new_outlier_caps[dept] = cap_value
-                
-                # Update per-department rules (min_hours and min_employees)
+                # Update per-department rules (min_hours, min_employees, and outlier_cap)
                 new_dept_rules = {}
+                new_outlier_caps = {}
                 for dept in utils.DEPARTMENT_RULES.keys():
                     dept_min_hours = float(request.form.get(f'dept_min_hours_{dept}', utils.DEPARTMENT_RULES[dept]['min_hours']))
                     dept_min_employees = int(request.form.get(f'dept_min_employees_{dept}', utils.DEPARTMENT_RULES[dept]['min_employees']))
+                    dept_outlier_cap = int(request.form.get(f'dept_outlier_cap_{dept}', utils.OUTLIER_CAPS.get(dept, 7)))
                     new_dept_rules[dept] = {
                         'min_hours': dept_min_hours,
                         'min_employees': dept_min_employees
                     }
+                    new_outlier_caps[dept] = dept_outlier_cap
                 
                 # Update the global variables in utils module
-                utils.MIN_DAY_HOURS = new_min_hours
                 utils.OUTLIER_CAPS = new_outlier_caps
                 utils.DEPARTMENT_RULES.update(new_dept_rules)
                 utils.PROJECT_DAY_RULES.update({
-                    'min_total_hours': utils.MIN_DAY_HOURS,
                     'outlier_caps': utils.OUTLIER_CAPS,
-                    'min_employees_override': new_min_employees,
                     'department_rules': utils.DEPARTMENT_RULES,
+                    'max_gap_override': new_max_gap_override,
                 })
                 
-                message = "✅ Logic rules updated successfully!"
+                # Save configuration to database
+                from metrics_cache import save_configuration
+                save_configuration('OUTLIER_CAPS', new_outlier_caps)
+                save_configuration('DEPARTMENT_RULES', new_dept_rules)
+                save_configuration('EXCLUSION_EMPLOYEES', utils.PROJECT_DAY_RULES.get('exclusion_employees', []))
+                save_configuration('MAX_GAP_OVERRIDE', new_max_gap_override)
+                
+                # Refresh metrics cache since filtering rules changed
+                refresh_metrics_cache(trigger='logic_update')
+                message = "✅ Logic rules updated successfully! (metrics refreshed)"
             
         except Exception as e:
             message = f"❌ Error updating rules: {e}"
@@ -405,79 +486,55 @@ def logic_config():
             <form method="POST">
                 <input type="hidden" name="action" value="update">
                 
-                <!-- Minimum Hours Section -->
-                <div class="section">
-                    <h2>Minimum Day Hours Threshold</h2>
-                    <div class="definition">
-                        <strong>Definition:</strong> A department day is only counted if the total hours charged are at least this amount. 
-                        Days below this threshold are ignored for ALL departments in days_active and span calculations.
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Total Hours:</label>
-                        <input type="number" step="0.1" name="min_hours" value="{utils.MIN_DAY_HOURS}" />
-                    </div>
-                </div>
-                
-                <!-- Employee Override Section -->
-                <div class="section">
-                    <h2>Employee Override Count</h2>
-                    <div class="definition">
-                        <strong>Definition:</strong> If a department day has at least this many employees, it will never be dropped as an outlier, 
-                        regardless of the gap to adjacent days. This overrides the gap filtering rules below.
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Employees to Override (Global Default):</label>
-                        <input type="number" min="1" name="min_employees_override" value="{utils.PROJECT_DAY_RULES.get('min_employees_override', 2)}" />
-                    </div>
-                    <div class="definition" style="background: #fff3cd; border-left-color: #ffc107;">
-                        <strong>Note:</strong> The values above are global defaults. You can override them per-department in the section below.
-                    </div>
-                </div>
-                
                 <!-- Per-Department Rules Section -->
                 <div class="section">
                     <h2>⚙️ Per-Department Filtering Rules</h2>
                     <div class="definition">
-                        <strong>Department-Specific Overrides:</strong> Each department can have its own minimum hours and minimum employee thresholds. 
-                        These override the global defaults above for that specific department. The employee override rule applies to BOTH hours threshold and gap filtering.
+                        <strong>Department Configuration:</strong> Each department has three filtering settings that control how days are counted.
                     </div>
                     <div class="definition" style="background: #e8f8f5; border-left-color: #27ae60;">
-                        <strong>Employee Override Rule:</strong> If a day has ≥ min_employees <strong>valid (non-excluded)</strong> employees, 
-                        it is kept regardless of hours or gap filtering. This prevents losing important work days with multiple contributors.
+                        <strong>Min Hours:</strong> A day must have at least this many total hours to be counted (unless overridden by employee count).<br/>
+                        <strong>Min Employees:</strong> If a day has ≥ this many <strong>valid (non-excluded)</strong> employees, it's ALWAYS kept regardless of hours or gap.<br/>
+                        <strong>Outlier Cap (days):</strong> Max gap allowed for first/last day filtering. First day always filtered; last day only when 100% complete.
                     </div>
+                    <div class="definition" style="background: #fff3cd; border-left-color: #ffc107;">
+                        <strong>⚠️ Hard Maximum Gap Override:</strong> Days with gaps EXCEEDING this threshold are ALWAYS dropped, even if they have ≥ Min Employees. 
+                        This prevents extreme outliers (like charges after 300+ day gaps) from inflating span calculations.
+                    </div>
+                    <div class="definition" style="background: #f0f7ff; border-left-color: #1f6feb;">
+                        <strong>Gantt Chart:</strong> Shows ALL charged days with color coding (green=kept, yellow=excluded, red=filtered). No filtering applied to Gantt display.
+                    </div>
+                    
+                    <!-- Global Hard Maximum Gap Setting -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: #ffe6e6; border: 2px solid #dc3545; border-radius: 5px;">
+                        <h3 style="margin-top: 0; color: #dc3545;">🚫 Hard Maximum Gap Override</h3>
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-weight: bold;">Maximum Gap (days):</label>
+                            <input type="number" min="1" name="max_gap_override" value="{utils.PROJECT_DAY_RULES.get('max_gap_override', 30)}" style="width: 100px; padding: 8px; font-size: 16px; font-weight: bold;" />
+                        </div>
+                        <p style="margin: 0; font-size: 0.9em; color: #666;">
+                            Charges with gaps exceeding this value will be dropped regardless of employee count. 
+                            Default: 30 days. Use this to prevent extreme outliers from skewing metrics.
+                        </p>
+                    </div>
+                    
                     <div class="dept-grid">
                         {chr(10).join([f'''
                         <div class="dept-item">
                             <strong>{dept}</strong>
                             <div style="margin-top: 10px;">
                                 <label style="font-size: 0.9em;">Min Hours:</label>
-                                <input type="number" step="0.1" name="dept_min_hours_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_hours']}" style="width: 80px;" />h
+                                <input type="number" step="0.1" name="dept_min_hours_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_hours']}" style="width: 70px;" />h
                             </div>
                             <div style="margin-top: 8px;">
                                 <label style="font-size: 0.9em;">Min Employees:</label>
-                                <input type="number" min="1" name="dept_min_employees_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_employees']}" style="width: 80px;" />
+                                <input type="number" min="1" name="dept_min_employees_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_employees']}" style="width: 70px;" />
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <label style="font-size: 0.9em;">Outlier Cap:</label>
+                                <input type="number" min="1" name="dept_outlier_cap_{dept}" value="{utils.OUTLIER_CAPS.get(dept, 7)}" style="width: 70px;" />d
                             </div>
                         </div>''' for dept in sorted(utils.DEPARTMENT_RULES.keys())])}
-                    </div>
-                </div>
-                
-                <!-- First/Last Day Gap Filtering Section -->
-                <div class="section">
-                    <h2>First/Last Day Gap Filtering (Outlier Caps)</h2>
-                    <div class="definition">
-                        <strong>First Day:</strong> ALWAYS apply gap filtering. Keep if gap to next charge ≤ cap below OR ≥ override count of employees.<br/>
-                        <strong>Last Day:</strong> Apply gap filtering ONLY when department is 100% complete. Incomplete departments keep all days.<br/>
-                        <strong>Gantt Chart:</strong> Shows ALL raw charged days with NO filtering for visibility and troubleshooting.
-                    </div>
-                    <div style="background: #f0f7ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #1f6feb;">
-                        <strong>Note:</strong> Assembly cap applies to both ASSY (0260) and FLOW (0280) labor codes since they map to the same Assembly department.
-                    </div>
-                    <div class="dept-grid">
-                        {chr(10).join([f'''
-                        <div class="dept-item">
-                            <label>{dept}:</label>
-                            <input type="number" name="outlier_cap_{dept}" value="{utils.OUTLIER_CAPS[dept]}" /> days
-                        </div>''' for dept in sorted(utils.OUTLIER_CAPS.keys())])}
                     </div>
                 </div>
                 
@@ -524,9 +581,8 @@ def logic_config():
             <div class="section">
                 <h2>Current Active Rules Summary</h2>
                 <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;">
-Min Hours: {utils.MIN_DAY_HOURS}
-Min Employees Override: {utils.PROJECT_DAY_RULES.get('min_employees_override', 2)}
-Outlier Caps: {dict(sorted(utils.OUTLIER_CAPS.items()))}
+Department Rules: {len(utils.DEPARTMENT_RULES)} departments configured
+Outlier Caps: {len(utils.OUTLIER_CAPS)} departments configured
 Exclusion Employees: {len(exclusion_employees)} configured
                 </pre>
             </div>
