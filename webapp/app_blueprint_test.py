@@ -13,15 +13,17 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 # Import blueprints
 from blueprints.dashboard import dashboard
+from blueprints.api import api
 
 # Create Flask app
 app = Flask(__name__)
 
 # Register blueprints
 app.register_blueprint(dashboard)
+app.register_blueprint(api)
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("⚠️  TESTING MODE - Only / route implemented")
+    print("⚠️  TESTING MODE - Dashboard + API blueprints")
     print("=" * 70)
     app.run(host='0.0.0.0', port=5001, debug=True)  # Using port 5001 to not conflict
