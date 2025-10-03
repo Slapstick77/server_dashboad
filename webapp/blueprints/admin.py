@@ -1,0 +1,385 @@
+from flask import Blueprint, request, render_template_string
+import sqlite3
+from . import utils
+
+admin = Blueprint('admin', __name__)
+
+@admin.route('/logic', methods=['GET', 'POST'])
+def logic_config():
+    """Configuration page for project day filtering logic."""
+    # Import utils module to modify its globals
+    from . import utils
+    
+    if request.method == 'POST':
+        # Handle form submission - update the PROJECT_DAY_RULES
+        try:
+            # Handle different POST actions
+            action = request.form.get('action', 'update')
+            
+            if action == 'add_exclusion':
+                # Add new exclusion employee
+                employee_id = request.form.get('new_exclusion_id', '').strip()
+                if employee_id:
+                    current_exclusions = utils.PROJECT_DAY_RULES.get('exclusion_employees', [])
+                    if employee_id not in current_exclusions:
+                        current_exclusions.append(employee_id)
+                        utils.PROJECT_DAY_RULES['exclusion_employees'] = current_exclusions
+                        message = f"✅ Added exclusion employee: {employee_id}"
+                    else:
+                        message = f"⚠️ Employee {employee_id} already excluded"
+                else:
+                    message = "❌ Employee ID required"
+                    
+            elif action == 'remove_exclusion':
+                # Remove exclusion employee
+                employee_id = request.form.get('remove_exclusion_id', '').strip()
+                current_exclusions = utils.PROJECT_DAY_RULES.get('exclusion_employees', [])
+                if employee_id in current_exclusions:
+                    current_exclusions.remove(employee_id)
+                    utils.PROJECT_DAY_RULES['exclusion_employees'] = current_exclusions
+                    message = f"✅ Removed exclusion employee: {employee_id}"
+                else:
+                    message = f"❌ Employee {employee_id} not found in exclusions"
+                    
+            else:
+                # Update all logic rules
+                new_min_hours = float(request.form.get('min_hours', utils.MIN_DAY_HOURS))
+                new_min_employees = int(request.form.get('min_employees_override', utils.PROJECT_DAY_RULES.get('min_employees_override', 2)))
+                
+                # Update outlier caps for each department
+                new_outlier_caps = {}
+                for dept in utils.OUTLIER_CAPS.keys():
+                    cap_value = int(request.form.get(f'outlier_cap_{dept}', utils.OUTLIER_CAPS[dept]))
+                    new_outlier_caps[dept] = cap_value
+                
+                # Update per-department rules (min_hours and min_employees)
+                new_dept_rules = {}
+                for dept in utils.DEPARTMENT_RULES.keys():
+                    dept_min_hours = float(request.form.get(f'dept_min_hours_{dept}', utils.DEPARTMENT_RULES[dept]['min_hours']))
+                    dept_min_employees = int(request.form.get(f'dept_min_employees_{dept}', utils.DEPARTMENT_RULES[dept]['min_employees']))
+                    new_dept_rules[dept] = {
+                        'min_hours': dept_min_hours,
+                        'min_employees': dept_min_employees
+                    }
+                
+                # Update the global variables in utils module
+                utils.MIN_DAY_HOURS = new_min_hours
+                utils.OUTLIER_CAPS = new_outlier_caps
+                utils.DEPARTMENT_RULES.update(new_dept_rules)
+                utils.PROJECT_DAY_RULES.update({
+                    'min_total_hours': utils.MIN_DAY_HOURS,
+                    'outlier_caps': utils.OUTLIER_CAPS,
+                    'min_employees_override': new_min_employees,
+                    'department_rules': utils.DEPARTMENT_RULES,
+                })
+                
+                message = "✅ Logic rules updated successfully!"
+            
+        except Exception as e:
+            message = f"❌ Error updating rules: {e}"
+    else:
+        message = ""
+    
+    # Get current exclusion employee names for display
+    exclusion_employees = utils.PROJECT_DAY_RULES.get('exclusion_employees', [])
+    exclusion_names = {}
+    if exclusion_employees:
+        with utils.get_conn() as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            placeholders = ','.join(['?' for _ in exclusion_employees])
+            cur.execute(f"""
+                SELECT DISTINCT EmployeeNumber1, EmployeeName
+                FROM SCHLabor
+                WHERE EmployeeNumber1 IN ({placeholders})
+                AND EmployeeName IS NOT NULL
+                AND TRIM(EmployeeName) <> ''
+            """, exclusion_employees)
+            
+            for row in cur.fetchall():
+                exclusion_names[str(row['EmployeeNumber1'])] = row['EmployeeName']
+    
+    page = f"""<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Logic Configuration</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+            .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #2c3e50; margin-bottom: 10px; }}
+            .back-link {{ margin-bottom: 20px; }}
+            .back-link a {{ color: #3498db; text-decoration: none; }}
+            .back-link a:hover {{ text-decoration: underline; }}
+            .section {{ margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }}
+            .section h2 {{ margin-top: 0; color: #34495e; }}
+            .definition {{ margin-bottom: 15px; padding: 10px; background: #e8f4fd; border-left: 4px solid #3498db; }}
+            .form-group {{ margin-bottom: 15px; }}
+            .form-group label {{ display: block; margin-bottom: 5px; font-weight: bold; }}
+            .form-group input {{ width: 100px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; }}
+            .dept-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }}
+            .dept-item {{ background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }}
+            .submit-btn {{ background: #27ae60; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }}
+            .submit-btn:hover {{ background: #229954; }}
+            .btn-small {{ background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; margin-left: 10px; }}
+            .btn-small.danger {{ background: #e74c3c; }}
+            .btn-small:hover {{ opacity: 0.8; }}
+            .message {{ padding: 10px; margin-bottom: 20px; border-radius: 5px; font-weight: bold; }}
+            .message.success {{ background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }}
+            .message.error {{ background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }}
+            .autocomplete {{ position: relative; display: inline-block; }}
+            .autocomplete-input {{ width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 3px; }}
+            .autocomplete-list {{ position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 3px 3px; max-height: 200px; overflow-y: auto; display: none; z-index: 1000; }}
+            .autocomplete-item {{ padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }}
+            .autocomplete-item:hover {{ background: #f5f5f5; }}
+            .autocomplete-item:last-child {{ border-bottom: none; }}
+            .exclusion-list {{ background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }}
+            .exclusion-item {{ display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background: #f8f9fa; border-radius: 3px; }}
+            .exclusion-item:last-child {{ margin-bottom: 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="back-link">
+                <a href="/dash">&larr; Back to Dashboard</a>
+            </div>
+            
+            <h1>Project Day Filtering Logic Configuration</h1>
+            
+            {f'<div class="message {"success" if "✅" in message else "error" if "❌" in message else ""}">{message}</div>' if message else ''}
+            
+            <!-- Data Flow Information -->
+            <div class="section" style="background: #fff9e6; border-left: 4px solid #f39c12;">
+                <h2>📊 Data Flow & Department Mapping</h2>
+                <div class="definition">
+                    <strong>Data Sources:</strong> Labor charges come from <code>SCHLabor</code> with department codes resolved via <code>DepartmentCode</code> table, then mapped to canonical tracked departments.
+                </div>
+                <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 5px;">
+                    <strong>Labor Code → Department Mapping:</strong>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li><strong>0120 FAB</strong> → Fab</li>
+                        <li><strong>0140 WELD</strong> → Welding</li>
+                        <li><strong>0180 FOAM/PAINT</strong> → BaseFormPaint</li>
+                        <li><strong>0200 FAN</strong> → FanAssyTest</li>
+                        <li><strong>0220 WALL FAB</strong> → InsulWallFab</li>
+                        <li><strong>0230 PIPE</strong> → Pipe</li>
+                        <li><strong>0260 ASSY + 0280 FLOW</strong> → <strong>Assembly</strong> (both codes map to single Assembly department)</li>
+                        <li><strong>0270 DOOR</strong> → DoorFab</li>
+                        <li><strong>0300 ELEC</strong> → Electrical</li>
+                        <li><strong>0340 PAINT</strong> → Paint</li>
+                        <li><strong>0360 TEST</strong> → Test (Gantt display only; no completion tracking)</li>
+                        <li><strong>0380 FINISH</strong> → Crating</li>
+                    </ul>
+                </div>
+                <div class="definition" style="background: #e8f8f5; border-left-color: #27ae60;">
+                    <strong>Unit Completion:</strong> A unit is "Complete" only when ALL 11 completion-tracked departments in SCHSchedulingSummary 
+                    (Fab, Welding, BaseFormPaint, FanAssyTest, InsulWallFab, DoorFab, Electrical, Pipe, Paint, Crating, Assembly) 
+                    with std > 0 are 100% complete. Test is excluded from completion tracking. Days and Span calculations use filtered SCHLabor data with the rules below.
+                </div>
+                <div class="definition" style="background: #f0f7ff; border-left-color: #1f6feb;">
+                    <strong>Gantt Chart:</strong> Shows <strong>all</strong> raw charged days from SCHLabor for <strong>all departments</strong> including Test. 
+                    The Gantt applies <strong>no filtering</strong> and is not affected by completion status—it's purely for visibility and troubleshooting.
+                </div>
+            </div>
+            
+            <form method="POST">
+                <input type="hidden" name="action" value="update">
+                
+                <!-- Minimum Hours Section -->
+                <div class="section">
+                    <h2>Minimum Day Hours Threshold</h2>
+                    <div class="definition">
+                        <strong>Definition:</strong> A department day is only counted if the total hours charged are at least this amount. 
+                        Days below this threshold are ignored for ALL departments in days_active and span calculations.
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Total Hours:</label>
+                        <input type="number" step="0.1" name="min_hours" value="{utils.MIN_DAY_HOURS}" />
+                    </div>
+                </div>
+                
+                <!-- Employee Override Section -->
+                <div class="section">
+                    <h2>Employee Override Count</h2>
+                    <div class="definition">
+                        <strong>Definition:</strong> If a department day has at least this many employees, it will never be dropped as an outlier, 
+                        regardless of the gap to adjacent days. This overrides the gap filtering rules below.
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Employees to Override (Global Default):</label>
+                        <input type="number" min="1" name="min_employees_override" value="{utils.PROJECT_DAY_RULES.get('min_employees_override', 2)}" />
+                    </div>
+                    <div class="definition" style="background: #fff3cd; border-left-color: #ffc107;">
+                        <strong>Note:</strong> The values above are global defaults. You can override them per-department in the section below.
+                    </div>
+                </div>
+                
+                <!-- Per-Department Rules Section -->
+                <div class="section">
+                    <h2>⚙️ Per-Department Filtering Rules</h2>
+                    <div class="definition">
+                        <strong>Department-Specific Overrides:</strong> Each department can have its own minimum hours and minimum employee thresholds. 
+                        These override the global defaults above for that specific department. The employee override rule applies to BOTH hours threshold and gap filtering.
+                    </div>
+                    <div class="definition" style="background: #e8f8f5; border-left-color: #27ae60;">
+                        <strong>Employee Override Rule:</strong> If a day has ≥ min_employees <strong>valid (non-excluded)</strong> employees, 
+                        it is kept regardless of hours or gap filtering. This prevents losing important work days with multiple contributors.
+                    </div>
+                    <div class="dept-grid">
+                        {chr(10).join([f'''
+                        <div class="dept-item">
+                            <strong>{dept}</strong>
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 0.9em;">Min Hours:</label>
+                                <input type="number" step="0.1" name="dept_min_hours_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_hours']}" style="width: 80px;" />h
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <label style="font-size: 0.9em;">Min Employees:</label>
+                                <input type="number" min="1" name="dept_min_employees_{dept}" value="{utils.DEPARTMENT_RULES[dept]['min_employees']}" style="width: 80px;" />
+                            </div>
+                        </div>''' for dept in sorted(utils.DEPARTMENT_RULES.keys())])}
+                    </div>
+                </div>
+                
+                <!-- First/Last Day Gap Filtering Section -->
+                <div class="section">
+                    <h2>First/Last Day Gap Filtering (Outlier Caps)</h2>
+                    <div class="definition">
+                        <strong>First Day:</strong> ALWAYS apply gap filtering. Keep if gap to next charge ≤ cap below OR ≥ override count of employees.<br/>
+                        <strong>Last Day:</strong> Apply gap filtering ONLY when department is 100% complete. Incomplete departments keep all days.<br/>
+                        <strong>Gantt Chart:</strong> Shows ALL raw charged days with NO filtering for visibility and troubleshooting.
+                    </div>
+                    <div style="background: #f0f7ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #1f6feb;">
+                        <strong>Note:</strong> Assembly cap applies to both ASSY (0260) and FLOW (0280) labor codes since they map to the same Assembly department.
+                    </div>
+                    <div class="dept-grid">
+                        {chr(10).join([f'''
+                        <div class="dept-item">
+                            <label>{dept}:</label>
+                            <input type="number" name="outlier_cap_{dept}" value="{utils.OUTLIER_CAPS[dept]}" /> days
+                        </div>''' for dept in sorted(utils.OUTLIER_CAPS.keys())])}
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Update Logic Rules</button>
+                
+            </form>
+            
+            <!-- Exclusion Employees Section -->
+            <div class="section">
+                <h2>Exclusion Employees</h2>
+                <div class="definition">
+                    <strong>Exclusion Logic:</strong> These employees are excluded from first/last day calculations for ALL departments. 
+                    Their charges don't count toward hours or the employee override rule for gap filtering, but still count for other metrics.
+                </div>
+                
+                <!-- Add New Exclusion -->
+                <div style="margin-bottom: 20px;">
+                    <h3>Add Exclusion Employee</h3>
+                    <div class="autocomplete">
+                        <input type="text" id="employeeSearch" class="autocomplete-input" placeholder="Start typing employee name..." />
+                        <div id="autocompleteList" class="autocomplete-list"></div>
+                    </div>
+                    <button type="button" id="addExclusionBtn" class="btn-small" disabled>Add Exclusion</button>
+                </div>
+                
+                <!-- Current Exclusions -->
+                <div>
+                    <h3>Current Exclusions ({len(exclusion_employees)})</h3>
+                    <div class="exclusion-list">
+                        {chr(10).join([f'''
+                        <div class="exclusion-item">
+                            <span><strong>{exclusion_names.get(emp_id, f"ID: {emp_id}")}</strong> ({emp_id})</span>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="remove_exclusion">
+                                <input type="hidden" name="remove_exclusion_id" value="{emp_id}">
+                                <button type="submit" class="btn-small danger" onclick="return confirm('Remove this exclusion?')">Remove</button>
+                            </form>
+                        </div>''' for emp_id in exclusion_employees]) if exclusion_employees else '<p style="opacity: 0.7; margin: 0;">No exclusion employees configured.</p>'}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Rules Display -->
+            <div class="section">
+                <h2>Current Active Rules Summary</h2>
+                <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;">
+Min Hours: {utils.MIN_DAY_HOURS}
+Min Employees Override: {utils.PROJECT_DAY_RULES.get('min_employees_override', 2)}
+Outlier Caps: {dict(sorted(utils.OUTLIER_CAPS.items()))}
+Exclusion Employees: {len(exclusion_employees)} configured
+                </pre>
+            </div>
+            
+        </div>
+        
+        <script>
+        let selectedEmployee = null;
+        
+        // Employee autocomplete functionality
+        document.getElementById('employeeSearch').addEventListener('input', function() {{
+            const query = this.value.trim();
+            const list = document.getElementById('autocompleteList');
+            
+            if (query.length < 2) {{
+                list.style.display = 'none';
+                document.getElementById('addExclusionBtn').disabled = true;
+                selectedEmployee = null;
+                return;
+            }}
+            
+            fetch(`/api/employee/lookup?q=${{encodeURIComponent(query)}}`)
+                .then(r => r.json())
+                .then(data => {{
+                    const employees = data.employees || [];
+                    
+                    if (employees.length === 0) {{
+                        list.innerHTML = '<div class="autocomplete-item">No employees found</div>';
+                        list.style.display = 'block';
+                        document.getElementById('addExclusionBtn').disabled = true;
+                        selectedEmployee = null;
+                        return;
+                    }}
+                    
+                    list.innerHTML = employees.map(emp => 
+                        `<div class="autocomplete-item" onclick="selectEmployee('${{emp.id}}', '${{emp.name.replace(/'/g, "&apos;")}}')">${{emp.name}} (ID: ${{emp.id}})</div>`
+                    ).join('');
+                    list.style.display = 'block';
+                }})
+                .catch(() => {{
+                    list.innerHTML = '<div class="autocomplete-item">Error loading employees</div>';
+                    list.style.display = 'block';
+                }});
+        }});
+        
+        function selectEmployee(id, name) {{
+            selectedEmployee = {{ id: id, name: name }};
+            document.getElementById('employeeSearch').value = `${{name}} (ID: ${{id}})`;
+            document.getElementById('autocompleteList').style.display = 'none';
+            document.getElementById('addExclusionBtn').disabled = false;
+        }}
+        
+        // Add exclusion employee
+        document.getElementById('addExclusionBtn').addEventListener('click', function() {{
+            if (!selectedEmployee) return;
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                <input type="hidden" name="action" value="add_exclusion">
+                <input type="hidden" name="new_exclusion_id" value="${{selectedEmployee.id}}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }});
+        
+        // Hide autocomplete when clicking outside
+        document.addEventListener('click', function(e) {{
+            if (!e.target.closest('.autocomplete')) {{
+                document.getElementById('autocompleteList').style.display = 'none';
+            }}
+        }});
+        </script>
+    </body>
+    </html>"""
+    
+    return render_template_string(page)
