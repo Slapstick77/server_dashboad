@@ -227,6 +227,16 @@ def dash():
                 // Increase in days is bad -> red; decrease good -> green
                 return delta>0 ? '<span class="up">(+'+pct(delta)+' vs last 90 days)</span>' : '<span class="down">(-'+pct(-delta)+' vs last 90 days)</span>';
             }
+            function formatTimestamp(isoStr) {
+                const d = new Date(isoStr);
+                return d.toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+            }
             fetch('/api/metrics/unit_time_trends').then(r=>r.json()).then(m=>{
                 const c=document.getElementById('unitMetrics');
                 if(m.error){ c.innerHTML = '<span class="pill">'+m.error+'</span>'; return; }
@@ -235,6 +245,11 @@ def dash():
                 const dActive = (a10.avg_active_days||0) - (a90.avg_active_days||0);
                 const dSpan = (a10.avg_span_days||0) - (a90.avg_span_days||0);
                 const effArrow = dEff>0 ? '<span class="down">(+'+pct(dEff)+' vs 90d)</span>' : (dEff<0 ? '<span class="up">(-'+pct(-dEff)+' vs 90d)</span>' : '<span class="small">(flat vs 90d)</span>');
+                
+                // Cache info as plain text below the metrics
+                const staleWarning = m._cache && m._cache.is_stale ? '<span style="color:#f85149;font-size:.7rem"> ⚠ Stale data</span>' : '';
+                const cacheTimestamp = m._cache ? `<div style="text-align:center;margin-top:1rem;opacity:.6;font-size:.75rem">Metrics updated: ${formatTimestamp(m._cache.computed_at)} (${m._cache.trigger_source})${staleWarning}</div>` : '';
+                
                 c.innerHTML = `
                     <span class='pill'>
                         <div class='kpi-title'>Average Efficiency</div>
@@ -248,6 +263,7 @@ def dash():
                         <div class='kpi-title'>Avg Total Time Span</div>
                         <div class='kpi-value'>${pct(a10.avg_span_days||0)} <span class='kpi-trend'>${arrow(dSpan)}</span></div>
                     </span>
+                    ${cacheTimestamp}
                 `;
             }).catch(()=>{ document.getElementById('unitMetrics').innerHTML = '<span class="pill">Metrics unavailable</span>'; });
 

@@ -528,7 +528,7 @@ class SyncApp(tk.Tk):
     def _open_scheduler_dialog(self):
         dlg = tk.Toplevel(self)
         dlg.title('Create Scheduled Tasks')
-        dlg.geometry('420x260')
+        dlg.geometry('420x300')
         ttk.Label(dlg, text='Create Windows Scheduled Tasks', font=('Segoe UI', 12,'bold')).pack(pady=6)
         frm = ttk.Frame(dlg, padding=6)
         frm.pack(fill='both', expand=True)
@@ -539,21 +539,43 @@ class SyncApp(tk.Tk):
         prefix_var = tk.StringVar(value='SCHSync')
         ttk.Entry(frm, textvariable=prefix_var, width=20).grid(row=1,column=1, sticky='w', pady=(6,0))
         both_var = tk.BooleanVar(value=True)
+        labor_var = tk.BooleanVar(value=False)
+        schedule_var = tk.BooleanVar(value=False)
+        parts_var = tk.BooleanVar(value=False)
+        
         ttk.Checkbutton(frm, text='Create Combined (Both) Task', variable=both_var).grid(row=2,column=0,columnspan=2, sticky='w', pady=(6,0))
-        ttk.Checkbutton(frm, text='Create Labor Task', variable=tk.BooleanVar(value=False), state='disabled').grid(row=3,column=0,columnspan=2, sticky='w')
-        ttk.Checkbutton(frm, text='Create Scheduling Summary Task', variable=tk.BooleanVar(value=False), state='disabled').grid(row=4,column=0,columnspan=2, sticky='w')
+        ttk.Checkbutton(frm, text='Create Labor Task', variable=labor_var).grid(row=3,column=0,columnspan=2, sticky='w')
+        ttk.Checkbutton(frm, text='Create Scheduling Summary Task', variable=schedule_var).grid(row=4,column=0,columnspan=2, sticky='w')
+        ttk.Checkbutton(frm, text='Create Parts Tracker Task', variable=parts_var).grid(row=5,column=0,columnspan=2, sticky='w')
         status_lbl = ttk.Label(frm, text='', foreground='blue')
-        status_lbl.grid(row=5,column=0,columnspan=2, sticky='w', pady=(8,0))
+        status_lbl.grid(row=6,column=0,columnspan=2, sticky='w', pady=(8,0))
         def create_tasks():
             tm = time_var.get().strip()
             if not _valid_time(tm):
                 messagebox.showerror('Invalid','Time must be HH:MM')
                 return
+            
+            messages = []
             if both_var.get():
                 ok, msg = self._create_task(prefix_var.get()+'Both', tm, 'both')
-                status_lbl.config(text=msg, foreground=('green' if ok else 'red'))
-        ttk.Button(frm, text='Create', command=create_tasks).grid(row=6,column=0, pady=10, sticky='w')
-        ttk.Button(frm, text='Close', command=dlg.destroy).grid(row=6,column=1, pady=10, sticky='e')
+                messages.append(msg)
+            if labor_var.get():
+                ok, msg = self._create_task(prefix_var.get()+'Labor', tm, 'labor')
+                messages.append(msg)
+            if schedule_var.get():
+                ok, msg = self._create_task(prefix_var.get()+'Schedule', tm, 'schedule')
+                messages.append(msg)
+            if parts_var.get():
+                ok, msg = self._create_task(prefix_var.get()+'Parts', tm, 'parts')
+                messages.append(msg)
+            
+            if not messages:
+                messagebox.showwarning('No Selection', 'Please select at least one task to create.')
+                return
+            
+            status_lbl.config(text='\n'.join(messages), foreground='green')
+        ttk.Button(frm, text='Create', command=create_tasks).grid(row=7,column=0, pady=10, sticky='w')
+        ttk.Button(frm, text='Close', command=dlg.destroy).grid(row=7,column=1, pady=10, sticky='e')
 
     def _create_task(self, name:str, time_hhmm:str, mode:str):
         python_exe = sys.executable.replace('pythonw.exe','python.exe')

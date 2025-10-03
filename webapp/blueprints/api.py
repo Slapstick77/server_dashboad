@@ -336,6 +336,44 @@ def api_incomplete():
 
 @api.route('/api/metrics/unit_time_trends')
 def api_unit_time_trends():
+    """Get cached unit time trends metrics.
+    
+    If cache is missing or stale (>24 hours), falls back to live computation.
+    Returns cached data with timestamp so UI can show freshness.
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        from metrics_cache import get_cached_metrics
+        
+        cached = get_cached_metrics('unit_time_trends')
+        
+        if cached:
+            # Check if cache is fresh (less than 24 hours old)
+            from datetime import datetime as dt, timedelta
+            computed_at = dt.fromisoformat(cached['computed_at'])
+            age_hours = (dt.now() - computed_at).total_seconds() / 3600
+            
+            result = cached['data'].copy()
+            result['_cache'] = {
+                'computed_at': cached['computed_at'],
+                'trigger_source': cached['trigger_source'],
+                'age_hours': round(age_hours, 1),
+                'is_stale': age_hours > 24
+            }
+            
+            # If fresh, return cached data
+            if age_hours <= 24:
+                return jsonify(result)
+        
+        # Cache miss or stale - fall back to live computation
+        # (Keep original expensive logic as fallback)
+    except Exception as e:
+        # If cache system fails, fall back to live computation
+        print(f"Cache error: {e}")
+    
+    # ORIGINAL LIVE COMPUTATION (fallback when cache unavailable)
     """Compute averages for active days and span for:
     - last 10 completed units (by completion date = last labor day when overall completion >= ~100)
     - last 90 calendar days (all units with last labor day within window)

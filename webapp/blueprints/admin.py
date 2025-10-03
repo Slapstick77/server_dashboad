@@ -1,8 +1,229 @@
-from flask import Blueprint, request, render_template_string
+from flask import Blueprint, request, render_template_string, jsonify, redirect
 import sqlite3
+import subprocess
+import re
+import sys
+import os
 from . import utils
 
 admin = Blueprint('admin', __name__)
+
+@admin.route('/metrics/refresh', methods=['POST'])
+def refresh_metrics():
+    """Manually refresh the metrics cache."""
+    try:
+        # Add parent directory to path to import metrics_cache
+        parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        sys.path.insert(0, parent_dir)
+        from metrics_cache import refresh_metrics_cache
+        
+        result = refresh_metrics_cache(trigger='manual_refresh')
+        
+        if result['success']:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Metrics Refreshed</title>
+                <meta http-equiv="refresh" content="2;url=/tasks">
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                    .success {{ color: #3fb950; font-size: 24px; }}
+                </style>
+            </head>
+            <body>
+                <div class="success">✓ Metrics cache refreshed in {result['duration_seconds']:.2f}s!</div>
+                <p>Redirecting back to tasks page...</p>
+            </body>
+            </html>"""
+        else:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Error</title>
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                    .error {{ color: #f85149; font-size: 18px; }}
+                </style>
+            </head>
+            <body>
+                <div class="error">Failed to refresh metrics: {result.get('error', 'Unknown error')}</div>
+                <p><a href="/tasks" style="color: #8fb9ff;">Back to tasks page</a></p>
+            </body>
+            </html>"""
+    except Exception as e:
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error</title>
+            <style>
+                body {{ font-family: Arial; text-align: center; padding: 50px; background: #0d1117; color: #e6edf3; }}
+                .error {{ color: #f85149; font-size: 18px; }}
+            </style>
+        </head>
+        <body>
+            <div class="error">Error: {str(e)}</div>
+            <p><a href="/tasks" style="color: #8fb9ff;">Back to tasks page</a></p>
+        </body>
+        </html>"""
+
+@admin.route('/tasks')
+def list_tasks():
+    """View and manage scheduled tasks."""
+    # Get all tasks that match SQRS pattern
+    try:
+        result = subprocess.run(
+            ['schtasks', '/query', '/fo', 'LIST', '/v'],
+            capture_output=True,
+            text=True
+        )
+        
+        tasks = []
+        if result.returncode == 0:
+            # Parse the output to find SQRS-related tasks
+            current_task = {}
+            for line in result.stdout.split('\n'):
+                line = line.strip()
+                if line.startswith('TaskName:'):
+                    if current_task and ('SCH' in current_task.get('name', '') or 'SQRS' in current_task.get('name', '')):
+                        tasks.append(current_task)
+                    current_task = {'name': line.split(':', 1)[1].strip().replace('\\', '')}
+                elif line.startswith('Next Run Time:'):
+                    current_task['next_run'] = line.split(':', 1)[1].strip()
+                elif line.startswith('Status:'):
+                    current_task['status'] = line.split(':', 1)[1].strip()
+                elif line.startswith('Task To Run:'):
+                    current_task['command'] = line.split(':', 1)[1].strip()
+                elif line.startswith('Schedule Type:'):
+                    current_task['schedule'] = line.split(':', 1)[1].strip()
+            
+            # Don't forget the last task
+            if current_task and ('SCH' in current_task.get('name', '') or 'SQRS' in current_task.get('name', '')):
+                tasks.append(current_task)
+    except Exception as e:
+        tasks = []
+        error = str(e)
+    
+    page = f"""<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Scheduled Tasks</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+            .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #2c3e50; }}
+            .back-link {{ margin-bottom: 20px; }}
+            .back-link a {{ color: #3498db; text-decoration: none; }}
+            .back-link a:hover {{ text-decoration: underline; }}
+            .task-list {{ margin-top: 20px; }}
+            .task-card {{ background: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 5px; border-left: 4px solid #3498db; }}
+            .task-card.disabled {{ border-left-color: #95a5a6; }}
+            .task-name {{ font-size: 18px; font-weight: bold; color: #2c3e50; }}
+            .task-info {{ margin: 8px 0; color: #555; }}
+            .task-command {{ font-family: monospace; background: #fff; padding: 8px; border-radius: 3px; font-size: 12px; margin: 8px 0; }}
+            .btn-delete {{ background: #e74c3c; color: white; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }}
+            .btn-delete:hover {{ background: #c0392b; }}
+            .btn-refresh {{ background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; }}
+            .btn-refresh:hover {{ background: #2980b9; }}
+            .no-tasks {{ color: #7f8c8d; font-style: italic; padding: 20px; text-align: center; }}
+            .header-actions {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="back-link">
+                <a href="/dash">&larr; Back to Dashboard</a>
+            </div>
+            
+            <div class="header-actions">
+                <h1>Scheduled Tasks & Metrics</h1>
+                <form method="POST" action="/metrics/refresh" style="display:inline;">
+                    <button type="submit" class="btn-refresh">🔄 Refresh Metrics Cache</button>
+                </form>
+            </div>
+            
+            <div class="task-list">
+                {chr(10).join([f'''
+                <div class="task-card {'' if task.get('status') == 'Ready' else 'disabled'}">
+                    <div class="task-name">{task.get('name', 'Unknown')}</div>
+                    <div class="task-info"><strong>Status:</strong> {task.get('status', 'Unknown')}</div>
+                    <div class="task-info"><strong>Next Run:</strong> {task.get('next_run', 'N/A')}</div>
+                    <div class="task-info"><strong>Schedule:</strong> {task.get('schedule', 'N/A')}</div>
+                    <div class="task-command">{task.get('command', 'N/A')}</div>
+                    <form method="POST" action="/tasks/delete" style="margin-top: 10px;" onsubmit="return confirm('Delete task {task.get('name', '')}?');">
+                        <input type="hidden" name="task_name" value="{task.get('name', '')}">
+                        <button type="submit" class="btn-delete">Delete Task</button>
+                    </form>
+                </div>''' for task in tasks]) if tasks else '<div class="no-tasks">No SQRS-related scheduled tasks found.</div>'}
+            </div>
+        </div>
+    </body>
+    </html>"""
+    
+    return render_template_string(page)
+
+
+@admin.route('/tasks/delete', methods=['POST'])
+def delete_task():
+    """Delete a scheduled task."""
+    task_name = request.form.get('task_name', '').strip()
+    
+    if not task_name:
+        return jsonify({'success': False, 'error': 'Task name required'}), 400
+    
+    try:
+        result = subprocess.run(
+            ['schtasks', '/delete', '/tn', task_name, '/f'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Task Deleted</title>
+                <meta http-equiv="refresh" content="2;url=/tasks">
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; }}
+                    .success {{ color: #27ae60; font-size: 24px; }}
+                </style>
+            </head>
+            <body>
+                <div class="success">✓ Task "{task_name}" deleted successfully!</div>
+                <p>Redirecting back to task list...</p>
+            </body>
+            </html>"""
+        else:
+            return f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Error</title>
+                <style>
+                    body {{ font-family: Arial; text-align: center; padding: 50px; }}
+                    .error {{ color: #e74c3c; font-size: 18px; }}
+                </style>
+            </head>
+            <body>
+                <div class="error">Failed to delete task: {result.stderr}</div>
+                <p><a href="/tasks">Back to task list</a></p>
+            </body>
+            </html>"""
+    except Exception as e:
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error</title>
+            <style>
+                body {{ font-family: Arial; text-align: center; padding: 50px; }}
+                .error {{ color: #e74c3c; font-size: 18px; }}
+            </style>
+        </head>
+        <body>
+            <div class="error">Error: {str(e)}</div>
+            <p><a href="/tasks">Back to task list</a></p>
+        </body>
+        </html>"""
+
 
 @admin.route('/logic', methods=['GET', 'POST'])
 def logic_config():

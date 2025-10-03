@@ -209,20 +209,59 @@ def _read_csv(path: str):
         rdr = _csv.DictReader(f)
         return list(rdr)
 
+# ---------------- Parts Tracker Sync ---------------- #
+def parts_sync() -> Dict[str,Any]:
+    """Sync Parts Tracker from network CSV."""
+    csv_path = r"P:\Database Parts Tracker\Database Part Tracker II.csv"
+    if not os.path.isfile(csv_path):
+        return {'ok': False, 'error': f'Parts CSV not found: {csv_path}'}
+    try:
+        import desktop_sync_app as dsa
+        result = dsa.sync_parts_tracker(csv_path)
+        return result
+    except Exception as e:
+        return {'ok': False, 'error': str(e)}
+
 # ---------------- CLI ---------------- #
 def main():
-    ap = argparse.ArgumentParser(description="NEW Data Sync App (labor backfill + scheduling summary upsert)")
-    ap.add_argument('mode', choices=['labor','sched','both'], help='Which sync to run')
+    ap = argparse.ArgumentParser(description="NEW Data Sync App (labor backfill + scheduling summary upsert + parts tracker)")
+    ap.add_argument('mode', choices=['labor','sched','both','parts'], help='Which sync to run')
     ap.add_argument('--days', type=int, default=60, help='Backfill window if SCHLabor empty (default 60)')
     args = ap.parse_args()
+    
+    metrics_needs_refresh = False
+    
     if args.mode in ('labor','both'):
         res = labor_backfill(args.days)
         print('[LABOR]', res)
-        if not res.get('ok'): sys.exit(1)
+        if not res.get('ok'): 
+            sys.exit(1)
+        if res.get('inserted', 0) > 0:
+            metrics_needs_refresh = True
+            
     if args.mode in ('sched','both'):
         res2 = sched_update()
         print('[SCHED]', res2)
-        if not res2.get('ok'): sys.exit(1)
+        if not res2.get('ok'): 
+            sys.exit(1)
+        if res2.get('rows', 0) > 0:
+            metrics_needs_refresh = True
+            
+    if args.mode == 'parts':
+        res3 = parts_sync()
+        print('[PARTS]', res3)
+        if not res3.get('ok'): 
+            sys.exit(1)
+    
+    # Refresh metrics cache if data was updated
+    if metrics_needs_refresh:
+        try:
+            from metrics_cache import refresh_metrics_cache
+            print('[METRICS] Refreshing cache...')
+            refresh_result = refresh_metrics_cache(trigger=f'{args.mode}_sync')
+            print('[METRICS]', refresh_result)
+        except Exception as e:
+            print(f'[METRICS] Warning: Failed to refresh cache: {e}')
 
 if __name__ == '__main__':
     main()
