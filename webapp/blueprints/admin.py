@@ -161,6 +161,30 @@ def list_tasks():
         tasks = []
         error = str(e)
     
+    # Get latest RunLog entries
+    import sqlite3
+    db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'SCHLabor.db')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, run_started, run_completed, run_type, success, message FROM RunLog ORDER BY id DESC LIMIT 20')
+    log_entries = cursor.fetchall()
+    conn.close()
+    
+    log_html = ''
+    for entry in log_entries:
+        log_id, started, completed, run_type, success, message = entry
+        status_class = 'success' if success else 'error'
+        log_html += f'''
+        <div class="log-entry {status_class}">
+            <div class="log-header">
+                <span class="log-id">#{log_id}</span>
+                <span class="log-type">{run_type}</span>
+                <span class="log-status">{'✓' if success else '✗'}</span>
+            </div>
+            <div class="log-time">Started: {started} | Completed: {completed}</div>
+            <div class="log-message">{message}</div>
+        </div>'''
+    
     page = f"""<!DOCTYPE html>
     <html>
     <head>
@@ -169,6 +193,7 @@ def list_tasks():
             body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
             .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
             h1 {{ color: #2c3e50; }}
+            h2 {{ color: #34495e; margin-top: 30px; }}
             .back-link {{ margin-bottom: 20px; }}
             .back-link a {{ color: #3498db; text-decoration: none; }}
             .back-link a:hover {{ text-decoration: underline; }}
@@ -182,8 +207,20 @@ def list_tasks():
             .btn-delete:hover {{ background: #c0392b; }}
             .btn-refresh {{ background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; }}
             .btn-refresh:hover {{ background: #2980b9; }}
+            .btn-clear {{ background: #e67e22; color: white; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; }}
+            .btn-clear:hover {{ background: #d35400; }}
             .no-tasks {{ color: #7f8c8d; font-style: italic; padding: 20px; text-align: center; }}
             .header-actions {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+            .log-section {{ margin-top: 30px; background: #f8f9fa; padding: 20px; border-radius: 5px; }}
+            .log-header-section {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }}
+            .log-entry {{ background: white; padding: 12px; margin-bottom: 10px; border-radius: 4px; border-left: 4px solid #27ae60; font-size: 13px; }}
+            .log-entry.error {{ border-left-color: #e74c3c; }}
+            .log-header {{ display: flex; gap: 15px; align-items: center; margin-bottom: 5px; }}
+            .log-id {{ color: #7f8c8d; font-weight: bold; }}
+            .log-type {{ background: #3498db; color: white; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }}
+            .log-status {{ font-size: 16px; }}
+            .log-time {{ color: #7f8c8d; font-size: 11px; margin: 5px 0; }}
+            .log-message {{ color: #2c3e50; margin-top: 5px; }}
         </style>
     </head>
     <body>
@@ -215,6 +252,18 @@ def list_tasks():
                         <button type="submit" class="btn-delete">Delete Task</button>
                     </form>
                 </div>''' for task in tasks]) if tasks else '<div class="no-tasks">No SQRS-related scheduled tasks found.</div>'}
+            </div>
+            
+            <div class="log-section">
+                <div class="log-header-section">
+                    <h2>Database Update Log (Latest 20)</h2>
+                    <form method="POST" action="/admin/tasks/clear-log" style="display:inline;" onsubmit="return confirm('Clear all log entries?');">
+                        <button type="submit" class="btn-clear">🗑️ Clear Log</button>
+                    </form>
+                </div>
+                <div class="log-entries">
+                    {log_html if log_entries else '<div class="no-tasks">No log entries found.</div>'}
+                </div>
             </div>
         </div>
     </body>
@@ -281,6 +330,51 @@ def delete_task():
         </head>
         <body>
             <div class="error">Error: {str(e)}</div>
+            <p><a href="/tasks">Back to task list</a></p>
+        </body>
+        </html>"""
+
+
+@admin.route('/tasks/clear-log', methods=['POST'])
+def clear_log():
+    """Clear all RunLog entries."""
+    try:
+        import sqlite3
+        db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'SCHLabor.db')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM RunLog')
+        deleted_count = cursor.rowcount
+        conn.commit()
+        conn.close()
+        
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Log Cleared</title>
+            <meta http-equiv="refresh" content="2;url=/tasks">
+            <style>
+                body {{ font-family: Arial; text-align: center; padding: 50px; }}
+                .success {{ color: #27ae60; font-size: 24px; }}
+            </style>
+        </head>
+        <body>
+            <div class="success">✓ Cleared {deleted_count} log entries!</div>
+            <p>Redirecting back to task list...</p>
+        </body>
+        </html>"""
+    except Exception as e:
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error</title>
+            <style>
+                body {{ font-family: Arial; text-align: center; padding: 50px; }}
+                .error {{ color: #e74c3c; font-size: 18px; }}
+            </style>
+        </head>
+        <body>
+            <div class="error">Error clearing log: {str(e)}</div>
             <p><a href="/tasks">Back to task list</a></p>
         </body>
         </html>"""
