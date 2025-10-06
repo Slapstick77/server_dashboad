@@ -1187,11 +1187,11 @@ def display_board():
         <style>
             :root{color-scheme:dark;}
             *{box-sizing:border-box;}
-            body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0d1117;color:#ccd6f6;overflow:hidden;display:flex;flex-direction:column;min-height:100vh;}
+            body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0d1117;color:#ccd6f6;display:flex;flex-direction:column;height:100vh;}
             a{color:#8fb9ff;text-decoration:none;}
             a:hover{text-decoration:underline;}
             .hidden{display:none!important;}
-            .toolbar{display:flex;flex-direction:column;align-items:stretch;padding:0.9rem 1.4rem;background:#161b22;border-bottom:1px solid #30363d;gap:0.9rem;}
+            .toolbar{display:flex;flex-direction:column;align-items:stretch;padding:0.9rem 1.4rem;background:#161b22;border-bottom:1px solid #30363d;gap:0.9rem;z-index:100;flex-shrink:0;}
             .toolbar-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;}
             .toolbar-left{display:flex;gap:0.75rem;align-items:center;}
             .toolbar-right{display:flex;gap:0.75rem;align-items:center;}
@@ -1203,7 +1203,7 @@ def display_board():
             .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:0.65rem 0.9rem;font-size:0.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:0.02rem;}
             .alpha-banner strong{display:block;font-size:0.7rem;margin-bottom:0.25rem;color:#ffe2cc;letter-spacing:0.05rem;text-transform:uppercase;}
             .board-wrapper{flex:1;width:100%;background:#0a0f16;position:relative;overflow:hidden;}
-            .chart-board{position:relative;width:100%;height:100%;overflow:auto;padding:1.5rem;}
+            .chart-board{position:relative;width:100%;height:100%;overflow:auto;padding:1.5rem;padding-top:0.5rem;}
             .display-card{position:absolute;min-width:320px;min-height:220px;width:520px;height:340px;background:#111821;border:1px solid #2a3240;border-radius:14px;box-shadow:0 8px 26px -18px rgba(0,0,0,0.8),0 0 0 1px rgba(48,54,61,0.8);resize:both;overflow:hidden;display:flex;flex-direction:column;}
             .display-card.locked{resize:none;}
             .card-header{cursor:grab;padding:0.65rem 0.95rem;border-bottom:1px solid #212b35;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;background:linear-gradient(130deg,#151d27,#111620);font-weight:600;font-size:0.9rem;}
@@ -1242,7 +1242,9 @@ def display_board():
             .fullscreen-active body,body.fullscreen-active{overflow:hidden;}
             .fullscreen-active .toolbar-btn.primary{display:none;}
             .fullscreen-active .chart-close{display:none;}
-            .fullscreen-active .display-card{border-color:#1d2533;box-shadow:none;cursor:default;}
+            .fullscreen-active .display-card{border:none;box-shadow:none;cursor:default;background:transparent;}
+            .fullscreen-active .card-header{background:transparent;border-bottom:none;display:none;}
+            .fullscreen-active .card-body{background:transparent;}
             .fullscreen-active .display-card.locked .card-header{cursor:default;}
             .fullscreen-active .chart-picker{display:none!important;}
             .fullscreen-active #pickerBackdrop{display:none!important;}
@@ -1272,7 +1274,6 @@ def display_board():
                     <a class='toolbar-link' href='/dash'>&larr; Dashboard</a>
                 </div>
             </div>
-            <p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are in early testing. Data feeds may be incomplete, delayed, or incorrect. Do not rely on them for operational or business decisions.</p>
         </header>
         <div class='board-wrapper'>
             <div id='chartBoard' class='chart-board'></div>
