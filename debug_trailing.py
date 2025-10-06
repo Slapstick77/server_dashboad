@@ -11,8 +11,8 @@ from collections import defaultdict
 ROOT = os.path.dirname(__file__)
 DB_PATH = os.path.join(ROOT, 'SCHLabor.db')
 
-sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-from blueprints.utils import (
+sys.path.insert(0, ROOT)
+from webapp.blueprints.utils import (
     TRACKED_DEPARTMENTS, COMPLETION_CHECK_DEPARTMENTS,
     normalize_com, fnum, _resolve_department_days
 )

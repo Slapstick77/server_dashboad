@@ -117,28 +117,28 @@ def refresh_unit_completion() -> Dict[str, Any]:
     Returns summary of updates.
     """
     import sys
-    sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-    from blueprints.utils import COMPLETION_CHECK_DEPARTMENTS, normalize_com, fnum
+    sys.path.insert(0, ROOT)
+    from webapp.blueprints.utils import COMPLETION_CHECK_DEPARTMENTS, normalize_com, fnum
     
     ensure_cache_tables()
     
     with get_conn() as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
-        
+
         # Get all units from scheduling summary
         cur.execute('PRAGMA table_info(SCHSchedulingSummary)')
         colset = {r[1] for r in cur.fetchall()}
-        
+
         base_needed = ['comnumber1']
         for _, stdc, actc, compc, effc in COMPLETION_CHECK_DEPARTMENTS:
             base_needed.extend([stdc, actc, compc, effc])
         present = [c for c in base_needed if c in colset]
         cols_sql = ','.join(f'"{c}"' for c in present) if present else 'comnumber1'
-        
+
         cur.execute(f'SELECT {cols_sql} FROM SCHSchedulingSummary WHERE CAST(comnumber1 AS TEXT) GLOB "[0-9][0-9][0-9][0-9][0-9]"')
         units = [dict(r) for r in cur.fetchall()]
-        
+
         # Get labor data to find last day for each unit
         cur.execute("""
             SELECT CAST(COMNumber AS TEXT) as com,
@@ -149,9 +149,13 @@ def refresh_unit_completion() -> Dict[str, Any]:
             GROUP BY CAST(COMNumber AS TEXT)
         """)
         last_days = {normalize_com(str(r['com'])): r['last_day'] for r in cur.fetchall() if r['last_day']}
+
+        # Existing completion entries (append-only behaviour)
+        cur.execute("SELECT com_number, last_day_unfiltered FROM UnitCompletion")
+        existing_entries = {normalize_com(str(r['com_number'])): r['last_day_unfiltered'] for r in cur.fetchall()}
     
     # Calculate completion for each unit - ONLY keep complete ones
-    completion_data = []
+    new_completion_rows = []
     complete_count = 0
     incomplete_count = 0
     
@@ -180,39 +184,30 @@ def refresh_unit_completion() -> Dict[str, Any]:
         
         if all_complete:
             complete_count += 1
-            last_day = last_days.get(com)
-            if last_day:
-                completion_data.append((com, last_day, datetime.now().isoformat()))
+            if com not in existing_entries:
+                last_day = last_days.get(com)
+                if last_day:
+                    new_completion_rows.append((com, last_day, datetime.now().isoformat()))
+                    existing_entries[com] = last_day
         else:
             incomplete_count += 1
     
-    # Bulk update the UnitCompletion table
-    with get_conn() as conn:
-        cur = conn.cursor()
-        
-        # Clear existing data
-        cur.execute("DELETE FROM UnitCompletion")
-        
-        # Insert ONLY complete units
-        cur.executemany("""
-            INSERT INTO UnitCompletion (com_number, last_day_unfiltered, last_updated)
-            VALUES (?, ?, ?)
-        """, completion_data)
-        
-        conn.commit()
+    # Insert only newly completed units (append-only behavior)
+    if new_completion_rows:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.executemany("""
+                INSERT INTO UnitCompletion (com_number, last_day_unfiltered, last_updated)
+                VALUES (?, ?, ?)
+            """, new_completion_rows)
+            conn.commit()
     
     return {
         'success': True,
         'total_units': len(units),
         'complete': complete_count,
         'incomplete': incomplete_count,
-        'updated_at': datetime.now().isoformat()
-    }
-    return {
-        'success': True,
-        'total_units': len(completion_data),
-        'complete': complete_count,
-        'incomplete': incomplete_count,
+        'newly_added': len(new_completion_rows),
         'updated_at': datetime.now().isoformat()
     }
 
@@ -250,8 +245,8 @@ def _compute_incomplete_units() -> Dict[str, Any]:
     """
     import sys
     import re
-    sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-    from blueprints.utils import (
+    sys.path.insert(0, ROOT)
+    from webapp.blueprints.utils import (
         TRACKED_DEPARTMENTS, COMPLETION_CHECK_DEPARTMENTS,
         normalize_com, fnum, build_unit, _recalculate_dept_stats_with_completion,
         PROJECT_DAY_RULES
@@ -268,6 +263,7 @@ def _compute_incomplete_units() -> Dict[str, Any]:
         # Discover existing columns
         cur.execute('PRAGMA table_info(SCHSchedulingSummary)')
         colset = {r[1] for r in cur.fetchall()}
+        
         base_needed = ['comnumber1', 'jobname']
         for _, stdc, actc, compc, effc in TRACKED_DEPARTMENTS:
             base_needed.extend([stdc, actc, compc, effc])
@@ -276,7 +272,10 @@ def _compute_incomplete_units() -> Dict[str, Any]:
             return {'count': 0, 'units': [], 'in_progress_count': 0}
 
         cols_sql = ','.join(f'"{c}"' for c in present)
-        cur.execute(f'SELECT {cols_sql} FROM SCHSchedulingSummary WHERE CAST(comnumber1 AS TEXT) GLOB "[0-9][0-9][0-9][0-9][0-9]"')
+        cur.execute(
+            f'SELECT {cols_sql} FROM SCHSchedulingSummary '
+            'WHERE CAST(comnumber1 AS TEXT) GLOB "[0-9][0-9][0-9][0-9][0-9]"'
+        )
         sched_rows = [dict(r) for r in cur.fetchall()]
 
         # Labor activity windows
@@ -418,8 +417,8 @@ def _compute_unit_time_trends() -> Dict[str, Any]:
     """
     # Import here to avoid circular dependencies
     import sys
-    sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-    from blueprints.utils import (
+    sys.path.insert(0, ROOT)
+    from webapp.blueprints.utils import (
         TRACKED_DEPARTMENTS, COMPLETION_CHECK_DEPARTMENTS,
         normalize_com, fnum
     )
@@ -687,8 +686,8 @@ def _compute_trailing_trend_charts() -> Dict[str, Any]:
         }
     """
     import sys
-    sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-    from blueprints.utils import (
+    sys.path.insert(0, ROOT)
+    from webapp.blueprints.utils import (
         TRACKED_DEPARTMENTS, COMPLETION_CHECK_DEPARTMENTS,
         normalize_com, fnum, _resolve_department_days
     )
@@ -925,6 +924,227 @@ def _compute_trailing_trend_charts() -> Dict[str, Any]:
     print(f"✅ All 6 charts pre-calculated")
     return results
 
+
+def _compute_daily_hours_series(max_days: int = 90) -> Dict[str, Any]:
+    """Compute total charged hours per day for the last `max_days` days."""
+    max_days = max(1, min(max_days, 365))
+    end_date = date.today()
+    start_date = end_date - timedelta(days=max_days - 1)
+    start_iso = start_date.isoformat()
+
+    date_expr = "strftime('%Y-%m-%d', COALESCE(iso_logged_date, substr(LoggedDate,1,10)))"
+
+    with get_conn() as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            f"""
+            SELECT {date_expr} AS day,
+                   SUM(COALESCE(ActualHours,0)) AS hrs
+            FROM SCHLabor
+            WHERE COALESCE(ActualHours,0) > 0
+              AND {date_expr} >= ?
+            GROUP BY {date_expr}
+            ORDER BY {date_expr}
+            """,
+            (start_iso,)
+        )
+        rows = cur.fetchall()
+
+    day_map = {row['day']: float(row['hrs'] or 0) for row in rows if row['day']}
+    labels = [(start_date + timedelta(days=i)).isoformat() for i in range(max_days)]
+    totals = [day_map.get(label, 0.0) for label in labels]
+
+    # 7-day moving average for smoother trend
+    ma7 = []
+    window = []
+    window_sum = 0.0
+    for value in totals:
+        window.append(value)
+        window_sum += value
+        if len(window) > 7:
+            window_sum -= window.pop(0)
+        ma7.append(window_sum / len(window))
+
+    return {
+        'labels': labels,
+        'totals': totals,
+        'ma7': ma7,
+        'start_date': start_iso,
+        'end_date': end_date.isoformat(),
+    }
+
+
+def _compute_department_totals(day_windows=(30, 60, 90)) -> Dict[str, Any]:
+    """Pre-compute department hour totals for the configured rolling windows."""
+    if not day_windows:
+        return {'windows': {}, 'max_window_days': 0}
+
+    windows = sorted({max(1, min(365, int(w))) for w in day_windows if isinstance(w, (int, float))})
+    if not windows:
+        return {'windows': {}, 'max_window_days': 0}
+
+    end_date = date.today()
+    max_window = max(windows)
+    start_date = end_date - timedelta(days=max_window - 1)
+    start_iso = start_date.isoformat()
+
+    raw_code_to_label = {
+        '0120': 'Fab',
+        '0140': 'Welding',
+        '0180': 'BaseFormPaint',
+        '0200': 'FanAssyTest',
+        '0220': 'InsulWallFab',
+        '0230': 'Pipe',
+        '0260': 'Assembly',
+        '0270': 'DoorFab',
+        '0280': 'Assembly',
+        '0300': 'Electrical',
+        '0320': 'Pipe',
+        '0340': 'Paint',
+        '0360': 'Test',
+        '0380': 'Crating',
+    }
+    tracked_codes = sorted(raw_code_to_label.keys())
+    codes_sql = ','.join(f"'{c}'" for c in tracked_codes)
+    date_expr = "strftime('%Y-%m-%d', COALESCE(iso_logged_date, substr(LoggedDate,1,10)))"
+
+    with get_conn() as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            f"""
+            SELECT {date_expr} AS day,
+                   DepartmentNumber AS dept,
+                   SUM(COALESCE(ActualHours,0)) AS hrs
+            FROM SCHLabor
+            WHERE COALESCE(ActualHours,0) > 0
+              AND DepartmentNumber IN ({codes_sql})
+              AND {date_expr} >= ?
+            GROUP BY {date_expr}, DepartmentNumber
+            ORDER BY {date_expr}
+            """,
+            (start_iso,)
+        )
+        rows = cur.fetchall()
+
+    window_starts = {w: end_date - timedelta(days=w - 1) for w in windows}
+    accum = {w: {} for w in windows}
+    totals = {w: 0.0 for w in windows}
+
+    for row in rows:
+        day_val = row['day']
+        dept_code = str(row['dept'] or '').strip()
+        if not day_val or not dept_code:
+            continue
+        label = raw_code_to_label.get(dept_code)
+        if not label:
+            continue
+        try:
+            day_date = date.fromisoformat(day_val)
+        except ValueError:
+            continue
+        hrs = float(row['hrs'] or 0.0)
+        if hrs <= 0:
+            continue
+        for window_days, window_start in window_starts.items():
+            if day_date >= window_start:
+                dept_totals = accum[window_days]
+                dept_totals[label] = dept_totals.get(label, 0.0) + hrs
+                totals[window_days] += hrs
+
+    windows_payload: Dict[str, Any] = {}
+    for window_days in windows:
+        window_start = window_starts[window_days]
+        dept_totals = accum[window_days]
+        departments = sorted(
+            [{'name': name, 'hours': round(value, 2)} for name, value in dept_totals.items()],
+            key=lambda item: item['hours'],
+            reverse=True
+        )
+        windows_payload[str(window_days)] = {
+            'start_date': window_start.isoformat(),
+            'end_date': end_date.isoformat(),
+            'total_hours': round(totals[window_days], 2),
+            'departments': departments,
+        }
+
+    return {
+        'windows': windows_payload,
+        'max_window_days': max_window,
+        'tracked_departments': raw_code_to_label,
+    }
+
+
+def _build_daily_metric_charts(trailing_charts: Dict[str, Any], hours_series: Dict[str, Any]) -> Dict[str, Any]:
+    """Derive 30/60/90 day windows for average metrics and total hours trends."""
+    windows = (30, 60, 90)
+    base_key = '90_10'
+    base_chart = trailing_charts.get(base_key)
+    if not base_chart:
+        return {}
+
+    base_labels = base_chart.get('labels', [])
+    base_eff = base_chart.get('avg_efficiency', [])
+    base_act = base_chart.get('avg_act_days', [])
+    base_span = base_chart.get('avg_span', [])
+
+    hours_labels = hours_series.get('labels', []) if hours_series else []
+    hours_totals = hours_series.get('totals', []) if hours_series else []
+    hours_ma7 = hours_series.get('ma7', []) if hours_series else []
+
+    output = {
+        'windows': {},
+        'trailing_units': base_chart.get('trailing', 10),
+        'hours_source_range': {
+            'start_date': hours_series.get('start_date') if hours_series else None,
+            'end_date': hours_series.get('end_date') if hours_series else None,
+            'moving_average': 7
+        },
+        'max_avg_daily_hours': 0.0
+    }
+
+    for win in windows:
+        window_len = min(
+            win,
+            len(base_labels),
+            len(hours_labels) if hours_labels else win
+        )
+        if window_len <= 0:
+            subset_labels = []
+            eff = []
+            act = []
+            span = []
+        else:
+            subset_labels = base_labels[-window_len:]
+            eff = base_eff[-window_len:]
+            act = base_act[-window_len:]
+            span = base_span[-window_len:]
+
+        if hours_labels and window_len > 0 and len(hours_labels) >= window_len:
+            hours_subset = hours_totals[-window_len:]
+            ma_subset = hours_ma7[-window_len:] if hours_ma7 else []
+        else:
+            hours_subset = []
+            ma_subset = []
+        if hours_subset:
+            avg_hours = sum(hours_subset) / len(hours_subset)
+        else:
+            avg_hours = 0.0
+        if avg_hours > output['max_avg_daily_hours']:
+            output['max_avg_daily_hours'] = avg_hours
+        output['windows'][str(win)] = {
+            'labels': subset_labels,
+            'avg_efficiency': eff,
+            'avg_act_days': act,
+            'avg_span': span,
+            'total_hours': hours_subset,
+            'total_hours_ma7': ma_subset,
+            'avg_daily_hours': avg_hours,
+        }
+
+    return output
+
 def refresh_metrics_cache(trigger='manual') -> Dict[str, Any]:
     """
     Refresh all cached metrics.
@@ -946,10 +1166,14 @@ def refresh_metrics_cache(trigger='manual') -> Dict[str, Any]:
         unit_trends = _compute_unit_time_trends()
         incomplete_units = _compute_incomplete_units()
         trailing_charts = _compute_trailing_trend_charts()
+        daily_hours = _compute_daily_hours_series(max_days=90)
+        daily_metric_charts = _build_daily_metric_charts(trailing_charts, daily_hours)
+        department_totals = _compute_department_totals(day_windows=(30, 60, 90))
         
         # Store in cache table
         import json
         computed_at = datetime.now().isoformat()
+        department_totals['generated_at'] = computed_at
         
         with get_conn() as conn:
             cur = conn.cursor()
@@ -983,6 +1207,29 @@ def refresh_metrics_cache(trigger='manual') -> Dict[str, Any]:
                     computed_at = excluded.computed_at,
                     trigger_source = excluded.trigger_source
             """, (json.dumps(trailing_charts), computed_at, trigger))
+
+            # Update or insert daily metric charts
+            cur.execute("""
+                INSERT INTO MetricsCache (metric_type, metric_data, computed_at, trigger_source)
+                VALUES ('daily_metric_charts', ?, ?, ?)
+                ON CONFLICT(metric_type) DO UPDATE SET
+                    metric_data = excluded.metric_data,
+                    computed_at = excluded.computed_at,
+                    trigger_source = excluded.trigger_source
+            """, (json.dumps({
+                'charts': daily_metric_charts,
+                'hours_source': daily_hours
+            }), computed_at, trigger))
+
+            # Update or insert department totals
+            cur.execute("""
+                INSERT INTO MetricsCache (metric_type, metric_data, computed_at, trigger_source)
+                VALUES ('department_totals', ?, ?, ?)
+                ON CONFLICT(metric_type) DO UPDATE SET
+                    metric_data = excluded.metric_data,
+                    computed_at = excluded.computed_at,
+                    trigger_source = excluded.trigger_source
+            """, (json.dumps(department_totals), computed_at, trigger))
             
             conn.commit()
         

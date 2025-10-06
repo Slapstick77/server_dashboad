@@ -343,6 +343,10 @@ def logic_config():
                 new_min_hours = float(request.form.get('min_hours', utils.MIN_DAY_HOURS))
                 new_min_employees = int(request.form.get('min_employees_override', utils.PROJECT_DAY_RULES.get('min_employees_override', 2)))
                 new_max_gap_override = int(request.form.get('max_gap_override', utils.PROJECT_DAY_RULES.get('max_gap_override', 30)))
+                new_pre_fab_gap = int(request.form.get('pre_fab_gap_days', utils.PROJECT_DAY_RULES.get('pre_fab_gap_days', 10)))
+                new_post_assembly_gap = int(request.form.get('post_assembly_gap_days', utils.PROJECT_DAY_RULES.get('post_assembly_gap_days', 10)))
+                new_pre_fab_gap = max(0, new_pre_fab_gap)
+                new_post_assembly_gap = max(0, new_post_assembly_gap)
                 
                 # Update per-department rules (min_hours, min_employees, and outlier_cap)
                 new_dept_rules = {}
@@ -364,6 +368,8 @@ def logic_config():
                     'outlier_caps': utils.OUTLIER_CAPS,
                     'department_rules': utils.DEPARTMENT_RULES,
                     'max_gap_override': new_max_gap_override,
+                    'pre_fab_gap_days': new_pre_fab_gap,
+                    'post_assembly_gap_days': new_post_assembly_gap,
                 })
                 
                 # Save configuration to database
@@ -372,6 +378,8 @@ def logic_config():
                 save_configuration('DEPARTMENT_RULES', new_dept_rules)
                 save_configuration('EXCLUSION_EMPLOYEES', utils.PROJECT_DAY_RULES.get('exclusion_employees', []))
                 save_configuration('MAX_GAP_OVERRIDE', new_max_gap_override)
+                save_configuration('PRE_FAB_GAP_DAYS', new_pre_fab_gap)
+                save_configuration('POST_ASSEMBLY_GAP_DAYS', new_post_assembly_gap)
                 
                 # Refresh metrics cache since filtering rules changed
                 refresh_metrics_cache(trigger='logic_update')
@@ -517,6 +525,24 @@ def logic_config():
                             Default: 30 days. Use this to prevent extreme outliers from skewing metrics.
                         </p>
                     </div>
+
+                    <div style="margin-bottom: 20px; padding: 15px; background: #e8f4fd; border: 2px solid #1f6feb; border-radius: 5px;">
+                        <h3 style="margin-top: 0; color: #1f6feb;">🧭 Fab &amp; Assembly Span Windows</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <div>
+                                <label style="font-weight: bold;">Fab Lead-In Window (days):</label>
+                                <input type="number" min="0" name="pre_fab_gap_days" value="{utils.PROJECT_DAY_RULES.get('pre_fab_gap_days', 10)}" style="width: 100px; padding: 8px; font-size: 16px; font-weight: bold;" />
+                            </div>
+                            <div>
+                                <label style="font-weight: bold;">Assembly Tail Window (days):</label>
+                                <input type="number" min="0" name="post_assembly_gap_days" value="{utils.PROJECT_DAY_RULES.get('post_assembly_gap_days', 10)}" style="width: 100px; padding: 8px; font-size: 16px; font-weight: bold;" />
+                            </div>
+                        </div>
+                        <p style="margin: 10px 0 0; font-size: 0.9em; color: #666;">
+                            Days that fall more than these buffers before the first Fab cluster or after the last Assembly cluster are filtered from span metrics to eliminate stray single-day charges.
+                            Default: 10 days for both windows.
+                        </p>
+                    </div>
                     
                     <div class="dept-grid">
                         {chr(10).join([f'''
@@ -584,6 +610,8 @@ def logic_config():
 Department Rules: {len(utils.DEPARTMENT_RULES)} departments configured
 Outlier Caps: {len(utils.OUTLIER_CAPS)} departments configured
 Exclusion Employees: {len(exclusion_employees)} configured
+Fab Lead-In Window: {utils.PROJECT_DAY_RULES.get('pre_fab_gap_days', 10)} days
+Assembly Tail Window: {utils.PROJECT_DAY_RULES.get('post_assembly_gap_days', 10)} days
                 </pre>
             </div>
             

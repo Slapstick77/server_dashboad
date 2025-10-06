@@ -13,11 +13,14 @@ dashboard = Blueprint('dashboard', __name__)
 # Template constants
 RECENT_PAGE = """<!doctype html><html><head><meta charset='utf-8'><title>Recent Unit Completion</title><style>
 body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+header{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}
+.header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
 h1{margin:0;font-size:1.05rem}
 nav a{color:#8fb9ff;text-decoration:none;margin-right:.8rem;font-size:.72rem}
 button{background:#238636;border:1px solid #2ea043;color:#fff;padding:.55rem .9rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer}button:hover{background:#2ea043}
 main{padding:1rem 1.1rem}
+.alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+.alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
 .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.45rem .75rem;font-size:.6rem;letter-spacing:.5px;margin:.25rem .4rem .6rem 0}
 .unit{display:grid;border:1px solid #3f4751;border-radius:14px;margin:1.25rem 0;overflow:hidden;background:#141a21;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s,transform .2s;position:relative;box-shadow:0 2px 5px -2px #000,0 0 0 1px #212a33;cursor:pointer}
 .unit:hover{transform:translateY(-2px);box-shadow:0 4px 12px -2px rgba(0,0,0,.4),0 0 0 1px #3a4a5f,0 0 8px -2px rgba(31,111,235,.3);border-color:#4a5a6f}
@@ -26,7 +29,7 @@ main{padding:1rem 1.1rem}
 .unit.eff-band-low:before{background:linear-gradient(#8b1111,#d53030)}
 .unit.eff-band-mid:before{background:linear-gradient(#9a7300,#d6a400)}
 .unit.eff-band-high:before{background:linear-gradient(#1d7f36,#28c14f)}
-.unit.complete{background:#10291a;border-color:#2e8045;box-shadow:0 0 0 1px #2e8045,0 0 4px -1px #184d2b}
+.unit.complete{background:linear-gradient(150deg,#18122a,#140e24 58%,#1f1338);border-color:#7b5cd6;box-shadow:0 0 0 1px #7b5cd6,0 0 10px -3px rgba(123,92,214,.55)}
 .unit-col1{grid-row:1 / span 4;padding:.75rem .95rem;border-right:1px solid #30363d;display:flex;flex-direction:column;gap:.55rem;background:linear-gradient(145deg,#12181f,#151e27 55%,#10161c)}
 .com-card{background:linear-gradient(160deg,#0b141b,#0e1d28);border:1px solid #3a4a59;border-radius:12px;padding:.6rem .7rem .7rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:0 2px 4px -2px #000,0 0 0 1px #18232c,0 0 10px -4px #0d3044}
 .title{font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:.83rem;font-weight:700;letter-spacing:.12rem;background:#0f161d;border:1px solid #2d3842;padding:.3rem .55rem .32rem;border-radius:8px;display:inline-block;box-shadow:0 0 0 1px #121a21,0 0 4px #0b0f13 inset}
@@ -34,21 +37,20 @@ main{padding:1rem 1.1rem}
 .daysbox{display:flex;gap:.4rem;font-size:.55rem}
 .daysbox span{background:#1d272f;padding:2px 6px;border:1px solid #2d3842;border-radius:6px}
 .dept-row{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem .7rem .55rem;border-bottom:1px solid #222b33}
-.dept{flex:0 0 auto;background:#1d232a;border:1px solid #2d333b;padding:.45rem .55rem;border-radius:6px;min-width:120px;position:relative;transition:background .25s,border-color .25s}
-.dept.complete{background:#142f1d;border-color:#2e8045}
-.dept-name{font-size:.55rem;font-weight:600;margin-bottom:.25rem}
-.bars{display:flex;flex-direction:column;gap:2px}
-.bar{height:10px;background:#262c33;border-radius:5px;position:relative;overflow:hidden}
-.bar span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ff914d,#ffcd3c)}
-.bar.eff span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
-.bar.eff.low span{background:linear-gradient(90deg,#b32020,#ff5959)}
-.bar.eff.mid span{background:linear-gradient(90deg,#c28a00,#ffd43b)}
-.bar.comp span{background:linear-gradient(90deg,#4373d9,#6da8ff)}
-.bar.eff.over span{background:linear-gradient(90deg,#52d96d,#2f9e44)}
-.bar.comp.over span{background:linear-gradient(90deg,#6da8ff,#4373d9)}
-/* Only recolor completion bars on complete items; keep efficiency threshold colors */
-.dept.complete .bar.comp span,.unit.complete .bar.comp span{background:linear-gradient(90deg,#2f9e44,#52d96d)}
-.ovr-rows{display:flex;flex-direction:column;gap:4px;padding:.6rem .7rem .7rem}
+.dept{flex:0 0 auto;background:#1d232a;border:1px solid #2d333b;padding:.55rem .65rem;border-radius:6px;min-width:140px;position:relative;display:flex;flex-direction:column;gap:.35rem;transition:background .25s,border-color .25s,color .25s}
+.dept.zero{background:#2b161a;border-color:#a23d4a;color:#f4d7dd}
+.dept.zero .dept-values span{color:#f2c2cb}
+.dept.partial{background:#242417;border-color:#6f6224}
+.dept.partial .dept-values span{color:#d8cd83}
+.dept.complete{background:linear-gradient(150deg,#173525,#1d3f2c);border-color:#2e8045;color:#d6f3dc}
+.dept.complete .dept-values span{color:#9fd7aa}
+.dept-name{font-size:.56rem;font-weight:600}
+.dept-values{display:flex;gap:.6rem;font-size:.5rem;opacity:.8;flex-wrap:wrap}
+.dept-values span{white-space:nowrap}
+.overall-metrics{margin:.6rem .7rem .7rem auto;font-size:.54rem;display:flex;flex-direction:column;gap:.3rem;align-items:flex-end}
+.overall-metrics .metric-line{display:flex;gap:.6rem;align-items:center;color:#c9d1d9}
+.overall-metrics .metric-line span:first-child{opacity:.75}
+.overall-metrics .metric-line span:last-child{font-weight:700;font-size:.6rem}
 .unit-sep{height:16px;margin:-.4rem 0 .2rem;position:relative}
 .unit-sep:after{content:"";position:absolute;left:0;right:0;top:6px;height:4px;background:linear-gradient(90deg,#141b22,#3d4a57,#141b22);opacity:.85;border-radius:2px}
 .metrics{font-size:.52rem;opacity:.8;display:flex;flex-wrap:wrap;gap:.6rem}
@@ -56,7 +58,7 @@ main{padding:1rem 1.1rem}
 .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
 .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
 .nav-links a:hover{text-decoration:underline}
-</style></head><body><header><h1>Recent Unit Completion</h1><div><button onclick='loadData()'>Refresh</button></div></header>
+</style></head><body><header><div class='header-row'><h1>Recent Unit Completion</h1><div><button onclick='loadData()'>Refresh</button></div></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
 <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
 <main>
 <div id='loading' style='font-size:.7rem;opacity:.7;'>Loading...</div><div id='summary'></div><div id='units'></div>
@@ -110,24 +112,34 @@ async function loadData(){
     unit.appendChild(c1);
         // Row 1: departments (dual bars per dept)
         const deptRow=document.createElement('div');deptRow.className='dept-row';
-    u.departments.forEach(d=>{if(d.std<=0) return; const isDeptComplete=d.completion>=100; const box=document.createElement('div');box.className='dept'+(isDeptComplete?' complete':'');
+    const sortedDepts=[...u.departments].filter(d=>d.std>0).sort((a,b)=>{
+        const aComplete=a.completion>=100?1:0;
+        const bComplete=b.completion>=100?1:0;
+        if(aComplete!==bComplete){
+            return bComplete-aComplete; // completed to the left
+        }
+        return b.completion-a.completion;
+    });
+    sortedDepts.forEach(d=>{const compVal = Number(d.completion) || 0;
+                const effVal = Number(d.efficiency) || 0;
+                let statusClass=' partial';
+                if(compVal<=0){statusClass=' zero';}
+                else if(compVal>=100){statusClass=' complete';}
+                const box=document.createElement('div');box.className='dept'+statusClass;
                 const name=document.createElement('div');name.className='dept-name';name.textContent=d.name;box.appendChild(name);
-                const bars=document.createElement('div');bars.className='bars';
-    // Efficiency bar top (always threshold-based coloring)
-    bars.appendChild(makeBar(d.efficiency,'eff'));
-    // Completion bar bottom
-    bars.appendChild(makeBar(d.completion,'comp'));
-                box.appendChild(bars);
+                const values=document.createElement('div');values.className='dept-values';
+                values.innerHTML=`<span>${compVal.toFixed(1)}% complete</span><span>${effVal.toFixed(1)}% eff</span>`;
+                box.appendChild(values);
                 deptRow.appendChild(box);
         });
         unit.appendChild(deptRow);
-        // Overall bars rows (2 rows)
-        const overallWrap=document.createElement('div');overallWrap.className='ovr-rows';
-        const effBar=makeBar(u.overall_efficiency,'eff');
-        const compBar=makeBar(u.overall_completion,'comp');
-        const effLabel=document.createElement('div');effLabel.style.cssText='font-size:.5rem;margin-top:2px;';effLabel.textContent='Overall Efficiency';
-        const compLabel=document.createElement('div');compLabel.style.cssText='font-size:.5rem;margin-top:6px;';compLabel.textContent='Overall Completion';
-        overallWrap.appendChild(effLabel);overallWrap.appendChild(effBar);overallWrap.appendChild(compLabel);overallWrap.appendChild(compBar);
+        // Overall metrics summary (numbers only)
+        const overallWrap=document.createElement('div');overallWrap.className='overall-metrics';
+        const effLine=document.createElement('div');effLine.className='metric-line';
+    effLine.innerHTML=`<span>Overall Efficiency</span><span>${(Number(u.overall_efficiency)||0).toFixed(1)}%</span>`;
+        const compLine=document.createElement('div');compLine.className='metric-line';
+    compLine.innerHTML=`<span>Overall Completion</span><span>${(Number(u.overall_completion)||0).toFixed(1)}%</span>`;
+        overallWrap.appendChild(effLine);overallWrap.appendChild(compLine);
         unit.appendChild(overallWrap);
         unitsDiv.appendChild(unit);
     });
@@ -152,7 +164,8 @@ def dash():
         <html><head><meta charset='utf-8'><title>Dashboard</title>
         <style>
             body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-            header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+            header{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d;display:flex;flex-direction:column;gap:.75rem}
+            .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
             h1{margin:0;font-size:1.15rem}
             main{padding:1.5rem}
             .grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
@@ -173,6 +186,8 @@ def dash():
             .up{color:#f85149}
             .down{color:#3fb950}
             header{box-shadow:0 3px 10px -6px #000}
+            .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.7rem .95rem;font-size:.72rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+            .alpha-banner strong{display:block;font-size:.78rem;margin-bottom:.25rem;color:#ffe2cc;text-transform:uppercase;letter-spacing:.05rem}
             .card{transition:transform .12s ease, box-shadow .12s ease}
             .card:hover{transform:translateY(-2px); box-shadow:0 8px 22px -10px #000}
             /* Legend styling for Daily Hours chart */
@@ -185,9 +200,42 @@ def dash():
             .chart-btn{background:#21262d;border:1px solid #30363d;color:#8b949e;padding:.4rem .75rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
             .chart-btn:hover{background:#30363d;border-color:#484f58;color:#c9d1d9}
             .chart-btn.active{background:#238636;border-color:#2ea043;color:#fff}
+            .pie-card{margin-top:2rem;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;box-shadow:0 6px 18px -12px #000}
+            .pie-header{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.2rem}
+            .pie-header h2{margin:0;font-size:1.05rem}
+            .pie-controls{display:flex;gap:.6rem;flex-wrap:wrap}
+            .pie-layout{display:flex;flex-wrap:wrap;gap:1.8rem;align-items:center;justify-content:center}
+            #deptPieCanvas{max-width:380px;max-height:380px}
+            .pie-legend{display:flex;flex-direction:column;gap:.55rem;min-width:220px}
+            .pie-legend-item{display:flex;align-items:center;gap:.6rem;background:#0f1a2a;border:1px solid #2a3b55;border-radius:12px;padding:.45rem .7rem;font-size:.78rem;box-shadow:0 2px 6px -6px #000}
+            .pie-legend-swatch{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px #0007 inset}
+            .pie-legend-item span.label{font-weight:600}
+            .pie-legend-item span.value{margin-left:auto;font-weight:600;font-size:.78rem;color:#d0d7de}
+            .pie-summary{margin-top:1.2rem;text-align:center;font-size:.75rem;opacity:.75}
+            .pie-empty{padding:1.2rem;text-align:center;font-size:.85rem;opacity:.7}
+            .daily-metrics-card{margin-top:2rem;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;box-shadow:0 6px 18px -12px #000}
+            .daily-header{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.2rem}
+            .daily-header h2{margin:0;font-size:1.05rem}
+            .daily-controls{display:flex;gap:.6rem;flex-wrap:wrap}
+            .daily-gauge-grid{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+            .daily-status{margin-top:1rem;text-align:center;font-size:.75rem;opacity:.75}
+            .daily-empty{padding:1rem;text-align:center;font-size:.85rem;opacity:.7}
+            .gauge-card{background:#0f1a2a;border:1px solid #2a3b55;border-radius:12px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem;align-items:center;box-shadow:0 2px 6px -8px #000}
+            .gauge-card.metric-gauge{margin-top:0}
+            .gauge-header{width:100%;display:flex;flex-direction:column;gap:.4rem;text-align:center}
+            .gauge-header h3{margin:0;font-size:1rem}
+            .gauge-header .gauge-meta{font-size:.74rem;opacity:.75;display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem}
+            .gauge-header .gauge-meta span{white-space:nowrap}
+            .gauge-body{display:flex;justify-content:center;align-items:center;width:100%}
+            .gauge{position:relative;width:220px;aspect-ratio:1;border-radius:50%;background:#131c27;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #1f2a38,0 12px 30px -18px #000}
+            .gauge-fill{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#58a6ff 0deg,#1b2531 0deg);transition:background .4s ease}
+            .gauge::after{content:"";position:absolute;inset:18%;border-radius:50%;background:#0d1117;box-shadow:inset 0 0 18px -12px #000}
+            .gauge-center{position:relative;display:flex;flex-direction:column;align-items:center;gap:.35rem;z-index:1}
+            .gauge-value{font-size:1.4rem;font-weight:700;color:#d1e3ff}
+            .gauge-range{font-size:.72rem;opacity:.7}
         </style></head>
         <body>
-            <header><h1>Production Dashboard</h1></header>
+            <header><div class='header-row'><h1>Production Dashboard</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
             <main>
                 <div class='grid'>
                     <div class='card'>
@@ -251,8 +299,81 @@ def dash():
                     </div>
                     <div id='trailingLegend' class='legend' style='display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;'></div>
                     <div id='trailingChartInfo' style='text-align:center;margin-top:1rem;font-size:0.75rem;opacity:0.6;'></div>
-                </div>
-            </main>
+                    </div>
+                    <div class='pie-card'>
+                        <div class='pie-header'>
+                            <h2>Department Hours (Last 30 Days)</h2>
+                            <div class='pie-controls'>
+                                <button class='chart-btn pie-btn active' data-pie-days='30'>30 Days</button>
+                                <button class='chart-btn pie-btn' data-pie-days='60'>60 Days</button>
+                                <button class='chart-btn pie-btn' data-pie-days='90'>90 Days</button>
+                            </div>
+                        </div>
+                        <div id='deptPieContent' class='pie-layout'>
+                            <canvas id='deptPieCanvas' width='380' height='380'></canvas>
+                            <div id='deptPieLegend' class='pie-legend'></div>
+                        </div>
+                        <div id='deptPieSummary' class='pie-summary'></div>
+                    </div>
+                    <div class='daily-metrics-card'>
+                        <div class='daily-header'>
+                            <h2>Daily Metrics Pulse</h2>
+                            <div class='daily-controls'>
+                                <button class='chart-btn daily-btn active' data-daily-days='30'>30 Days</button>
+                                <button class='chart-btn daily-btn' data-daily-days='60'>60 Days</button>
+                                <button class='chart-btn daily-btn' data-daily-days='90'>90 Days</button>
+                            </div>
+                        </div>
+                        <div id='dailyMetricsContent' class='daily-gauge-grid'>
+                            <div class='gauge-card metric-gauge'>
+                                <div class='gauge-header'>
+                                    <h3>Average Efficiency</h3>
+                                    <div class='gauge-meta' id='gaugeEffMeta'></div>
+                                </div>
+                                <div class='gauge-body'>
+                                    <div class='gauge' id='gaugeEff'>
+                                        <div class='gauge-fill'></div>
+                                        <div class='gauge-center'>
+                                            <div class='gauge-value' id='gaugeEffValue'>0%</div>
+                                            <div class='gauge-range' id='gaugeEffRange'></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='gauge-card metric-gauge'>
+                                <div class='gauge-header'>
+                                    <h3>Average Active Days</h3>
+                                    <div class='gauge-meta' id='gaugeActMeta'></div>
+                                </div>
+                                <div class='gauge-body'>
+                                    <div class='gauge' id='gaugeAct'>
+                                        <div class='gauge-fill'></div>
+                                        <div class='gauge-center'>
+                                            <div class='gauge-value' id='gaugeActValue'>0 days</div>
+                                            <div class='gauge-range' id='gaugeActRange'></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='gauge-card metric-gauge'>
+                                <div class='gauge-header'>
+                                    <h3>Average Span Days</h3>
+                                    <div class='gauge-meta' id='gaugeSpanMeta'></div>
+                                </div>
+                                <div class='gauge-body'>
+                                    <div class='gauge' id='gaugeSpan'>
+                                        <div class='gauge-fill'></div>
+                                        <div class='gauge-center'>
+                                            <div class='gauge-value' id='gaugeSpanValue'>0 days</div>
+                                            <div class='gauge-range' id='gaugeSpanRange'></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id='dailyMetricsStatus' class='daily-status'></div>
+                    </div>
+                </main>
             <script>
             function pct(n){return (Math.round(n*10)/10).toFixed(1)}
             function arrow(delta){
@@ -324,21 +445,6 @@ def dash():
                 const yMaxNice = Math.ceil(ymax / yStep) * yStep;
                 const sx=(W-padL-padR)/Math.max(1,labels.length-1);
                 const sy=(H-padT-padB)/yMaxNice;
-                // axes
-                ctx.strokeStyle='#2a323c';ctx.lineWidth=1.4;ctx.beginPath();
-                ctx.moveTo(padL, padT);ctx.lineTo(padL, H-padB);ctx.lineTo(W-padR, H-padB);ctx.stroke();
-                // y ticks and grid
-                ctx.fillStyle='#b9c9da'; ctx.font='13.5px system-ui, sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
-                for(let yv=0; yv<=yMaxNice+1e-6; yv+=yStep){
-                    const y = H-padB - yv*sy;
-                    // grid
-                    ctx.strokeStyle='#1c2430'; ctx.lineWidth=1; ctx.beginPath();
-                    ctx.moveTo(padL, y); ctx.lineTo(W-padR, y); ctx.stroke();
-                    // tick
-                    ctx.strokeStyle='#2a323c'; ctx.beginPath(); ctx.moveTo(padL-4, y); ctx.lineTo(padL, y); ctx.stroke();
-                    ctx.fillText(String(Math.round(yv)), padL-10, y);
-                }
-                // lines
                 let idx=0;
                 vis.forEach((s)=>{
                     const color = s.color || lineColor(idx++);
@@ -377,6 +483,277 @@ def dash():
                         onToggle();
                     });
                 });
+            }
+            function formatHours(val){
+                if(val === null || val === undefined) return '0';
+                const num = Number(val) || 0;
+                return new Intl.NumberFormat('en-US',{maximumFractionDigits:1, minimumFractionDigits:0}).format(num);
+            }
+            function formatDateRangeLabel(startIso, endIso){
+                if(!startIso || !endIso) return '';
+                try{
+                    const start = new Date(startIso + 'T00:00:00');
+                    const end = new Date(endIso + 'T00:00:00');
+                    const fmt = new Intl.DateTimeFormat('en-US',{month:'short', day:'numeric'});
+                    return `${fmt.format(start)} – ${fmt.format(end)}`;
+                }catch(err){
+                    return `${startIso} – ${endIso}`;
+                }
+            }
+            const pieColors=['#58a6ff','#7ee787','#fbbc64','#f778ba','#9b9bff','#4fd2c2','#ffa657','#8cddff','#d2a8ff','#6fdd8b','#ff9b9b','#e3b341'];
+            function drawDeptPie(ctx, segments, total){
+                const {canvas}=ctx;
+                const {width,height}=canvas;
+                ctx.clearRect(0,0,width,height);
+                if(!segments.length || total<=0){
+                    return;
+                }
+                const cx=width/2;
+                const cy=height/2;
+                const radius=Math.min(width,height)/2 - 12;
+                let startAngle=-Math.PI/2;
+                segments.forEach(seg=>{
+                    const portion = seg.hours/total;
+                    const slice = portion*Math.PI*2;
+                    if(slice<=0) return;
+                    ctx.beginPath();
+                    ctx.moveTo(cx,cy);
+                    ctx.fillStyle=seg.color;
+                    ctx.arc(cx,cy,radius,startAngle,startAngle+slice);
+                    ctx.closePath();
+                    ctx.fill();
+                    startAngle+=slice;
+                });
+                const innerRadius=radius*0.55;
+                ctx.beginPath();
+                ctx.fillStyle='#0d1117';
+                ctx.arc(cx,cy,innerRadius,0,Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle='#c9d1d9';
+                ctx.textAlign='center';
+                ctx.textBaseline='middle';
+                ctx.font='600 14px system-ui,-apple-system,sans-serif';
+                ctx.fillText('Total Hours',cx,cy-12);
+                ctx.font='700 20px system-ui,-apple-system,sans-serif';
+                ctx.fillText(`${formatHours(total)}`,cx,cy+14);
+            }
+            const deptPieState={days:30};
+            function loadDeptPie(){
+                const canvas=document.getElementById('deptPieCanvas');
+                const legend=document.getElementById('deptPieLegend');
+                const summary=document.getElementById('deptPieSummary');
+                if(!canvas || !legend || !summary){
+                    return;
+                }
+                summary.innerHTML='<span style="opacity:0.7;">Loading…</span>';
+                legend.innerHTML='';
+                const ctx=canvas.getContext('2d');
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                fetch(`/api/metrics/department_totals?days=${deptPieState.days}`)
+                    .then(r=>r.json())
+                    .then(data=>{
+                        let departments=(data.departments||[]).map(d=>({
+                            name:d.name,
+                            hours:Number(d.hours)||0
+                        })).filter(d=>d.hours>0);
+                        let total=Number(data.total_hours)||0;
+                        if(!(total>0)){
+                            total=departments.reduce((sum,d)=>sum+d.hours,0);
+                        }
+                        if(!departments.length || !(total>0)){
+                            legend.innerHTML='';
+                            summary.innerHTML=`<div class="pie-empty">No hours logged in the last ${deptPieState.days} days.</div>`;
+                            ctx.clearRect(0,0,canvas.width,canvas.height);
+                            return;
+                        }
+                        if(departments.length>8){
+                            const primary=departments.slice(0,7);
+                            const otherTotal=departments.slice(7).reduce((sum,d)=>sum+d.hours,0);
+                            if(otherTotal>0){
+                                primary.push({name:'Other', hours:otherTotal});
+                            }
+                            departments=primary;
+                        }
+                        const segments=departments.map((dept,idx)=>({
+                            ...dept,
+                            color:pieColors[idx % pieColors.length],
+                            percent: total ? (dept.hours/total)*100 : 0
+                        }));
+                        drawDeptPie(ctx, segments, total);
+                        legend.innerHTML='';
+                        segments.forEach(seg=>{
+                            const item=document.createElement('div');
+                            item.className='pie-legend-item';
+                            const swatch=document.createElement('span');
+                            swatch.className='pie-legend-swatch';
+                            swatch.style.background=seg.color;
+                            const label=document.createElement('span');
+                            label.className='label';
+                            label.textContent=seg.name;
+                            const value=document.createElement('span');
+                            value.className='value';
+                            value.textContent=`${formatHours(seg.hours)}h • ${seg.percent.toFixed(1)}%`;
+                            item.appendChild(swatch);
+                            item.appendChild(label);
+                            item.appendChild(value);
+                            legend.appendChild(item);
+                        });
+                        const rangeLabel=formatDateRangeLabel(data.start_date, data.end_date);
+                        const updated = data.generated_at ? formatTimestamp(data.generated_at) : '';
+                        const pieces=[];
+                        pieces.push(`${formatHours(total)} total hours`);
+                        pieces.push(`${data.days}-day window`);
+                        if(rangeLabel){
+                            pieces.push(rangeLabel);
+                        }
+                        if(updated){
+                            pieces.push(`Updated ${updated}`);
+                        }
+                        summary.innerHTML=pieces.join(' • ');
+                    })
+                    .catch(err=>{
+                        console.error('Failed to load department totals:', err);
+                        summary.innerHTML='<span style="color:#f85149;">Unable to load department totals</span>';
+                    });
+            }
+            const dailyChartState={days:30};
+            let dailyMetricDataset=null;
+            function mean(values){
+                if(!values || !values.length) return 0;
+                let total=0;
+                values.forEach(v=>{total+=Number(v)||0;});
+                return total/values.length;
+            }
+            function seriesMax(values){
+                if(!values || !values.length) return 0;
+                let maxVal=-Infinity;
+                values.forEach(v=>{
+                    const num=Number(v)||0;
+                    if(num>maxVal) maxVal=num;
+                });
+                return maxVal===-Infinity?0:maxVal;
+            }
+            function computeDailyMaxAverages(data){
+                const result={eff:0, act:0, span:0};
+                const windows=data.windows||{};
+                Object.values(windows).forEach(win=>{
+                    if(!win) return;
+                    result.eff=Math.max(result.eff, seriesMax(win.avg_efficiency||[]));
+                    result.act=Math.max(result.act, seriesMax(win.avg_act_days||[]));
+                    result.span=Math.max(result.span, seriesMax(win.avg_span||[]));
+                });
+                result.eff = Math.max(result.eff, 100); // keep efficiency gauge targeting 100%
+                return result;
+            }
+            function renderDailyCharts(){
+                const statusEl=document.getElementById('dailyMetricsStatus');
+                if(!dailyMetricDataset || !dailyMetricDataset.windows){
+                    statusEl.innerHTML='<span class="daily-empty">Daily metrics unavailable.</span>';
+                    return;
+                }
+                const key=String(dailyChartState.days);
+                const windowData=dailyMetricDataset.windows[key];
+                if(!windowData || !(windowData.labels||[]).length){
+                    statusEl.innerHTML=`<span class="daily-empty">No data for the last ${dailyChartState.days} days.</span>`;
+                    return;
+                }
+                statusEl.innerHTML='';
+                const labels=windowData.labels;
+                const displayLabels=labels.map(l=>{
+                    try{const d=new Date(l+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return l;}
+                });
+                const rangeLabel=formatDateRangeLabel(labels[0], labels[labels.length-1]);
+                const cacheInfo=dailyMetricDataset._cache||{};
+                const maxAverages=dailyMetricDataset._maxAverages || {eff:100, act:0, span:0};
+                const gaugeConfigs=[
+                    {
+                        key:'avg_efficiency',
+                        gaugeId:'gaugeEff',
+                        valueId:'gaugeEffValue',
+                        rangeId:'gaugeEffRange',
+                        metaId:'gaugeEffMeta',
+                        formatter:(v)=>`${pct(v)}%`,
+                        unitLabel:'% avg',
+                        maxValue:100
+                    },
+                    {
+                        key:'avg_act_days',
+                        gaugeId:'gaugeAct',
+                        valueId:'gaugeActValue',
+                        rangeId:'gaugeActRange',
+                        metaId:'gaugeActMeta',
+                        formatter:(v)=>`${(Number(v)||0).toFixed(1)} days`,
+                        maxValue:maxAverages.act || seriesMax(windowData.avg_act_days||[])
+                    },
+                    {
+                        key:'avg_span',
+                        gaugeId:'gaugeSpan',
+                        valueId:'gaugeSpanValue',
+                        rangeId:'gaugeSpanRange',
+                        metaId:'gaugeSpanMeta',
+                        formatter:(v)=>`${(Number(v)||0).toFixed(1)} days`,
+                        maxValue:maxAverages.span || seriesMax(windowData.avg_span||[])
+                    }
+                ];
+
+                gaugeConfigs.forEach(cfg=>{
+                    const series = windowData[cfg.key] || [];
+                    const avgValue = mean(series);
+                    const maxValue = cfg.maxValue > 0 ? cfg.maxValue : avgValue || 1;
+                    const gauge=document.getElementById(cfg.gaugeId);
+                    if(gauge){
+                        const fill=gauge.querySelector('.gauge-fill');
+                        const ratio = maxValue>0 ? Math.max(0, Math.min(1, avgValue/maxValue)) : 0;
+                        if(fill){
+                            const sweep=Math.min(360, Math.max(0, ratio*360));
+                            fill.style.background=`conic-gradient(#58a6ff ${sweep}deg,#1b2531 ${sweep}deg 360deg)`;
+                        }
+                    }
+                    const valueEl=document.getElementById(cfg.valueId);
+                    if(valueEl){
+                        valueEl.textContent = cfg.formatter(avgValue);
+                    }
+                    const rangeEl=document.getElementById(cfg.rangeId);
+                    if(rangeEl){
+                        if(cfg.key==='avg_efficiency'){
+                            rangeEl.textContent = '';
+                        } else {
+                            rangeEl.textContent = maxValue ? `Peak avg ${(Number(maxValue)||0).toFixed(1)} days` : '';
+                        }
+                    }
+                    const metaPieces=[`Window avg ${cfg.formatter(avgValue)}`];
+                    if(rangeLabel) metaPieces.push(rangeLabel);
+                    metaPieces.push('All units included');
+                    if(series && series.length) metaPieces.push(`${series.length} days`);
+                    const metaEl=document.getElementById(cfg.metaId);
+                    if(metaEl){
+                        metaEl.innerHTML=metaPieces.map(v=>`<span>${v}</span>`).join('');
+                    }
+                });
+                if(cacheInfo.computed_at){
+                    const updated=formatTimestamp(cacheInfo.computed_at);
+                    statusEl.innerHTML=`Charts cached ${updated}${cacheInfo.trigger_source?` • ${cacheInfo.trigger_source}`:''}`;
+                }
+            }
+            function loadDailyMetrics(){
+                const statusEl=document.getElementById('dailyMetricsStatus');
+                statusEl.innerHTML='<span style="opacity:0.7;">Loading daily charts…</span>';
+                fetch('/api/metrics/daily_metric_trends')
+                    .then(r=>r.json())
+                    .then(data=>{
+                        if(data.error){
+                            statusEl.innerHTML=`<span style="color:#f85149;">${data.error}</span>`;
+                            dailyMetricDataset=null;
+                            return;
+                        }
+                        data._maxAverages = computeDailyMaxAverages(data);
+                        dailyMetricDataset=data;
+                        renderDailyCharts();
+                    })
+                    .catch(err=>{
+                        console.error('Failed to load daily metric charts:', err);
+                        statusEl.innerHTML='<span style="color:#f85149;">Unable to load daily metric charts</span>';
+                    });
             }
             
             // Trailing Metrics Chart
@@ -448,8 +825,33 @@ def dash():
                     });
             }
             
+            // Handle button clicks for department pie chart
+            document.querySelectorAll('.pie-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const days = parseInt(btn.getAttribute('data-pie-days'), 10);
+                    if(!days || days === deptPieState.days){
+                        return;
+                    }
+                    deptPieState.days = days;
+                    document.querySelectorAll('.pie-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadDeptPie();
+                });
+            });
+            document.querySelectorAll('.daily-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const days = parseInt(btn.getAttribute('data-daily-days'), 10);
+                    if(!days || days === dailyChartState.days){
+                        return;
+                    }
+                    dailyChartState.days = days;
+                    document.querySelectorAll('.daily-btn').forEach(b=>b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderDailyCharts();
+                });
+            });
             // Handle button clicks for trailing metrics chart
-            document.querySelectorAll('.chart-btn').forEach(btn => {
+            document.querySelectorAll('.chart-btn[data-type]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const type = btn.getAttribute('data-type');
                     const value = parseInt(btn.getAttribute('data-value'));
@@ -470,6 +872,8 @@ def dash():
             
             // Load initial chart
             loadTrailingMetrics();
+            loadDeptPie();
+            loadDailyMetrics();
             </script>
         </body></html>
         """
@@ -491,7 +895,8 @@ def hours_chart():
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #0d1117; color: #c9d1d9; }
             .container { max-width: 1400px; margin: 0 auto; }
-            header { padding: 1rem 1.5rem; background: #161b22; border-bottom: 1px solid #30363d; }
+            header { padding: 1rem 1.5rem; background: #161b22; border-bottom: 1px solid #30363d; display:flex; flex-direction:column; gap:.75rem; }
+            .header-row { display:flex; justify-content:space-between; align-items:center; gap:.75rem; width:100%; }
             h1 { margin: 0; font-size: 1.05rem; }
             .nav-links { padding: 0.5rem 1.5rem; display: flex; gap: 1rem; background: #0d1117; }
             .nav-links a { color: #8fb9ff; text-decoration: none; font-size: .85rem; }
@@ -509,10 +914,12 @@ def hours_chart():
             .legend-item:hover { background: #30363d; }
             .legend-item.off { opacity: 0.3; }
             .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+            .alpha-banner { width:100%; background:linear-gradient(135deg,#912323,#5c1b1f); border:1px solid rgba(255,255,255,0.22); border-radius:10px; padding:.7rem .95rem; font-size:.72rem; line-height:1.4; font-weight:600; color:#fdf2f2; box-shadow:0 6px 18px -14px #000; letter-spacing:.02rem; }
+            .alpha-banner strong { display:block; font-size:.78rem; margin-bottom:.25rem; color:#ffe2cc; text-transform:uppercase; letter-spacing:.05rem; }
         </style>
     </head>
     <body>
-        <header><h1>Total Daily Hours Charged Chart</h1></header>
+        <header><div class='header-row'><h1>Total Daily Hours Charged Chart</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
         <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <div class="container">
             <div class="content">
@@ -770,6 +1177,705 @@ def hours_chart():
     return render_template_string(page)
 
 
+@dashboard.route('/display')
+def display_board():
+    page = """<!doctype html>
+    <html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Display Dashboard</title>
+        <style>
+            :root{color-scheme:dark;}
+            *{box-sizing:border-box;}
+            body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0d1117;color:#ccd6f6;overflow:hidden;display:flex;flex-direction:column;min-height:100vh;}
+            a{color:#8fb9ff;text-decoration:none;}
+            a:hover{text-decoration:underline;}
+            .hidden{display:none!important;}
+            .toolbar{display:flex;flex-direction:column;align-items:stretch;padding:0.9rem 1.4rem;background:#161b22;border-bottom:1px solid #30363d;gap:0.9rem;}
+            .toolbar-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;}
+            .toolbar-left{display:flex;gap:0.75rem;align-items:center;}
+            .toolbar-right{display:flex;gap:0.75rem;align-items:center;}
+            .toolbar-btn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:0.55rem 1.1rem;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s ease;}
+            .toolbar-btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+            .toolbar-btn:hover{filter:brightness(1.08);}
+            .toolbar-btn:disabled{opacity:0.45;cursor:not-allowed;}
+            .toolbar-link{font-size:0.85rem;opacity:0.85;}
+            .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:0.65rem 0.9rem;font-size:0.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:0.02rem;}
+            .alpha-banner strong{display:block;font-size:0.7rem;margin-bottom:0.25rem;color:#ffe2cc;letter-spacing:0.05rem;text-transform:uppercase;}
+            .board-wrapper{flex:1;width:100%;background:#0a0f16;position:relative;overflow:hidden;}
+            .chart-board{position:relative;width:100%;height:100%;overflow:auto;padding:1.5rem;}
+            .display-card{position:absolute;min-width:320px;min-height:220px;width:520px;height:340px;background:#111821;border:1px solid #2a3240;border-radius:14px;box-shadow:0 8px 26px -18px rgba(0,0,0,0.8),0 0 0 1px rgba(48,54,61,0.8);resize:both;overflow:hidden;display:flex;flex-direction:column;}
+            .display-card.locked{resize:none;}
+            .card-header{cursor:grab;padding:0.65rem 0.95rem;border-bottom:1px solid #212b35;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;background:linear-gradient(130deg,#151d27,#111620);font-weight:600;font-size:0.9rem;}
+            .card-header:active{cursor:grabbing;}
+            .card-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .chart-close{background:transparent;border:0;color:#b6c3e5;font-size:1.1rem;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+            .chart-close:hover{background:rgba(255,255,255,0.08);color:#fff;}
+            .card-body{flex:1;position:relative;background:#0d131a;padding:0.75rem;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+            .card-body canvas{width:100%;height:100%;display:block;}
+            .card-meta{padding:0.6rem 0.95rem;border-top:1px solid #212b35;font-size:0.75rem;opacity:0.75;display:flex;gap:0.8rem;flex-wrap:wrap;}
+            .loading{font-size:0.85rem;opacity:0.7;}
+            .error{color:#ff7b72;font-size:0.85rem;text-align:center;padding:0.5rem;}
+            .picker-backdrop{position:fixed;inset:0;background:rgba(2,10,20,0.78);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 0.2s ease;}
+            .picker-backdrop.open{opacity:1;pointer-events:auto;}
+            .chart-picker{position:fixed;top:50%;left:50%;transform:translate(-50%,-45%) scale(0.96);width:min(720px,92vw);max-height:80vh;overflow:auto;background:#0f1724;border:1px solid #243044;border-radius:18px;box-shadow:0 30px 70px -40px rgba(0,0,0,0.9);padding:1.5rem;opacity:0;pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease;display:flex;flex-direction:column;gap:1.2rem;}
+            .chart-picker.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+            .picker-header{display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+            .picker-header h2{margin:0;font-size:1.1rem;}
+            .picker-close{background:transparent;border:0;color:#8fb9ff;font-size:1.5rem;cursor:pointer;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+            .picker-close:hover{background:rgba(143,185,255,0.15);}
+            .picker-section{display:flex;flex-direction:column;gap:0.7rem;}
+            .picker-section h3{margin:0;font-size:0.95rem;color:#9fb4da;text-transform:uppercase;letter-spacing:0.08rem;font-weight:700;}
+            .picker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.6rem;}
+            .picker-option{background:#1a2331;border:1px solid #273448;border-radius:10px;padding:0.75rem 0.85rem;font-size:0.82rem;text-align:left;cursor:pointer;color:#d2dcf8;transition:all 0.2s ease;min-height:64px;display:flex;flex-direction:column;gap:0.35rem;}
+            .picker-option strong{font-size:0.85rem;color:#f1f5ff;}
+            .picker-option span{opacity:0.75;font-size:0.75rem;}
+            .picker-option:hover{border-color:#3a8bff;background:#1f2d44;}
+            .chart-gauge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;width:100%;height:100%;align-content:center;}
+            .gauge{position:relative;width:100%;aspect-ratio:1;border-radius:50%;background:#151e2b;box-shadow:0 15px 35px -20px rgba(0,0,0,0.9),0 0 0 1px rgba(43,56,71,0.7);display:flex;align-items:center;justify-content:center;}
+            .gauge-fill{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#58a6ff 0deg,#111821 0deg);transition:background 0.45s ease;}
+            .gauge::after{content:"";position:absolute;inset:16%;border-radius:50%;background:#0d1117;box-shadow:inset 0 0 20px -12px rgba(0,0,0,0.8);}
+            .gauge-center{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0.35rem;color:#d5e4ff;}
+            .gauge-value{font-size:1.4rem;font-weight:700;}
+            .gauge-label{font-size:0.8rem;opacity:0.75;}
+            .gauge-meta{display:flex;flex-direction:column;gap:0.35rem;font-size:0.72rem;opacity:0.75;text-align:center;}
+            .fullscreen-active body,body.fullscreen-active{overflow:hidden;}
+            .fullscreen-active .toolbar-btn.primary{display:none;}
+            .fullscreen-active .chart-close{display:none;}
+            .fullscreen-active .display-card{border-color:#1d2533;box-shadow:none;cursor:default;}
+            .fullscreen-active .display-card.locked .card-header{cursor:default;}
+            .fullscreen-active .chart-picker{display:none!important;}
+            .fullscreen-active #pickerBackdrop{display:none!important;}
+            .fullscreen-active .display-card.locked{pointer-events:none;}
+            .chart-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;background:#131c27;border:1px solid #283347;border-radius:999px;padding:0.25rem 0.65rem;}
+            .chart-badge span{opacity:0.75;}
+            .card-body .chart-legend{position:absolute;top:0.6rem;left:0.75rem;display:flex;gap:0.55rem;flex-wrap:wrap;background:rgba(13,17,23,0.78);padding:0.32rem 0.5rem;border-radius:8px;font-size:0.72rem;line-height:1.3;box-shadow:0 18px 28px -24px rgba(0,0,0,0.9);}
+            .card-body .chart-legend-item{display:inline-flex;align-items:center;gap:0.4rem;color:#d8e4ff;opacity:0.85;white-space:nowrap;}
+            .card-body .chart-legend-swatch{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.45);}
+            .card-body .chart-meta-stack{position:absolute;bottom:0.55rem;left:0.75rem;background:rgba(13,17,23,0.75);padding:0.35rem 0.55rem;border-radius:8px;font-size:0.7rem;display:flex;gap:0.6rem;flex-wrap:wrap;}
+            .card-body .chart-meta-stack span{opacity:0.7;}
+            @media (max-width:900px){
+                .toolbar{flex-wrap:wrap;}
+                .toolbar-left{flex-wrap:wrap;}
+                .display-card{width:420px;height:300px;}
+            }
+        </style>
+    </head>
+    <body>
+        <header class='toolbar'>
+            <div class='toolbar-row'>
+                <div class='toolbar-left'>
+                    <button id='addChartBtn' class='toolbar-btn primary'>Add Chart</button>
+                    <button id='fullScreenBtn' class='toolbar-btn'>Full Screen</button>
+                </div>
+                <div class='toolbar-right'>
+                    <a class='toolbar-link' href='/dash'>&larr; Dashboard</a>
+                </div>
+            </div>
+            <p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are in early testing. Data feeds may be incomplete, delayed, or incorrect. Do not rely on them for operational or business decisions.</p>
+        </header>
+        <div class='board-wrapper'>
+            <div id='chartBoard' class='chart-board'></div>
+        </div>
+        <div id='pickerBackdrop' class='picker-backdrop hidden'></div>
+        <aside id='chartPicker' class='chart-picker hidden'>
+            <div class='picker-header'>
+                <h2>Select a chart</h2>
+                <button id='pickerClose' class='picker-close' title='Close'>&times;</button>
+            </div>
+            <div class='picker-section'>
+                <h3>Trailing Metrics (Line)</h3>
+                <div class='picker-grid' data-chart-group='trailing'></div>
+            </div>
+            <div class='picker-section'>
+                <h3>Department Pie Charts</h3>
+                <div class='picker-grid' data-chart-group='pie'></div>
+            </div>
+            <div class='picker-section'>
+                <h3>Average Metrics Gauges</h3>
+                <div class='picker-grid' data-chart-group='avg'></div>
+            </div>
+            <div class='picker-section'>
+                <h3>Daily Total Hours (Line)</h3>
+                <div class='picker-grid' data-chart-group='dailyTotals'></div>
+            </div>
+        </aside>
+        <script>
+        (function(){
+            const board = document.getElementById('chartBoard');
+            const addBtn = document.getElementById('addChartBtn');
+            const picker = document.getElementById('chartPicker');
+            const pickerBackdrop = document.getElementById('pickerBackdrop');
+            const pickerClose = document.getElementById('pickerClose');
+            const fullScreenBtn = document.getElementById('fullScreenBtn');
+            let isFullScreen = false;
+            let cardCounter = 0;
+
+            const chartDefinitions = [
+                {id:'trend-90-10',group:'trailing',label:'Trailing Metrics • 90 days • trailing 10',type:'trailing',params:{days:90,trailing:10}},
+                {id:'trend-90-30',group:'trailing',label:'Trailing Metrics • 90 days • trailing 30',type:'trailing',params:{days:90,trailing:30}},
+                {id:'trend-120-10',group:'trailing',label:'Trailing Metrics • 120 days • trailing 10',type:'trailing',params:{days:120,trailing:10}},
+                {id:'trend-120-30',group:'trailing',label:'Trailing Metrics • 120 days • trailing 30',type:'trailing',params:{days:120,trailing:30}},
+                {id:'trend-365-10',group:'trailing',label:'Trailing Metrics • 1 year • trailing 10',type:'trailing',params:{days:365,trailing:10}},
+                {id:'trend-365-30',group:'trailing',label:'Trailing Metrics • 1 year • trailing 30',type:'trailing',params:{days:365,trailing:30}},
+                {id:'pie-30',group:'pie',label:'Department Hours • 30 days',type:'pie',params:{days:30}},
+                {id:'pie-60',group:'pie',label:'Department Hours • 60 days',type:'pie',params:{days:60}},
+                {id:'pie-90',group:'pie',label:'Department Hours • 90 days',type:'pie',params:{days:90}},
+                {id:'avg-30',group:'avg',label:'Average Metrics Gauges • 30 days',type:'avg',params:{window:30}},
+                {id:'avg-60',group:'avg',label:'Average Metrics Gauges • 60 days',type:'avg',params:{window:60}},
+                {id:'avg-90',group:'avg',label:'Average Metrics Gauges • 90 days',type:'avg',params:{window:90}},
+                {id:'daily-30-actual',group:'dailyTotals',label:'Daily Total Hours • 30 days Actual',type:'dailyTotals',params:{days:30,view:'actual'}},
+                {id:'daily-30-ma7',group:'dailyTotals',label:'Daily Total Hours • 30 days • 7-day avg',type:'dailyTotals',params:{days:30,view:'ma7'}},
+                {id:'daily-60-actual',group:'dailyTotals',label:'Daily Total Hours • 60 days Actual',type:'dailyTotals',params:{days:60,view:'actual'}},
+                {id:'daily-60-ma7',group:'dailyTotals',label:'Daily Total Hours • 60 days • 7-day avg',type:'dailyTotals',params:{days:60,view:'ma7'}},
+                {id:'daily-90-actual',group:'dailyTotals',label:'Daily Total Hours • 90 days Actual',type:'dailyTotals',params:{days:90,view:'actual'}},
+                {id:'daily-90-ma7',group:'dailyTotals',label:'Daily Total Hours • 90 days • 7-day avg',type:'dailyTotals',params:{days:90,view:'ma7'}},
+            ];
+
+            const dataCache = {
+                trailing:{},
+                pie:{},
+                avg:null,
+                dailyTotals:{}
+            };
+
+            const cardHandlers = new Map();
+
+            function populatePicker(){
+                const groups = picker.querySelectorAll('[data-chart-group]');
+                groups.forEach(groupEl=>{
+                    const groupKey = groupEl.getAttribute('data-chart-group');
+                    groupEl.innerHTML='';
+                    chartDefinitions.filter(def=>def.group===groupKey).forEach(def=>{
+                        const btn=document.createElement('button');
+                        btn.type='button';
+                        btn.className='picker-option';
+                        btn.dataset.chartId=def.id;
+                        const parts=def.label.split('•');
+                        if(parts.length>1){
+                            btn.innerHTML=`<strong>${parts[0].trim()}</strong><span>${parts.slice(1).join('•').trim()}</span>`;
+                        }else{
+                            btn.innerHTML=`<strong>${def.label}</strong>`;
+                        }
+                        btn.addEventListener('click',()=>{
+                            addChart(def);
+                        });
+                        groupEl.appendChild(btn);
+                    });
+                });
+            }
+
+            function openPicker(){
+                if(document.body.classList.contains('fullscreen-active')) return;
+                picker.classList.remove('hidden');
+                pickerBackdrop.classList.remove('hidden');
+                setTimeout(()=>{
+                    picker.classList.add('open');
+                    pickerBackdrop.classList.add('open');
+                },10);
+            }
+
+            function closePicker(){
+                picker.classList.remove('open');
+                pickerBackdrop.classList.remove('open');
+                setTimeout(()=>{
+                    picker.classList.add('hidden');
+                    pickerBackdrop.classList.add('hidden');
+                },180);
+            }
+
+            addBtn.addEventListener('click',openPicker);
+            pickerClose.addEventListener('click',closePicker);
+            pickerBackdrop.addEventListener('click',closePicker);
+
+            function removeCard(card){
+                const handler=cardHandlers.get(card);
+                if(handler){
+                    if(handler.observer){handler.observer.disconnect();}
+                    if(typeof handler.cleanup==='function'){handler.cleanup();}
+                    cardHandlers.delete(card);
+                }
+                card.remove();
+            }
+
+            function enableDrag(card){
+                const header=card.querySelector('.card-header');
+                header.addEventListener('pointerdown',event=>{
+                    if(event.target.closest('.chart-close')) return;
+                    if(document.body.classList.contains('fullscreen-active')) return;
+                    const boardRect=board.getBoundingClientRect();
+                    const cardRect=card.getBoundingClientRect();
+                    const offsetX=event.clientX-cardRect.left;
+                    const offsetY=event.clientY-cardRect.top;
+                    function onMove(e){
+                        const x=e.clientX-boardRect.left-offsetX;
+                        const y=e.clientY-boardRect.top-offsetY;
+                        card.style.left=Math.max(0,x)+'px';
+                        card.style.top=Math.max(0,y)+'px';
+                    }
+                    function onUp(){
+                        document.removeEventListener('pointermove',onMove);
+                    }
+                    document.addEventListener('pointermove',onMove);
+                    document.addEventListener('pointerup',onUp,{once:true});
+                    event.preventDefault();
+                });
+            }
+
+            function prepareCanvas(container){
+                const canvas=document.createElement('canvas');
+                canvas.className='chart-canvas';
+                container.innerHTML='';
+                container.appendChild(canvas);
+                const ctx=canvas.getContext('2d');
+                return {canvas,ctx};
+            }
+
+            function resizeCanvas(canvas,ctx){
+                const parent=canvas.parentElement;
+                const width=Math.max(220,parent.clientWidth||220);
+                const height=Math.max(180,parent.clientHeight||180);
+                const ratio=window.devicePixelRatio||1;
+                canvas.width=width*ratio;
+                canvas.height=height*ratio;
+                canvas.style.width=width+'px';
+                canvas.style.height=height+'px';
+                ctx.setTransform(ratio,0,0,ratio,0,0);
+                ctx.clearRect(0,0,width,height);
+                return {width,height};
+            }
+
+            function drawLineChart(ctx,width,height,labels,series,opts={}){
+                const padL=60,padR=35,padT=30,padB=54;
+                const plotW=width-padL-padR;
+                const plotH=height-padT-padB;
+                ctx.clearRect(0,0,width,height);
+                const visibleSeries=series.filter(s=>s && s.data && s.data.length);
+                if(!visibleSeries.length) return;
+                let minY=Number.POSITIVE_INFINITY,maxY=Number.NEGATIVE_INFINITY;
+                visibleSeries.forEach(s=>{
+                    s.data.forEach(v=>{
+                        if(v==null) return;
+                        if(v<minY) minY=v;
+                        if(v>maxY) maxY=v;
+                    });
+                });
+                if(!isFinite(minY) || !isFinite(maxY)) return;
+                if(Math.abs(maxY-minY)<1e-6){maxY=minY+1;}
+                const count=labels.length;
+                const stepX=count>1?plotW/(count-1):plotW;
+                ctx.strokeStyle='#1f2933';
+                ctx.lineWidth=1;
+                const gridLines=5;
+                for(let i=0;i<=gridLines;i++){
+                    const y=padT+plotH*(i/gridLines);
+                    ctx.beginPath();
+                    ctx.moveTo(padL,y);
+                    ctx.lineTo(width-padR,y);
+                    ctx.stroke();
+                }
+                function scaleY(v){
+                    return padT + plotH * (1 - (v - minY) / (maxY - minY));
+                }
+                visibleSeries.forEach((s,idx)=>{
+                    ctx.strokeStyle=s.color||'#58a6ff';
+                    ctx.lineWidth=2.5;
+                    ctx.beginPath();
+                    let started=false;
+                    s.data.forEach((v,i)=>{
+                        if(v==null) return;
+                        const x=padL+stepX*i;
+                        const y=scaleY(v);
+                        if(!started){ctx.moveTo(x,y);started=true;}else{ctx.lineTo(x,y);} 
+                    });
+                    ctx.stroke();
+                });
+                ctx.fillStyle='#9fb4da';
+                ctx.font='12px sans-serif';
+                ctx.textAlign='right';
+                ctx.textBaseline='middle';
+                for(let i=0;i<=gridLines;i++){
+                    const value=maxY - (maxY-minY)*(i/gridLines);
+                    const y=padT+plotH*(i/gridLines);
+                    ctx.fillText(value.toFixed(opts.yPrecision||1), padL-8, y);
+                }
+                ctx.textAlign='center';
+                ctx.textBaseline='top';
+                const labelStep=Math.max(1,Math.floor(count/12));
+                for(let i=0;i<count;i+=labelStep){
+                    const x=padL+stepX*i;
+                    const label=opts.formatLabel?opts.formatLabel(labels[i],i):labels[i];
+                    ctx.fillText(label,x,height-padB+12);
+                    ctx.beginPath();
+                    ctx.moveTo(x,height-padB);
+                    ctx.lineTo(x,height-padB+6);
+                    ctx.strokeStyle='#233144';
+                    ctx.stroke();
+                }
+            }
+
+            function drawPie(ctx,width,height,segments,total){
+                ctx.clearRect(0,0,width,height);
+                const radius=Math.min(width,height)/2 - 12;
+                const cx=width/2,cy=height/2;
+                let start=-Math.PI/2;
+                segments.forEach(seg=>{
+                    if(seg.hours<=0) return;
+                    const slice=(seg.hours/total)*Math.PI*2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx,cy);
+                    ctx.fillStyle=seg.color;
+                    ctx.arc(cx,cy,radius,start,start+slice);
+                    ctx.closePath();
+                    ctx.fill();
+                    start+=slice;
+                });
+                const innerRadius=radius*0.55;
+                ctx.beginPath();
+                ctx.fillStyle='#0d1117';
+                ctx.arc(cx,cy,innerRadius,0,Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle='#d0dcff';
+                ctx.font='600 15px system-ui';
+                ctx.textAlign='center';
+                ctx.fillText('Total Hours',cx,cy-12);
+                ctx.font='700 20px system-ui';
+                ctx.fillText((total||0).toFixed(1),cx,cy+14);
+            }
+
+            function mean(values){
+                if(!values || !values.length) return 0;
+                let sum=0,count=0;
+                values.forEach(v=>{
+                    const num=Number(v);
+                    if(!isNaN(num)){sum+=num;count++;}
+                });
+                return count?sum/count:0;
+            }
+
+            function formatDateLabel(label){
+                if(!label) return '';
+                const parts=label.split('-');
+                if(parts.length!==3) return label;
+                return parts[1].replace(/^0/,'')+'/'+parts[2].replace(/^0/,'');
+            }
+
+            function setCardHandler(card, handler){
+                const prev=cardHandlers.get(card);
+                if(prev){
+                    if(prev.observer){prev.observer.disconnect();}
+                    if(typeof prev.cleanup==='function'){prev.cleanup();}
+                }
+                if(handler && handler.contentEl){
+                    const observer=new ResizeObserver(()=>{
+                        if(typeof handler.redraw==='function') handler.redraw();
+                    });
+                    observer.observe(handler.contentEl);
+                    handler.observer=observer;
+                }
+                cardHandlers.set(card,handler);
+            }
+
+            function addChart(def){
+                closePicker();
+                const card=document.createElement('div');
+                card.className='display-card';
+                const cardId='card-'+(++cardCounter);
+                card.dataset.cardId=cardId;
+                card.style.left=24 + (cardCounter%5)*28 + 'px';
+                card.style.top=24 + (cardCounter%3)*34 + 'px';
+                if(def.type==='pie'){card.style.width='420px';card.style.height='360px';}
+                if(def.type==='avg'){card.style.width='500px';card.style.height='360px';}
+                card.innerHTML=`<div class="card-header"><span class="card-title">${def.label}</span><button class="chart-close" title="Remove">&times;</button></div><div class="card-body"><div class="loading">Loading…</div></div>`;
+                board.appendChild(card);
+                const closeBtn=card.querySelector('.chart-close');
+                closeBtn.addEventListener('click',()=>removeCard(card));
+                enableDrag(card);
+                renderChart(card,def);
+            }
+
+            async function fetchTrailing(days,trailing){
+                const key=`${days}_${trailing}`;
+                if(dataCache.trailing[key]) return dataCache.trailing[key];
+                const res=await fetch(`/api/metrics/trailing_trend?days=${days}&trailing=${trailing}`);
+                const json=await res.json();
+                dataCache.trailing[key]=json;
+                return json;
+            }
+
+            async function fetchPie(days){
+                const key=String(days);
+                if(dataCache.pie[key]) return dataCache.pie[key];
+                const res=await fetch(`/api/metrics/department_totals?days=${days}`);
+                const json=await res.json();
+                dataCache.pie[key]=json;
+                return json;
+            }
+
+            async function fetchAvg(){
+                if(dataCache.avg) return dataCache.avg;
+                const res=await fetch('/api/metrics/daily_metric_trends');
+                const json=await res.json();
+                dataCache.avg=json;
+                return json;
+            }
+
+            async function fetchDailyTotals(days){
+                const key=String(Math.min(365,Math.max(days,7)));
+                if(dataCache.dailyTotals[key]) return dataCache.dailyTotals[key];
+                const requestDays=Math.min(365,Math.max(days,7));
+                const res=await fetch(`/api/metrics/daily_hours?days=${requestDays}`);
+                const json=await res.json();
+                dataCache.dailyTotals[key]=json;
+                return json;
+            }
+
+            function renderChart(card, def){
+                const body=card.querySelector('.card-body');
+                body.innerHTML='<div class="loading">Loading…</div>';
+                if(def.type==='trailing'){
+                    renderTrailing(card,body,def).catch(err=>showError(body,err));
+                }else if(def.type==='pie'){
+                    renderPie(card,body,def).catch(err=>showError(body,err));
+                }else if(def.type==='avg'){
+                    renderAvg(card,body,def).catch(err=>showError(body,err));
+                }else if(def.type==='dailyTotals'){
+                    renderDailyTotals(card,body,def).catch(err=>showError(body,err));
+                }
+            }
+
+            function showError(body,err){
+                console.error('Chart render error',err);
+                body.innerHTML=`<div class="error">Unable to load chart data</div>`;
+            }
+
+            async function renderTrailing(card,body,def){
+                const data=await fetchTrailing(def.params.days,def.params.trailing);
+                if(!data || !data.labels){throw new Error('No trailing data');}
+                const labels=data.labels;
+                const series=[
+                    {name:'Avg Efficiency',color:'#58a6ff',data:(data.avg_efficiency||[]).map(v=>Number(v)||0)},
+                    {name:'Avg Active Days',color:'#fbbc64',data:(data.avg_act_days||[]).map(v=>Number(v)||0)},
+                    {name:'Avg Span',color:'#7ee787',data:(data.avg_span||[]).map(v=>Number(v)||0)},
+                ];
+                const {canvas,ctx}=prepareCanvas(body);
+                const legend=document.createElement('div');
+                legend.className='chart-legend';
+                series.forEach(s=>{
+                    const item=document.createElement('div');
+                    item.className='chart-legend-item';
+                    item.innerHTML=`<span class="chart-legend-swatch" style="background:${s.color}"></span><span>${s.name}</span>`;
+                    legend.appendChild(item);
+                });
+                body.appendChild(legend);
+                const meta=document.createElement('div');
+                meta.className='chart-meta-stack';
+                const range=labels.length?rangeLabel(labels[0],labels[labels.length-1]):'';
+                meta.innerHTML=`<span>Trailing ${def.params.trailing} units</span><span>${def.params.days} day window</span>${range?`<span>${range}</span>`:''}`;
+                body.appendChild(meta);
+                function redraw(){
+                    const {width,height}=resizeCanvas(canvas,ctx);
+                    drawLineChart(ctx,width,height,labels,series,{formatLabel:formatDateLabel,yPrecision:1});
+                }
+                redraw();
+                setCardHandler(card,{redraw,contentEl:body});
+            }
+
+            async function renderPie(card,body,def){
+                const data=await fetchPie(def.params.days);
+                const total=Number(data.total_hours)||0;
+                const departments=(data.departments||[]).map((d,i)=>({
+                    name:d.name,
+                    hours:Number(d.hours)||0,
+                    color:pieColors[i % pieColors.length]
+                })).filter(d=>d.hours>0);
+                body.innerHTML='';
+                const {canvas,ctx}=prepareCanvas(body);
+                const info=document.createElement('div');
+                info.className='chart-meta-stack';
+                const range=rangeLabel(data.start_date,data.end_date);
+                info.innerHTML=`<span>${(total||0).toFixed(1)}h total</span>${range?`<span>${range}</span>`:''}`;
+                body.appendChild(info);
+                function redraw(){
+                    if(!departments.length){
+                        ctx.clearRect(0,0,canvas.width,canvas.height);
+                        body.innerHTML='<div class="error">No hours for this period</div>';
+                        return;
+                    }
+                    const {width,height}=resizeCanvas(canvas,ctx);
+                    const sum=departments.reduce((acc,d)=>acc+d.hours,0) || total || 1;
+                    drawPie(ctx,width,height,departments,sum);
+                }
+                redraw();
+                setCardHandler(card,{redraw,contentEl:body});
+            }
+
+            async function renderAvg(card,body,def){
+                const data=await fetchAvg();
+                const winKey=String(def.params.window);
+                const windows=data.windows || (data.data && data.data.windows) || {};
+                const windowData=windows[winKey];
+                if(!windowData){throw new Error('Window not available');}
+                body.innerHTML='';
+                const grid=document.createElement('div');
+                grid.className='chart-gauge-grid';
+                body.appendChild(grid);
+                const labels=windowData.labels||[];
+                const windowRange=labels.length?rangeLabel(labels[0],labels[labels.length-1]):'';
+                function buildGauge(label,value,unit,maxValue,metaText){
+                    const wrap=document.createElement('div');
+                    wrap.style.display='flex';
+                    wrap.style.flexDirection='column';
+                    wrap.style.alignItems='center';
+                    wrap.style.gap='0.6rem';
+                    const title=document.createElement('div');
+                    title.className='gauge-label';
+                    title.textContent=label;
+                    const gauge=document.createElement('div');
+                    gauge.className='gauge';
+                    const fill=document.createElement('div');
+                    fill.className='gauge-fill';
+                    const center=document.createElement('div');
+                    center.className='gauge-center';
+                    const valueEl=document.createElement('div');
+                    valueEl.className='gauge-value';
+                    valueEl.textContent=unit(value);
+                    const meta=document.createElement('div');
+                    meta.className='gauge-meta';
+                    gauge.appendChild(fill);
+                    center.appendChild(valueEl);
+                    center.appendChild(meta);
+                    gauge.appendChild(center);
+                    wrap.appendChild(title);
+                    wrap.appendChild(gauge);
+                    const limit=maxValue && maxValue>0?maxValue:Math.max(value,1);
+                    const ratio=limit?Math.min(1,Math.max(0,value/limit)):0;
+                    const sweep=Math.round(ratio*360);
+                    fill.style.background=`conic-gradient(#58a6ff ${sweep}deg,#111821 ${sweep}deg)`;
+                    const parts=[];
+                    if(metaText) parts.push(metaText);
+                    if(windowRange) parts.push(windowRange);
+                    meta.innerHTML=parts.map(txt=>`<span>${txt}</span>`).join('');
+                    return wrap;
+                }
+                const eff=mean(windowData.avg_efficiency);
+                const act=mean(windowData.avg_act_days);
+                const span=mean(windowData.avg_span);
+                const maxAct=windowMax(windowData.avg_act_days);
+                const maxSpan=windowMax(windowData.avg_span);
+                grid.appendChild(buildGauge('Avg Efficiency',eff,v=>v.toFixed(1)+'%',100,''));
+                grid.appendChild(buildGauge('Avg Active Days',act,v=>v.toFixed(1)+' days',maxAct||act||1,`Peak ${ (maxAct||act||0).toFixed(1) } days`));
+                grid.appendChild(buildGauge('Avg Span',span,v=>v.toFixed(1)+' days',maxSpan||span||1,`Peak ${ (maxSpan||span||0).toFixed(1) } days`));
+                setCardHandler(card,{redraw:null,contentEl:body});
+            }
+
+            function windowMax(values){
+                if(!values || !values.length) return 0;
+                let max=-Infinity;
+                values.forEach(v=>{const num=Number(v);if(!isNaN(num) && num>max) max=num;});
+                return max===-Infinity?0:max;
+            }
+
+            async function renderDailyTotals(card,body,def){
+                const data=await fetchDailyTotals(def.params.days);
+                const dates=data.dates||[];
+                const total=data.total||{};
+                const targetDays=def.params.days;
+                const labels=dates.slice(-targetDays);
+                const seriesData=def.params.view==='ma7'?(total.ma7||[]):(total.hours||[]);
+                let dataSlice=seriesData.slice(-(labels.length));
+                if(dataSlice.length<labels.length){
+                    const padLength=labels.length-dataSlice.length;
+                    dataSlice=[...Array(padLength).fill(null), ...dataSlice];
+                }
+                const {canvas,ctx}=prepareCanvas(body);
+                const meta=document.createElement('div');
+                meta.className='chart-meta-stack';
+                const descriptor=def.params.view==='ma7'?'Trailing 7-day avg':'Actual totals';
+                const range=labels.length?rangeLabel(labels[0],labels[labels.length-1]):'';
+                meta.innerHTML=`<span>${descriptor}</span>${range?`<span>${range}</span>`:''}`;
+                body.appendChild(meta);
+                function redraw(){
+                    const {width,height}=resizeCanvas(canvas,ctx);
+                    drawLineChart(ctx,width,height,labels,[{name:'Hours',color:'#8fb9ff',data:dataSlice}],{formatLabel:formatDateLabel,yPrecision:0});
+                }
+                redraw();
+                setCardHandler(card,{redraw,contentEl:body});
+            }
+
+            const pieColors=['#6ea8fe','#f6c177','#3fb950','#ff8c69','#9d79f2','#3dd68c','#ff6ec7','#6ad7ff','#f4a259','#8dc891'];
+
+            function rangeLabel(start,end){
+                if(!start || !end) return '';
+                try{
+                    const s=new Date(start+'T00:00:00');
+                    const e=new Date(end+'T00:00:00');
+                    const startTxt=s.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+                    const endTxt=e.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+                    return `${startTxt} - ${endTxt}`;
+                }catch{return '';
+                }
+            }
+
+            populatePicker();
+
+            window.addEventListener('resize',()=>{
+                cardHandlers.forEach(handler=>{
+                    if(handler && typeof handler.redraw==='function') handler.redraw();
+                });
+            });
+
+            function toggleFullScreen(){
+                if(!isFullScreen){
+                    const elem=document.documentElement;
+                    if(elem.requestFullscreen){
+                        const req=elem.requestFullscreen();
+                        if(req && typeof req.catch==='function'){
+                            req.catch(()=>enterDisplayMode());
+                        }
+                    }else{
+                        enterDisplayMode();
+                    }
+                }else{
+                    if(document.fullscreenElement && document.exitFullscreen){
+                        document.exitFullscreen();
+                    }
+                    exitDisplayMode();
+                }
+            }
+
+            function enterDisplayMode(){
+                document.body.classList.add('fullscreen-active');
+                document.querySelectorAll('.display-card').forEach(card=>card.classList.add('locked'));
+                isFullScreen=true;
+                fullScreenBtn.textContent='Exit Full Screen';
+                closePicker();
+            }
+
+            function exitDisplayMode(){
+                document.body.classList.remove('fullscreen-active');
+                document.querySelectorAll('.display-card').forEach(card=>card.classList.remove('locked'));
+                isFullScreen=false;
+                fullScreenBtn.textContent='Full Screen';
+            }
+
+            fullScreenBtn.addEventListener('click',toggleFullScreen);
+
+            document.addEventListener('fullscreenchange',()=>{
+                if(document.fullscreenElement){
+                    enterDisplayMode();
+                }else if(isFullScreen){
+                    exitDisplayMode();
+                }
+            });
+        })();
+        </script>
+    </body>
+    </html>
+    """
+    return render_template_string(page)
+
+
 @dashboard.route('/dr', methods=['GET', 'POST'])
 def dr_lookup():
         # DR lookup page. Detect probable columns and search broadly across patterns.
@@ -852,15 +1958,67 @@ def dr_lookup():
                     totals[d] = totals.get(d, 0.0) + float(r.get('Hours') or 0)
 
             # Render inline template
+            if query_dr and dr_col:
+                search_message = (
+                    "<p style='opacity:.8;margin-top:.5rem;'>"
+                    "Searching in column: <strong>"
+                    f"{html.escape(dr_col)}</strong></p>"
+                )
+            elif query_dr:
+                scanned = ''
+                if searched_cols_info:
+                    scanned = 'Scanned columns: ' + html.escape(', '.join(searched_cols_info))
+                search_message = (
+                    "<p style='opacity:.7;margin-top:.5rem;'>"
+                    f"{scanned}</p>"
+                )
+            else:
+                search_message = ''
+
+            no_matches_html = (
+                "<p style='margin-top:1rem;opacity:.7;'>No matches found.</p>"
+                if query_dr and not rows
+                else ''
+            )
+
+            rows_table = ''
+            if rows:
+                row_html = '\n'.join(
+                    f"<tr><td>{html.escape(r.get('EmployeeName', ''))}</td>"
+                    f"<td>{html.escape(r.get('DeptCode') or 'UNKNOWN')}</td>"
+                    f"<td>{float(r.get('Hours') or 0):.2f}</td></tr>"
+                    for r in rows
+                )
+                totals_html = '\n'.join(
+                    f"<tr><td>{html.escape(k)}</td><td>{v:.2f}</td></tr>"
+                    for k, v in totals.items()
+                )
+                rows_table = (
+                    "<table>"
+                    "<thead><tr><th>Employee</th><th>Dept</th><th>Hours</th></tr></thead>"
+                    "<tbody>"
+                    f"{row_html}"
+                    "</tbody></table>"
+                    "<h3 style='margin-top:1rem;'>Totals by Dept</h3>"
+                    "<table style='width:auto'>"
+                    "<thead><tr><th>Department</th><th>Total Hours</th></tr></thead>"
+                    "<tbody>"
+                    f"{totals_html}"
+                    "</tbody></table>"
+                )
+
             page = f"""
             <!doctype html><html><head><meta charset='utf-8'><title>DR Labor Lookup</title>
             <style>
                 body{{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}}
-                header{{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}}
+                header{{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}}
+                .header-row{{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;width:100%}}
                 h1{{margin:0;font-size:1.05rem}}
                 main{{padding:1rem 1.2rem}}
                 form input,form button{{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}}
                 form button{{background:#1f6feb;border-color:#3a78e0;font-weight:700;cursor:pointer}}
+                .alpha-banner{{flex-basis:100%;background:linear-gradient(135deg,#8c2f39,#5c1b1f);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}}
+                .alpha-banner strong{{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}}
                 table{{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.8rem}}
                 th,td{{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left}}
                 th{{background:#1a2330}}
@@ -869,7 +2027,7 @@ def dr_lookup():
                 .nav-links a:hover{{text-decoration:underline}}
             </style></head>
             <body>
-                <header><h1>DR Labor Lookup</h1></header>
+                <header><div class='header-row'><h1>DR Labor Lookup</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
                 <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
                 <main>
                     <form method='GET'>
@@ -877,23 +2035,9 @@ def dr_lookup():
                         <input id='dr' name='dr' type='text' value='{html.escape(query_dr)}' placeholder='e.g. 12345' required />
                         <button type='submit'>Lookup</button>
                     </form>
-                    {('<p style=\"opacity:.8;margin-top:.5rem;\">Searching in column: <strong>'+html.escape(dr_col)+'</strong></p>') if (query_dr and dr_col) else (('<p style=\"opacity:.7;margin-top:.5rem;\">' + ('Scanned columns: '+html.escape(', '.join(searched_cols_info)) if query_dr and searched_cols_info else '') + '</p>') if query_dr else '')}
-                    {('<p style=\"margin-top:1rem;opacity:.7;\">No matches found.</p>') if (query_dr and not rows) else ''}
-                    {('''
-                        <table>
-                            <thead><tr><th>Employee</th><th>Dept</th><th>Hours</th></tr></thead>
-                            <tbody>
-                                ''' + '\n'.join(f"<tr><td>{html.escape(r.get('EmployeeName',''))}</td><td>{html.escape((r.get('DeptCode') or 'UNKNOWN'))}</td><td>{float(r.get('Hours') or 0):.2f}</td></tr>" for r in rows) + '''
-                            </tbody>
-                        </table>
-                        <h3 style='margin-top:1rem;'>Totals by Dept</h3>
-                        <table style='width:auto'>
-                            <thead><tr><th>Department</th><th>Total Hours</th></tr></thead>
-                            <tbody>
-                                ''' + '\n'.join(f"<tr><td>{html.escape(k)}</td><td>{v:.2f}</td></tr>" for k,v in totals.items()) + '''
-                            </tbody>
-                        </table>
-                    ''') if rows else ''}
+                    {search_message}
+                    {no_matches_html}
+                    {rows_table}
                 </main>
             </body></html>
             """
@@ -907,7 +2051,8 @@ def employee_lookup():
     <!doctype html><html><head><meta charset='utf-8'><title>Employee Lookup</title>
     <style>
         body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+        header{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}
+        .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         .row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:end}
@@ -919,6 +2064,8 @@ def employee_lookup():
         .slist{position:absolute;z-index:10;background:#0f151c;border:1px solid #2a323c;border-radius:6px;min-width:240px;max-height:220px;overflow:auto;box-shadow:0 6px 18px -8px #000}
         .sopt{padding:.4rem .6rem;cursor:pointer}
         .sopt:hover{background:#1a2230}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.85rem}
     th,td{border:1px solid #2a323c;padding:.45rem .6rem;text-align:left}
         th{background:#1a2330}
@@ -930,7 +2077,7 @@ def employee_lookup():
     .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-        <header><h1>Employee Lookup</h1></header>
+        <header><div class='header-row'><h1>Employee Lookup</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
         <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <main>
             <div class='row'>
@@ -1053,14 +2200,17 @@ def parts_page():
     page = """
     <!doctype html><html><head><meta charset='utf-8'><title>Parts Tracker</title>
     <style>
-        body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#161b22;border-bottom:1px solid #30363d}
+    body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
+    header{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}
+    .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         .row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:end}
         label{font-size:.72rem;opacity:.9}
         input,button{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}
         button{background:#1f6feb;border-color:#3a78e0;font-weight:700;cursor:pointer}
+    .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+    .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
         table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.8rem}
         th,td{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left;vertical-align:top;max-width:420px;overflow:hidden;text-overflow:ellipsis}
         th{background:#1a2330}
@@ -1070,7 +2220,7 @@ def parts_page():
         .nav-links a:hover{text-decoration:underline}
     </style></head>
     <body>
-        <header><h1>Parts Tracker</h1></header>
+        <header><div class='header-row'><h1>Parts Tracker</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
         <div class='nav-links'><a href='/dash'>&larr; Dashboard</a></div>
         <main>
             <div class='row'>
@@ -1123,7 +2273,8 @@ def com_totals_page():
     <!doctype html><html><head><meta charset='utf-8'><title>COM# Totals by Employee</title>
     <style>
         body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}
+        header{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}
+        .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.9rem}
@@ -1133,9 +2284,11 @@ def com_totals_page():
         .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
         .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
         .nav-links a:hover{text-decoration:underline}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     </style></head>
     <body>
-    <header><h1>COM# Totals by Employee</h1></header>
+    <header><div class='header-row'><h1>COM# Totals by Employee</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
     <div class='nav-links'>
         <a href='/com'>&larr; Back to Charges</a>
         <a href='/dash'>&larr; Dashboard</a>
@@ -1181,7 +2334,8 @@ def com_lookup():
     <!doctype html><html><head><meta charset='utf-8'><title>COM# Charges</title>
     <style>
         body{margin:0;font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;background:#0d1117;color:#e6edf3}
-        header{padding:1rem 1.5rem;background:#161b22;border-bottom:1px solid #30363d}
+        header{padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;background:#161b22;border-bottom:1px solid #30363d}
+        .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;width:100%}
         h1{margin:0;font-size:1.05rem}
         main{padding:1rem 1.2rem}
         input,button{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}
@@ -1193,9 +2347,11 @@ def com_lookup():
         .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
         .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
         .nav-links a:hover{text-decoration:underline}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     </style></head>
     <body>
-        <header><h1>COM# Charges</h1></header>
+        <header><div class='header-row'><h1>COM# Charges</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
         <div class='nav-links'>
             <a href='/recent'>&larr; Recent Units</a>
             <a href='/dash'>&larr; Dashboard</a>

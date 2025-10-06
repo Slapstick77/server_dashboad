@@ -101,6 +101,8 @@ PROJECT_DAY_RULES = {
     'exclusion_employees': ['1205797'],  # Employee IDs to exclude from day selection logic
     'department_rules': DEPARTMENT_RULES,  # Per-department min_hours and min_employees
     'max_gap_override': 30,  # Maximum gap in days - drops charges beyond this even with 2+ employees
+    'pre_fab_gap_days': 10,  # Drop days occurring more than this many days before first Fab cluster
+    'post_assembly_gap_days': 10,  # Drop days occurring more than this many days after last Assembly cluster
 }
 
 # Load configuration from database on module import
@@ -132,6 +134,16 @@ def _load_configuration():
         saved_max_gap = load_configuration('MAX_GAP_OVERRIDE')
         if saved_max_gap is not None:
             PROJECT_DAY_RULES['max_gap_override'] = saved_max_gap
+
+        # Load PRE_FAB_GAP_DAYS
+        saved_pre_fab_gap = load_configuration('PRE_FAB_GAP_DAYS')
+        if saved_pre_fab_gap is not None:
+            PROJECT_DAY_RULES['pre_fab_gap_days'] = saved_pre_fab_gap
+
+        # Load POST_ASSEMBLY_GAP_DAYS
+        saved_post_assembly_gap = load_configuration('POST_ASSEMBLY_GAP_DAYS')
+        if saved_post_assembly_gap is not None:
+            PROJECT_DAY_RULES['post_assembly_gap_days'] = saved_post_assembly_gap
         
         # Update PROJECT_DAY_RULES references
         PROJECT_DAY_RULES['outlier_caps'] = OUTLIER_CAPS
@@ -357,50 +369,168 @@ def _get_all_department_days(label: str, daymap: dict) -> list:
 def _recalculate_dept_stats_with_completion(units: list, day_emp: dict, stats_map: dict, timeline_map: dict):
     """Recalculate department stats considering completion status for each unit/department."""
     
-    # Create a mapping of COM -> department -> completion
+    # Create a mapping of COM -> department -> completion and overall unit completion status
     completion_map = {}
+    unit_completion_status = {}
     for unit in units:
         com = unit['com']
         completion_map[com] = {}
+        dept_lookup = {}
         for dept in unit['departments']:
             completion_map[com][dept['name']] = dept['completion']
+            dept_lookup[dept['name']] = dept
+        unit_complete = True
+        for label, *_ in COMPLETION_CHECK_DEPARTMENTS:
+            dept_info = dept_lookup.get(label)
+            if not dept_info:
+                continue
+            std_hours = dept_info.get('std', 0)
+            completion_pct = dept_info.get('completion', 0.0)
+            if std_hours and completion_pct + 1e-6 < 100.0:
+                unit_complete = False
+                break
+        unit_completion_status[com] = unit_complete
     
     # Recalculate stats with completion-aware filtering
     new_stats_map = {}
     new_timeline_map = {}
-    
+    unit_day_results = {}
+
     for (com, label), daymap in day_emp.items():
         # Get completion status for this COM/department combination
         is_complete = completion_map.get(com, {}).get(label, 0.0) >= 100.0 - 1e-6
-        
+
         # Use completion-aware filtering for metrics
         use_days, meta = _resolve_department_days(label, daymap, is_complete)
-        
+
         # Use unfiltered days for Gantt display
         all_days = _get_all_department_days(label, daymap)
-        
-        if use_days:
-            first_day = use_days[0]
-            last_day = use_days[-1]
-            new_stats_map[(com, label.upper())] = (
-                len(use_days),
-                first_day,
-                last_day,
-                meta,
-                is_complete,  # Add completion status
-            )
-        
-        # Always use all days for Gantt timeline (to show issues)
-        if all_days:
-            tm = new_timeline_map.setdefault(com, {'rows': {}, 'earliest': None, 'latest': None})
-            tm['rows'][label] = list(all_days)
-            first_all = all_days[0]
-            last_all = all_days[-1]
-            if first_all and (tm['earliest'] is None or first_all < tm['earliest']):
-                tm['earliest'] = first_all
-            if last_all and (tm['latest'] is None or last_all > tm['latest']):
-                tm['latest'] = last_all
-    
+
+        unit_entry = unit_day_results.setdefault(com, {})
+        unit_entry[label] = {
+            'use_days': list(use_days),
+            'meta': meta,
+            'is_complete': is_complete,
+            'all_days': list(all_days),
+        }
+
+    pre_fab_gap = PROJECT_DAY_RULES.get('pre_fab_gap_days', 10)
+    post_assembly_gap = PROJECT_DAY_RULES.get('post_assembly_gap_days', 10)
+    try:
+        pre_fab_gap_days = max(0, int(pre_fab_gap))
+    except Exception:
+        pre_fab_gap_days = 0
+    try:
+        post_assembly_gap_days = max(0, int(post_assembly_gap))
+    except Exception:
+        post_assembly_gap_days = 0
+
+    for com, dept_map in unit_day_results.items():
+        fab_days = dept_map.get('Fab', {}).get('use_days', [])
+        assembly_days = dept_map.get('Assembly', {}).get('use_days', [])
+
+        fab_window_start = None
+        if fab_days:
+            try:
+                fab_anchor = datetime.date.fromisoformat(fab_days[0])
+                fab_window_start = fab_anchor - datetime.timedelta(days=pre_fab_gap_days)
+            except Exception:
+                fab_window_start = None
+
+        assembly_window_end = None
+        if assembly_days:
+            try:
+                assembly_anchor = datetime.date.fromisoformat(assembly_days[-1])
+                assembly_window_end = assembly_anchor + datetime.timedelta(days=post_assembly_gap_days)
+            except Exception:
+                assembly_window_end = None
+
+        tm = new_timeline_map.setdefault(com, {'rows': {}, 'earliest': None, 'latest': None})
+        unit_complete = unit_completion_status.get(com, False)
+
+        initial_last_days = {}
+        for label_key, info in dept_map.items():
+            use_days_initial = info.get('use_days', [])
+            if use_days_initial:
+                try:
+                    initial_last_days[label_key] = datetime.date.fromisoformat(use_days_initial[-1])
+                except Exception:
+                    continue
+
+        fallback_anchor_by_label = {}
+        if assembly_window_end is None and unit_complete and initial_last_days:
+            for label_key in dept_map.keys():
+                candidates = [dt for other_label, dt in initial_last_days.items() if other_label != label_key]
+                if candidates:
+                    fallback_anchor_by_label[label_key] = max(candidates)
+
+        for label, info in dept_map.items():
+            use_days = list(info.get('use_days', []))
+            meta = info.get('meta', {})
+            meta.setdefault('dropped_before_fab_gap', [])
+            meta.setdefault('dropped_after_assembly_gap', [])
+            meta.setdefault('filter_reasons', {})
+
+            anchor_window_end = assembly_window_end
+            fallback_anchor = fallback_anchor_by_label.get(label)
+            fallback_reason = None
+            if anchor_window_end is None and fallback_anchor:
+                anchor_window_end = fallback_anchor + datetime.timedelta(days=post_assembly_gap_days)
+                fallback_reason = 'latest completed department'
+
+            trimmed_days = []
+            for day in use_days:
+                try:
+                    day_obj = datetime.date.fromisoformat(day)
+                except Exception:
+                    day_obj = None
+
+                dropped = False
+                if day_obj and fab_window_start and day_obj < fab_window_start:
+                    meta['dropped_before_fab_gap'].append(day)
+                    meta['filter_reasons'][day] = (
+                        f'Dropped by Fab lead-in window (> {pre_fab_gap_days} day gap before Fab)'
+                    )
+                    dropped = True
+                if day_obj and anchor_window_end and day_obj > anchor_window_end:
+                    meta['dropped_after_assembly_gap'].append(day)
+                    reason_context = 'Assembly'
+                    if fallback_reason:
+                        reason_context = fallback_reason
+                    meta['filter_reasons'][day] = (
+                        f'Dropped by Assembly tail window (> {post_assembly_gap_days} day gap after {reason_context})'
+                    )
+                    dropped = True
+
+                if not dropped:
+                    trimmed_days.append(day)
+
+            trimmed_days.sort()
+            info['use_days'] = trimmed_days
+            info['meta'] = meta
+
+            all_days = info.get('all_days', [])
+            if all_days:
+                tm['rows'][label] = list(all_days)
+                first_all = all_days[0]
+                last_all = all_days[-1]
+                if first_all and (tm['earliest'] is None or first_all < tm['earliest']):
+                    tm['earliest'] = first_all
+                if last_all and (tm['latest'] is None or last_all > tm['latest']):
+                    tm['latest'] = last_all
+
+            use_days_final = info['use_days']
+            if use_days_final:
+                first_day = use_days_final[0]
+                last_day = use_days_final[-1]
+                new_stats_map[(com, label.upper())] = (
+                    len(use_days_final),
+                    first_day,
+                    last_day,
+                    info['meta'],
+                    info['is_complete'],
+                )
+
     return new_stats_map, new_timeline_map
 
 

@@ -695,6 +695,42 @@ def api_trailing_trend():
     })
 
 
+@api.route('/api/metrics/daily_metric_trends')
+def api_daily_metric_trends():
+    """Return cached daily metric chart series (30/60/90 day windows)."""
+    import sys
+    import os
+
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from metrics_cache import get_cached_metrics
+
+    cached = get_cached_metrics('daily_metric_charts')
+
+    if not cached or 'data' not in cached:
+        return jsonify({
+            'windows': {},
+            'error': 'Daily metric charts not cached yet - refresh metrics cache'
+        })
+
+    data = cached['data']
+    charts = data.get('charts', {}) if isinstance(data, dict) else {}
+    hours_source = data.get('hours_source') if isinstance(data, dict) else None
+
+    response = {
+        'windows': charts.get('windows', {}),
+        'trailing_units': charts.get('trailing_units'),
+        'hours_source': charts.get('hours_source_range'),
+        'max_avg_daily_hours': charts.get('max_avg_daily_hours'),
+        'hours_series_source': hours_source,
+        '_cache': {
+            'computed_at': cached.get('computed_at'),
+            'trigger_source': cached.get('trigger_source')
+        }
+    }
+
+    return jsonify(response)
+
+
 def _calculate_metrics_for_units(com_list):
     """
     Calculate avg efficiency, act days, and span for a list of COM numbers.
@@ -1178,6 +1214,106 @@ def api_employee_stats():
     })
 
 
+@api.route('/api/metrics/department_totals')
+def api_department_totals():
+    """Return total charged hours per canonical department for the last N days (default 30)."""
+    try:
+        days = int(request.args.get('days', '30'))
+    except Exception:
+        days = 30
+    if days < 1:
+        days = 30
+    days = min(days, 365)
+
+    window_key = str(days)
+
+    # Attempt to use cached department totals for supported windows
+    cached = None
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+        from metrics_cache import get_cached_metrics
+        cached = get_cached_metrics('department_totals')
+    except Exception:
+        cached = None
+
+    if cached and cached.get('data'):
+        data = cached['data']
+        windows = data.get('windows', {}) if isinstance(data, dict) else {}
+        if window_key in windows:
+            window = windows[window_key]
+            generated = data.get('generated_at') or cached.get('computed_at')
+            response = {
+                'days': days,
+                'start_date': window.get('start_date'),
+                'end_date': window.get('end_date'),
+                'total_hours': round((window.get('total_hours') or 0), 2),
+                'departments': window.get('departments', []),
+                'generated_at': generated,
+            }
+            cache_info = {
+                'computed_at': cached.get('computed_at'),
+                'trigger_source': cached.get('trigger_source')
+            }
+            if cache_info['computed_at'] or cache_info['trigger_source']:
+                response['_cache'] = cache_info
+            return jsonify(response)
+
+    # Fallback: compute on demand (supports arbitrary day windows)
+    today = datetime.date.today()
+    start = (today - datetime.timedelta(days=days-1)).isoformat()
+
+    raw_code_to_label = {
+        '0120':'Fab','0140':'Welding','0180':'BaseFormPaint','0200':'FanAssyTest','0220':'InsulWallFab',
+        '0230':'Pipe','0260':'Assembly','0270':'DoorFab','0280':'Assembly','0300':'Electrical','0320':'Pipe',
+        '0340':'Paint','0360':'Test','0380':'Crating',
+    }
+    codes_sql = ','.join(f"'{c}'" for c in raw_code_to_label.keys())
+    date_expr = "strftime('%Y-%m-%d', COALESCE(iso_logged_date, substr(LoggedDate,1,10)))"
+
+    with get_conn() as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            f"""
+            SELECT DepartmentNumber AS dept,
+                   SUM(COALESCE(ActualHours,0)) AS hrs
+            FROM SCHLabor
+            WHERE COALESCE(ActualHours,0) > 0
+              AND DepartmentNumber IN ({codes_sql})
+              AND {date_expr} >= ?
+            GROUP BY DepartmentNumber
+            """,
+            (start,)
+        )
+        rows = cur.fetchall()
+
+    totals = {}
+    grand_total = 0.0
+    for r in rows:
+        label = raw_code_to_label.get(str(r['dept']))
+        if not label:
+            continue
+        hrs = float(r['hrs'] or 0)
+        totals[label] = totals.get(label, 0.0) + hrs
+        grand_total += hrs
+
+    departments = [
+        {'name': name, 'hours': round(value, 2)}
+        for name, value in sorted(totals.items(), key=lambda item: item[1], reverse=True)
+    ]
+
+    return jsonify({
+        'days': days,
+        'start_date': start,
+        'end_date': today.isoformat(),
+        'total_hours': round(grand_total, 2),
+        'generated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+        'departments': departments,
+    })
+
+
 @api.route('/api/metrics/daily_hours')
 def api_daily_hours():
     """Return daily hours per department and total for the last N days (default 60),
@@ -1366,11 +1502,18 @@ def api_com_charges():
     # Apply filtering for each department and track reasons
     filtered_days_by_dept = {}
     filter_reasons_by_dept = {}
+    dept_results = {}
     for label, daymap in day_emp.items():
         if apply_logic:
             is_dept_complete = dept_completion_map.get(label, False)
             use_days, meta = _resolve_department_days(label, daymap, is_complete=is_dept_complete)
-            filter_reasons_by_dept[label] = meta.get('filter_reasons', {})
+            meta.setdefault('filter_reasons', {})
+            meta.setdefault('dropped_before_fab_gap', [])
+            meta.setdefault('dropped_after_assembly_gap', [])
+            dept_results[label] = {
+                'use_days': set(use_days),
+                'meta': meta,
+            }
         else:
             # Only apply exclusion employee filter
             use_days = sorted(daymap.keys())
@@ -1378,8 +1521,81 @@ def api_com_charges():
                 excl_employees = PROJECT_DAY_RULES.get('exclusion_employees', [])
                 if excl_employees:
                     use_days = [d for d in use_days if not daymap[d]['emps'].issubset(set(excl_employees))]
-        filtered_days_by_dept[label] = set(use_days)
+            dept_results[label] = {
+                'use_days': set(use_days),
+                'meta': {
+                    'filter_reasons': {},
+                    'dropped_before_fab_gap': [],
+                    'dropped_after_assembly_gap': [],
+                }
+            }
     
+    if apply_logic and dept_results:
+        try:
+            pre_gap_days = max(0, int(PROJECT_DAY_RULES.get('pre_fab_gap_days', 10)))
+        except Exception:
+            pre_gap_days = 0
+        try:
+            post_gap_days = max(0, int(PROJECT_DAY_RULES.get('post_assembly_gap_days', 10)))
+        except Exception:
+            post_gap_days = 0
+
+        fab_days_sorted = sorted(dept_results.get('Fab', {}).get('use_days', []))
+        assembly_days_sorted = sorted(dept_results.get('Assembly', {}).get('use_days', []))
+
+        fab_window_start = None
+        if fab_days_sorted:
+            try:
+                fab_anchor = datetime.date.fromisoformat(fab_days_sorted[0])
+                fab_window_start = fab_anchor - datetime.timedelta(days=pre_gap_days)
+            except Exception:
+                fab_window_start = None
+
+        assembly_window_end = None
+        if assembly_days_sorted:
+            try:
+                assembly_anchor = datetime.date.fromisoformat(assembly_days_sorted[-1])
+                assembly_window_end = assembly_anchor + datetime.timedelta(days=post_gap_days)
+            except Exception:
+                assembly_window_end = None
+
+        for label, payload in dept_results.items():
+            use_days_set = payload['use_days']
+            meta = payload['meta']
+            trimmed_days = set()
+            for day in sorted(use_days_set):
+                try:
+                    day_obj = datetime.date.fromisoformat(day)
+                except Exception:
+                    day_obj = None
+
+                dropped = False
+                if day_obj and fab_window_start and day_obj < fab_window_start:
+                    meta['dropped_before_fab_gap'].append(day)
+                    meta['filter_reasons'][day] = (
+                        f'Dropped by Fab lead-in window (> {pre_gap_days} day gap before Fab)'
+                    )
+                    dropped = True
+                if day_obj and assembly_window_end and day_obj > assembly_window_end:
+                    meta['dropped_after_assembly_gap'].append(day)
+                    meta['filter_reasons'][day] = (
+                        f'Dropped by Assembly tail window (> {post_gap_days} day gap after Assembly)'
+                    )
+                    dropped = True
+
+                if not dropped:
+                    trimmed_days.add(day)
+
+            payload['use_days'] = trimmed_days
+            filter_reasons_by_dept[label] = meta['filter_reasons']
+            filtered_days_by_dept[label] = trimmed_days
+    else:
+        for label, payload in dept_results.items():
+            filter_reasons_by_dept[label] = payload['meta'].get('filter_reasons', {})
+            filtered_days_by_dept[label] = payload['use_days']
+    for label, payload in dept_results.items():
+        filtered_days_by_dept[label] = payload['use_days']
+        filter_reasons_by_dept[label] = payload['meta'].get('filter_reasons', {})
     # Check unit completion status (100% complete across all applicable departments)
     # Only check departments that have standard hours (are in dept_completion_map)
     unit_is_complete = False

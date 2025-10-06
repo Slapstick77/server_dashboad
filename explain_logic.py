@@ -8,8 +8,8 @@ import sys
 ROOT = os.path.dirname(__file__)
 DB_PATH = os.path.join(ROOT, 'SCHLabor.db')
 
-sys.path.insert(0, os.path.join(ROOT, 'webapp'))
-from blueprints.utils import COMPLETION_CHECK_DEPARTMENTS, normalize_com, fnum
+sys.path.insert(0, ROOT)
+from webapp.blueprints.utils import COMPLETION_CHECK_DEPARTMENTS, normalize_com, fnum
 
 def get_conn():
     return sqlite3.connect(DB_PATH)
