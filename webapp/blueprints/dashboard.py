@@ -19,7 +19,7 @@ h1{margin:0;font-size:1.05rem}
 nav a{color:#8fb9ff;text-decoration:none;margin-right:.8rem;font-size:.72rem}
 button{background:#238636;border:1px solid #2ea043;color:#fff;padding:.55rem .9rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer}button:hover{background:#2ea043}
 main{padding:1rem 1.1rem}
-.alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+.alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
 .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
 .pill{display:inline-block;background:#1f6feb33;border:1px solid #1f6feb55;border-radius:20px;padding:.45rem .75rem;font-size:.6rem;letter-spacing:.5px;margin:.25rem .4rem .6rem 0}
 .unit{display:grid;border:1px solid #3f4751;border-radius:14px;margin:1.25rem 0;overflow:hidden;background:#141a21;font-size:.6rem;grid-template-columns:260px 1fr;transition:background .25s,border-color .25s,box-shadow .25s,transform .2s;position:relative;box-shadow:0 2px 5px -2px #000,0 0 0 1px #212a33;cursor:pointer}
@@ -186,7 +186,7 @@ def dash():
             .up{color:#f85149}
             .down{color:#3fb950}
             header{box-shadow:0 3px 10px -6px #000}
-            .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.7rem .95rem;font-size:.72rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+            .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.7rem .95rem;font-size:.72rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
             .alpha-banner strong{display:block;font-size:.78rem;margin-bottom:.25rem;color:#ffe2cc;text-transform:uppercase;letter-spacing:.05rem}
             .card{transition:transform .12s ease, box-shadow .12s ease}
             .card:hover{transform:translateY(-2px); box-shadow:0 8px 22px -10px #000}
@@ -914,7 +914,7 @@ def hours_chart():
             .legend-item:hover { background: #30363d; }
             .legend-item.off { opacity: 0.3; }
             .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
-            .alpha-banner { width:100%; background:linear-gradient(135deg,#912323,#5c1b1f); border:1px solid rgba(255,255,255,0.22); border-radius:10px; padding:.7rem .95rem; font-size:.72rem; line-height:1.4; font-weight:600; color:#fdf2f2; box-shadow:0 6px 18px -14px #000; letter-spacing:.02rem; }
+            .alpha-banner { width:100%; background:linear-gradient(135deg,#d97706,#92400e); border:1px solid rgba(255,255,255,0.22); border-radius:10px; padding:.7rem .95rem; font-size:.72rem; line-height:1.4; font-weight:600; color:#fdf2f2; box-shadow:0 6px 18px -14px #000; letter-spacing:.02rem; }
             .alpha-banner strong { display:block; font-size:.78rem; margin-bottom:.25rem; color:#ffe2cc; text-transform:uppercase; letter-spacing:.05rem; }
         </style>
     </head>
@@ -1200,7 +1200,7 @@ def display_board():
             .toolbar-btn:hover{filter:brightness(1.08);}
             .toolbar-btn:disabled{opacity:0.45;cursor:not-allowed;}
             .toolbar-link{font-size:0.85rem;opacity:0.85;}
-            .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:0.65rem 0.9rem;font-size:0.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:0.02rem;}
+            .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:0.65rem 0.9rem;font-size:0.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:0.02rem;}
             .alpha-banner strong{display:block;font-size:0.7rem;margin-bottom:0.25rem;color:#ffe2cc;letter-spacing:0.05rem;text-transform:uppercase;}
             .board-wrapper{flex:1;width:100%;background:#0a0f16;position:relative;overflow:hidden;}
             .chart-board{position:relative;width:100%;height:100%;overflow:auto;padding:1.5rem;}
@@ -2017,7 +2017,7 @@ def dr_lookup():
                 main{{padding:1rem 1.2rem}}
                 form input,form button{{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}}
                 form button{{background:#1f6feb;border-color:#3a78e0;font-weight:700;cursor:pointer}}
-                .alpha-banner{{flex-basis:100%;background:linear-gradient(135deg,#8c2f39,#5c1b1f);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}}
+                .alpha-banner{{flex-basis:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.35;font-weight:600;color:#fbe5e8;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}}
                 .alpha-banner strong{{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}}
                 table{{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.8rem}}
                 th,td{{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left}}
@@ -2064,7 +2064,7 @@ def employee_lookup():
         .slist{position:absolute;z-index:10;background:#0f151c;border:1px solid #2a323c;border-radius:6px;min-width:240px;max-height:220px;overflow:auto;box-shadow:0 6px 18px -8px #000}
         .sopt{padding:.4rem .6rem;cursor:pointer}
         .sopt:hover{background:#1a2230}
-        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
         .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.85rem}
     th,td{border:1px solid #2a323c;padding:.45rem .6rem;text-align:left}
@@ -2209,7 +2209,7 @@ def parts_page():
         label{font-size:.72rem;opacity:.9}
         input,button{border-radius:6px;border:1px solid #30363d;background:#11161d;color:#e6edf3;padding:.5rem .65rem}
         button{background:#1f6feb;border-color:#3a78e0;font-weight:700;cursor:pointer}
-    .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+    .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
     .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
         table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:.8rem}
         th,td{border:1px solid #2a323c;padding:.35rem .5rem;text-align:left;vertical-align:top;max-width:420px;overflow:hidden;text-overflow:ellipsis}
@@ -2284,7 +2284,7 @@ def com_totals_page():
         .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
         .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
         .nav-links a:hover{text-decoration:underline}
-        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
         .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     </style></head>
     <body>
@@ -2347,7 +2347,7 @@ def com_lookup():
         .nav-links{padding:0.5rem 1.5rem;display:flex;gap:1rem;background:#0d1117}
         .nav-links a{color:#8fb9ff;text-decoration:none;font-size:.85rem}
         .nav-links a:hover{text-decoration:underline}
-        .alpha-banner{width:100%;background:linear-gradient(135deg,#912323,#5c1b1f);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
+        .alpha-banner{width:100%;background:linear-gradient(135deg,#d97706,#92400e);border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:.65rem .9rem;font-size:.68rem;line-height:1.4;font-weight:600;color:#fdf2f2;box-shadow:0 6px 18px -14px #000;letter-spacing:.02rem}
         .alpha-banner strong{display:block;font-size:.7rem;margin-bottom:.25rem;color:#ffe2cc}
     </style></head>
     <body>
