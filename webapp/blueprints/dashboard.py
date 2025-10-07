@@ -5,8 +5,21 @@ All user-facing HTML pages are defined here.
 """
 from flask import Blueprint, redirect, url_for, render_template_string, request
 import html
+import os
+import sys
 from .utils import get_conn
-from ..version import VERSION, VERSION_DATE
+
+# Import version info
+try:
+    # Add parent directory to path to import version
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    from version import VERSION, VERSION_DATE
+except ImportError:
+    # Fallback if version.py doesn't exist
+    VERSION = "1.2.0"
+    VERSION_DATE = "2025-10-07"
 
 # Create blueprint
 dashboard = Blueprint('dashboard', __name__)
