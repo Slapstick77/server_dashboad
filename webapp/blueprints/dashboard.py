@@ -6,6 +6,7 @@ All user-facing HTML pages are defined here.
 from flask import Blueprint, redirect, url_for, render_template_string, request
 import html
 from .utils import get_conn
+from ..version import VERSION, VERSION_DATE
 
 # Create blueprint
 dashboard = Blueprint('dashboard', __name__)
@@ -213,10 +214,15 @@ def dash():
             .pie-legend-item span.value{margin-left:auto;font-weight:600;font-size:.78rem;color:#d0d7de}
             .pie-summary{margin-top:1.2rem;text-align:center;font-size:.75rem;opacity:.75}
             .pie-empty{padding:1.2rem;text-align:center;font-size:.85rem;opacity:.7}
-            .daily-metrics-card{margin-top:2rem;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;box-shadow:0 6px 18px -12px #000}
+            .daily-metrics-card{margin-top:2rem;background:#161b22;border:1px solid#30363d;border-radius:12px;padding:1.5rem;box-shadow:0 6px 18px -12px #000}
             .daily-header{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.2rem}
             .daily-header h2{margin:0;font-size:1.05rem}
             .daily-controls{display:flex;gap:.6rem;flex-wrap:wrap}
+            footer{margin-top:3rem;padding:1.5rem;text-align:center;border-top:1px solid #30363d;background:#0d1117}
+            footer .version{font-size:.72rem;opacity:.7;margin-bottom:.4rem}
+            footer .links{display:flex;gap:1rem;justify-content:center;font-size:.7rem}
+            footer .links a{color:#8fb9ff;text-decoration:none}
+            footer .links a:hover{text-decoration:underline}
             .daily-gauge-grid{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
             .daily-status{margin-top:1rem;text-align:center;font-size:.75rem;opacity:.75}
             .daily-empty{padding:1rem;text-align:center;font-size:.85rem;opacity:.7}
@@ -875,6 +881,13 @@ def dash():
             loadDeptPie();
             loadDailyMetrics();
             </script>
+            <footer>
+                <div class='version'>Version """ + VERSION + """ (""" + VERSION_DATE + """)</div>
+                <div class='links'>
+                    <a href='/changelog'>📋 Changelog</a>
+                    <a href='https://github.com/Slapstick77/server_dashboad' target='_blank'>GitHub</a>
+                </div>
+            </footer>
         </body></html>
         """
         return render_template_string(page)
@@ -883,6 +896,87 @@ def dash():
 @dashboard.route('/recent')
 def recent_units():
         return render_template_string(RECENT_PAGE)
+
+
+@dashboard.route('/changelog')
+def changelog():
+    """Display the changelog from CHANGELOG.md."""
+    import os
+    import markdown
+    
+    # Try to find CHANGELOG.md
+    changelog_path = None
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'CHANGELOG.md'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'CHANGELOG.md'),
+        'CHANGELOG.md'
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            changelog_path = path
+            break
+    
+    if changelog_path and os.path.exists(changelog_path):
+        with open(changelog_path, 'r', encoding='utf-8') as f:
+            changelog_md = f.read()
+        # Convert markdown to HTML
+        try:
+            import markdown
+            changelog_html = markdown.markdown(changelog_md, extensions=['extra', 'codehilite'])
+        except ImportError:
+            # Fallback to basic HTML if markdown library not available
+            changelog_html = '<pre>' + html.escape(changelog_md) + '</pre>'
+    else:
+        changelog_html = '<p>Changelog not found.</p>'
+    
+    page = f"""<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Changelog - SCH Labor Dashboard</title>
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: #0d1117; color: #c9d1d9; line-height: 1.6; }}
+            header {{ padding: 1rem 1.5rem; background: #161b22; border-bottom: 1px solid #30363d; }}
+            h1 {{ margin: 0; font-size: 1.2rem; }}
+            .nav {{ padding: 0.5rem 1.5rem; background: #0d1117; }}
+            .nav a {{ color: #8fb9ff; text-decoration: none; font-size: .85rem; }}
+            .nav a:hover {{ text-decoration: underline; }}
+            .content {{ max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }}
+            .content h1 {{ font-size: 2rem; margin-bottom: 1.5rem; border-bottom: 2px solid #30363d; padding-bottom: 0.5rem; }}
+            .content h2 {{ font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 0.3rem; }}
+            .content h3 {{ font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #79c0ff; }}
+            .content ul {{ margin-left: 1.5rem; }}
+            .content li {{ margin: 0.5rem 0; }}
+            .content code {{ background: #161b22; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: ui-monospace, monospace; font-size: 0.9em; color: #79c0ff; }}
+            .content pre {{ background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; border: 1px solid #30363d; }}
+            .content pre code {{ background: none; padding: 0; }}
+            .content strong {{ color: #c9d1d9; }}
+            .content a {{ color: #58a6ff; }}
+            .content a:hover {{ text-decoration: underline; }}
+            .content hr {{ border: 0; border-top: 1px solid #30363d; margin: 2rem 0; }}
+            .version-badge {{ display: inline-block; background: #238636; color: #fff; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; margin-left: 0.5rem; }}
+            footer {{ margin-top: 3rem; padding: 1.5rem; text-align: center; border-top: 1px solid #30363d; background: #0d1117; }}
+            footer .version {{ font-size: .72rem; opacity: .7; margin-bottom: .4rem; }}
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>📋 Changelog</h1>
+        </header>
+        <div class='nav'>
+            <a href='/dash'>← Back to Dashboard</a>
+        </div>
+        <div class='content'>
+            {changelog_html}
+        </div>
+        <footer>
+            <div class='version'>Version {VERSION} ({VERSION_DATE})</div>
+        </footer>
+    </body>
+    </html>
+    """
+    return render_template_string(page)
 
 
 @dashboard.route('/hours-chart')
