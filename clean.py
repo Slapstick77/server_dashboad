@@ -434,8 +434,8 @@ def convert_file1_to_cleaned(file1_path, output_csv_path):
         cleaned_df["FanAssyTest Completion"] = _to_num(_get_series(df, "FanAssyTest"))
 
         cleaned_df["InsulWallFab Efficiency"] = _to_num(_get_series(df, "InsulWallFabEfficiency"))
-        # Some files use InsuWallFab vs InsulWallFab, or "Insul Wall Fab" with spaces
-        cleaned_df["InsulWallFab Completion"] = _to_num(_get_series(df, "InsulWallFab", alt="InsuWallFab", alt2="Insul_Wall_Fab"))
+        # The completion column is actually called "InsulateWallFab" (with "ate") in the source CSV
+        cleaned_df["InsulWallFab Completion"] = _to_num(_get_series(df, "InsulateWallFab", alt="InsulWallFab", alt2="InsuWallFab"))
 
         cleaned_df["DoorFab Efficiency"] = _to_num(_get_series(df, "DoorFabEfficiency"))
         cleaned_df["DoorFab Completion"] = _to_num(_get_series(df, "DoorFab"))

@@ -173,7 +173,7 @@ def root():
 @dashboard.route('/dash')
 def dash():
         # Minimal landing page with buttons to reports
-        page = f"""
+        page = """
         <!doctype html>
         <html><head><meta charset='utf-8'><title>Dashboard</title>
         <style>
@@ -254,7 +254,13 @@ def dash():
             .gauge-range{font-size:.72rem;opacity:.7}
         </style></head>
         <body>
-            <header><div class='header-row'><h1>Production Dashboard</h1></div><p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p></header>
+            <header>
+                <div class='header-row'>
+                    <h1>Production Dashboard</h1>
+                    <div style='font-size:.75rem;opacity:.7;'>Version {{ version }} ({{ version_date }}) • <a href='/changelog' style='color:#8fb9ff;text-decoration:none;'>Changelog</a></div>
+                </div>
+                <p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p>
+            </header>
             <main>
                 <div class='grid'>
                     <div class='card'>
@@ -894,16 +900,9 @@ def dash():
             loadDeptPie();
             loadDailyMetrics();
             </script>
-            <footer>
-                <div class='version'>Version {VERSION} ({VERSION_DATE})</div>
-                <div class='links'>
-                    <a href='/changelog'>📋 Changelog</a>
-                    <a href='https://github.com/Slapstick77/server_dashboad' target='_blank'>GitHub</a>
-                </div>
-            </footer>
         </body></html>
         """
-        return render_template_string(page)
+        return render_template_string(page, version=VERSION, version_date=VERSION_DATE)
 
 
 @dashboard.route('/recent')
