@@ -173,7 +173,7 @@ def root():
 @dashboard.route('/dash')
 def dash():
         # Minimal landing page with buttons to reports
-        page = """
+        page = f"""
         <!doctype html>
         <html><head><meta charset='utf-8'><title>Dashboard</title>
         <style>
@@ -895,7 +895,7 @@ def dash():
             loadDailyMetrics();
             </script>
             <footer>
-                <div class='version'>Version """ + VERSION + """ (""" + VERSION_DATE + """)</div>
+                <div class='version'>Version {VERSION} ({VERSION_DATE})</div>
                 <div class='links'>
                     <a href='/changelog'>📋 Changelog</a>
                     <a href='https://github.com/Slapstick77/server_dashboad' target='_blank'>GitHub</a>
