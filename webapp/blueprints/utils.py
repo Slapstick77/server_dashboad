@@ -559,9 +559,10 @@ def build_unit(row: dict, colset: set) -> dict:
         comp = fnum(row.get(compc)) if compc in colset else 0.0
         eff = fnum(row.get(effc)) if effc in colset else 0.0
 
-        # Fallback completion when blank or zero but hours exist
-        if (comp <= 0 or comp > 100.0) and std > 0:
-            comp = min(100.0, (act / std) * 100.0) if act > 0 else 0.0
+        # No fallback - only use actual completion value
+        # If completion is invalid (<=0 or >100), treat as 0
+        if comp <= 0 or comp > 100.0:
+            comp = 0.0
         comp = max(0.0, comp)
 
         # Earned hours based on completion

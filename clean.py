@@ -381,7 +381,7 @@ def convert_file1_to_cleaned(file1_path, output_csv_path):
             k = re.sub(r'[^\w]', '', k)
             return k
 
-        def _get_series(src_df: pd.DataFrame, key, alt=None) -> pd.Series:
+        def _get_series(src_df: pd.DataFrame, key, alt=None, alt2=None) -> pd.Series:
             nk = _norm_key(key)
             if nk in src_df.columns:
                 return src_df[nk]
@@ -389,6 +389,10 @@ def convert_file1_to_cleaned(file1_path, output_csv_path):
                 ak = _norm_key(alt)
                 if ak in src_df.columns:
                     return src_df[ak]
+            if alt2 is not None:
+                ak2 = _norm_key(alt2)
+                if ak2 in src_df.columns:
+                    return src_df[ak2]
             # Fallback to empty series aligned to index
             return pd.Series([pd.NA]*len(src_df), index=src_df.index)
 
@@ -430,8 +434,8 @@ def convert_file1_to_cleaned(file1_path, output_csv_path):
         cleaned_df["FanAssyTest Completion"] = _to_num(_get_series(df, "FanAssyTest"))
 
         cleaned_df["InsulWallFab Efficiency"] = _to_num(_get_series(df, "InsulWallFabEfficiency"))
-        # Some files use InsuWallFab vs InsulWallFab
-        cleaned_df["InsulWallFab Completion"] = _to_num(_get_series(df, "InsulWallFab", alt="InsuWallFab"))
+        # Some files use InsuWallFab vs InsulWallFab, or "Insul Wall Fab" with spaces
+        cleaned_df["InsulWallFab Completion"] = _to_num(_get_series(df, "InsulWallFab", alt="InsuWallFab", alt2="Insul_Wall_Fab"))
 
         cleaned_df["DoorFab Efficiency"] = _to_num(_get_series(df, "DoorFabEfficiency"))
         cleaned_df["DoorFab Completion"] = _to_num(_get_series(df, "DoorFab"))
