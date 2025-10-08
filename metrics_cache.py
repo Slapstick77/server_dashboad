@@ -175,12 +175,9 @@ def refresh_unit_completion() -> Dict[str, Any]:
             
             comp = fnum(r.get(compc)) if compc in r else 0.0
             if comp < 100.0:
-                # Not marked as complete - check actual vs std
-                act = fnum(r.get(actc)) if actc in r else 0.0
-                calc_comp = min(100.0, (act / std) * 100.0) if act > 0 else 0.0
-                if calc_comp < 99.999:  # Allow tiny rounding tolerance
-                    all_complete = False
-                    break
+                # Department not complete
+                all_complete = False
+                break
         
         if all_complete:
             complete_count += 1
