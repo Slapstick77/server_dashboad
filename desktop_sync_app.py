@@ -11,7 +11,7 @@ Depends on: SCHLabor.db, report_update_service.py, clean.py, PowerShell scripts.
 Run:  python desktop_sync_app.py
 """
 from __future__ import annotations
-import os, sqlite3, threading, csv, subprocess, sys, glob, shutil, time, hashlib, re
+import os, sqlite3, threading, csv, subprocess, sys, glob, shutil, time, hashlib, re, json
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
@@ -316,6 +316,8 @@ class SyncApp(tk.Tk):
         self.running = False
         self._stop_event = None
         self._build_ui()
+        self._creds = None
+        self._load_credentials()
         ensure_change_tables()
         self._append_log('Application initialized. Ready.')
 
@@ -328,9 +330,10 @@ class SyncApp(tk.Tk):
         self.btn_sched = ttk.Button(top, text='Pull SCHSummary', command=self._run_sched)
         self.btn_parts = ttk.Button(top, text='Sync Parts Tracker', command=self._run_parts)
         self.btn_drs   = ttk.Button(top, text='Poll DRs', command=self._run_drs)
+        self.btn_creds = ttk.Button(top, text='Credentials...', command=self._open_credentials_dialog)
         self.btn_stop  = ttk.Button(top, text='Stop', command=self._request_stop, state='disabled')
         self.btn_task  = ttk.Button(top, text='Create Task...', command=self._open_scheduler_dialog)
-        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_drs, self.btn_stop, self.btn_task)):
+        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_drs, self.btn_creds, self.btn_stop, self.btn_task)):
             btn.grid(row=1, column=idx, padx=4, pady=4, sticky='ew')
 
         # Central log panel
@@ -344,11 +347,11 @@ class SyncApp(tk.Tk):
 
     # --------------- Actions --------------- #
     def _disable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_stop,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_creds,self.btn_stop,self.btn_task):
             b.state(['disabled'])
 
     def _enable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_creds,self.btn_task):
             b.state(['!disabled'])
         self.btn_stop.state(['disabled'])
 
@@ -460,8 +463,15 @@ class SyncApp(tk.Tk):
             import types
             import poll_drs_incremental as drp
             # Credentials: prefer environment, else prompt
-            user = os.getenv('DR_USER') or os.getenv('MOM_USER')
-            pwd = os.getenv('DR_PASSWORD') or os.getenv('MOM_PASSWORD')
+            user = None
+            pwd = None
+            if self._creds:
+                user = self._creds.get('user')
+                pwd = self._creds.get('password')
+            if not user:
+                user = os.getenv('DR_USER') or os.getenv('MOM_USER')
+            if not pwd:
+                pwd = os.getenv('DR_PASSWORD') or os.getenv('MOM_PASSWORD')
             if not user:
                 user = simpledialog.askstring('DR Poller', 'MOM Username:', parent=self)
             if user is None or not user.strip():
@@ -471,6 +481,14 @@ class SyncApp(tk.Tk):
                 pwd = simpledialog.askstring('DR Poller', 'MOM Password:', parent=self, show='*')
             if pwd is None or not pwd.strip():
                 self._set_status('DR Poller cancelled: missing password')
+                return
+
+            # Validate 5-character alphanumeric per requirement
+            if not re.fullmatch(r'[A-Za-z0-9]{5}', user.strip()):
+                self._set_status('DR Poller cancelled: username must be 5 letters/numbers')
+                return
+            if not re.fullmatch(r'[A-Za-z0-9]{5}', pwd.strip()):
+                self._set_status('DR Poller cancelled: password must be 5 letters/numbers')
                 return
 
             # Output & state paths
@@ -511,6 +529,87 @@ class SyncApp(tk.Tk):
             self._append_log(f"DR Poller timings -> {timings_json}")
         except Exception as e:
             self._set_status(f"DR Poller error: {e}")
+
+    # ---------- Credentials persistence ---------- #
+    def _creds_path(self) -> str:
+        archive_dir = os.path.join(ROOT, 'download_archive')
+        os.makedirs(archive_dir, exist_ok=True)
+        return os.path.join(archive_dir, 'dr_credentials.json')
+
+    def _load_credentials(self):
+        try:
+            p = self._creds_path()
+            if os.path.isfile(p):
+                with open(p, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    user = (data.get('user') or '').strip()
+                    pwd = (data.get('password') or '').strip()
+                    if user and pwd and re.fullmatch(r'[A-Za-z0-9]{5}', user) and re.fullmatch(r'[A-Za-z0-9]{5}', pwd):
+                        self._creds = {'user': user, 'password': pwd}
+                        self._append_log('Loaded saved DR credentials.')
+                        return
+        except Exception:
+            pass
+        self._creds = None
+
+    def _save_credentials(self, user: str, pwd: str):
+        try:
+            data = {
+                'user': user.strip(),
+                'password': pwd.strip(),
+                'saved_at': datetime.now().isoformat(timespec='seconds'),
+            }
+            with open(self._creds_path(), 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+            self._creds = {'user': data['user'], 'password': data['password']}
+            self._append_log('DR credentials saved.')
+        except Exception as e:
+            messagebox.showerror('Save Error', f'Failed to save credentials: {e}')
+
+    def _open_credentials_dialog(self):
+        dlg = tk.Toplevel(self)
+        dlg.title('DR Credentials')
+        dlg.geometry('320x180')
+        dlg.transient(self)
+        dlg.grab_set()
+        frm = ttk.Frame(dlg, padding=10)
+        frm.pack(fill='both', expand=True)
+
+        ttk.Label(frm, text='Username (5 letters/numbers):').grid(row=0, column=0, sticky='w')
+        user_var = tk.StringVar(value=(self._creds.get('user') if self._creds else ''))
+        user_entry = ttk.Entry(frm, textvariable=user_var, width=20)
+        user_entry.grid(row=1, column=0, sticky='w')
+
+        ttk.Label(frm, text='Password (5 letters/numbers):').grid(row=2, column=0, sticky='w', pady=(8,0))
+        pwd_var = tk.StringVar(value=(self._creds.get('password') if self._creds else ''))
+        pwd_entry = ttk.Entry(frm, textvariable=pwd_var, width=20, show='*')
+        pwd_entry.grid(row=3, column=0, sticky='w')
+
+        status_lbl = ttk.Label(frm, text='', foreground='blue')
+        status_lbl.grid(row=4, column=0, sticky='w', pady=(8,0))
+
+        def validate(u: str, p: str) -> tuple[bool, str]:
+            if not re.fullmatch(r'[A-Za-z0-9]{5}', u or ''):
+                return False, 'Username must be 5 letters/numbers.'
+            if not re.fullmatch(r'[A-Za-z0-9]{5}', p or ''):
+                return False, 'Password must be 5 letters/numbers.'
+            return True, ''
+
+        def on_save():
+            u = user_var.get().strip()
+            p = pwd_var.get().strip()
+            ok, msg = validate(u, p)
+            if not ok:
+                status_lbl.config(text=msg, foreground='red')
+                return
+            self._save_credentials(u, p)
+            status_lbl.config(text='Saved.', foreground='green')
+            dlg.after(400, dlg.destroy)
+
+        btns = ttk.Frame(frm)
+        btns.grid(row=5, column=0, sticky='e', pady=(10,0))
+        ttk.Button(btns, text='Save', command=on_save).grid(row=0, column=0, padx=4)
+        ttk.Button(btns, text='Cancel', command=dlg.destroy).grid(row=0, column=1, padx=4)
 
     def _archive_files(self, patterns, keep_days: int = 7):
         """Move matching files into an archive folder and purge anything older than keep_days.
