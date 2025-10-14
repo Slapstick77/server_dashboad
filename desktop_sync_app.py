@@ -14,7 +14,7 @@ from __future__ import annotations
 import os, sqlite3, threading, csv, subprocess, sys, glob, shutil, time, hashlib, re
 from datetime import datetime
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog, simpledialog
 
 ROOT = os.path.dirname(__file__)
 DB_PATH = os.path.join(ROOT, 'SCHLabor.db')
@@ -327,9 +327,10 @@ class SyncApp(tk.Tk):
         self.btn_labor = ttk.Button(top, text='Run Labor', command=self._run_labor)
         self.btn_sched = ttk.Button(top, text='Pull SCHSummary', command=self._run_sched)
         self.btn_parts = ttk.Button(top, text='Sync Parts Tracker', command=self._run_parts)
+        self.btn_drs   = ttk.Button(top, text='Poll DRs', command=self._run_drs)
         self.btn_stop  = ttk.Button(top, text='Stop', command=self._request_stop, state='disabled')
         self.btn_task  = ttk.Button(top, text='Create Task...', command=self._open_scheduler_dialog)
-        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_stop, self.btn_task)):
+        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_drs, self.btn_stop, self.btn_task)):
             btn.grid(row=1, column=idx, padx=4, pady=4, sticky='ew')
 
         # Central log panel
@@ -343,11 +344,11 @@ class SyncApp(tk.Tk):
 
     # --------------- Actions --------------- #
     def _disable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_stop,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_stop,self.btn_task):
             b.state(['disabled'])
 
     def _enable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_task):
             b.state(['!disabled'])
         self.btn_stop.state(['disabled'])
 
@@ -359,6 +360,9 @@ class SyncApp(tk.Tk):
 
     def _run_parts(self):
         self._start_thread(self._parts_logic, 'Parts Tracker sync running...')
+
+    def _run_drs(self):
+        self._start_thread(self._drs_logic, 'DR Poller running...')
 
     def _start_thread(self, target, status_msg):
         if self.running:
@@ -448,6 +452,65 @@ class SyncApp(tk.Tk):
             self._append_log(f"Parts Tracker sync complete. Key cols: {cols}")
         except Exception as e:
             self._set_status(f"Parts error: {e}")
+
+    def _drs_logic(self):
+        """Run the incremental DR poller to produce JSON output (no DB writes)."""
+        try:
+            # Lazy import to avoid startup overhead
+            import types
+            import poll_drs_incremental as drp
+            # Credentials: prefer environment, else prompt
+            user = os.getenv('DR_USER') or os.getenv('MOM_USER')
+            pwd = os.getenv('DR_PASSWORD') or os.getenv('MOM_PASSWORD')
+            if not user:
+                user = simpledialog.askstring('DR Poller', 'MOM Username:', parent=self)
+            if user is None or not user.strip():
+                self._set_status('DR Poller cancelled: missing username')
+                return
+            if not pwd:
+                pwd = simpledialog.askstring('DR Poller', 'MOM Password:', parent=self, show='*')
+            if pwd is None or not pwd.strip():
+                self._set_status('DR Poller cancelled: missing password')
+                return
+
+            # Output & state paths
+            archive_dir = os.path.join(ROOT, 'download_archive')
+            os.makedirs(archive_dir, exist_ok=True)
+            out_json = os.path.join(archive_dir, 'dr_incremental.json')
+            timings_json = os.path.join(archive_dir, 'dr_timings.json')
+            state_file = os.path.join(archive_dir, 'dr_state.json')
+
+            # Build args namespace following poll() expectations
+            args = types.SimpleNamespace(
+                base_url=os.getenv('MOM_BASE_URL', getattr(drp, 'DEFAULT_BASE_URL', '')),
+                user=user.strip(),
+                password=pwd.strip(),
+                app_name=os.getenv('MOM_APP_NAME','ManufacturingDeviationSystem'),
+                window_days=7,
+                tz_offset_hours=0,
+                include_closed=True,
+                include_notes=False,
+                include_history=False,
+                state_file=state_file,
+                out_json=out_json,
+                out_csv=None,
+                only_updated_json=None,
+                only_updated_csv=None,
+                retries=3,
+                retry_wait_seconds=1.0,
+                verbose=False,
+                jitter_seconds=0,
+                timings=True,
+                timings_json=timings_json,
+                single_closed_variant=True,
+                expect_numbers=None,
+            )
+            self._set_status('DR Poller starting...')
+            drp.poll(args)
+            self._set_status(f"DR Poller OK -> {out_json}")
+            self._append_log(f"DR Poller timings -> {timings_json}")
+        except Exception as e:
+            self._set_status(f"DR Poller error: {e}")
 
     def _archive_files(self, patterns, keep_days: int = 7):
         """Move matching files into an archive folder and purge anything older than keep_days.
