@@ -18,6 +18,15 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 
 ROOT = os.path.dirname(__file__)
 DB_PATH = os.path.join(ROOT, 'SCHLabor.db')
+CREDS_SERVICE = 'SQRS_DR'
+
+# Optional secure storage via Windows Credential Manager (keyring)
+try:
+    import keyring  # type: ignore
+    HAVE_KEYRING = True
+except Exception:
+    keyring = None
+    HAVE_KEYRING = False
 
 # Attempt to import existing service logic
 try:
@@ -543,10 +552,27 @@ class SyncApp(tk.Tk):
                 with open(p, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     user = (data.get('user') or '').strip()
-                    pwd = (data.get('password') or '').strip()
+                    pwd = ''
+                    # Prefer secure store; fall back to JSON if legacy password key exists
+                    if user and HAVE_KEYRING:
+                        try:
+                            pwd = keyring.get_password(CREDS_SERVICE, user) or ''
+                        except Exception:
+                            pwd = ''
+                    if not pwd:
+                        pwd = (data.get('password') or '').strip()
                     if user and pwd and re.fullmatch(r'[A-Za-z0-9]{5}', user) and re.fullmatch(r'[A-Za-z0-9]{5}', pwd):
                         self._creds = {'user': user, 'password': pwd}
                         self._append_log('Loaded saved DR credentials.')
+                        if 'password' in data and HAVE_KEYRING:
+                            # Migrate legacy plaintext to keyring and rewrite file without password
+                            try:
+                                keyring.set_password(CREDS_SERVICE, user, pwd)
+                                with open(p, 'w', encoding='utf-8') as fw:
+                                    json.dump({'user': user, 'saved_at': datetime.now().isoformat(timespec='seconds')}, fw, indent=2)
+                                self._append_log('Migrated DR password to Windows Credential Manager.')
+                            except Exception:
+                                pass
                         return
         except Exception:
             pass
@@ -554,15 +580,30 @@ class SyncApp(tk.Tk):
 
     def _save_credentials(self, user: str, pwd: str):
         try:
-            data = {
-                'user': user.strip(),
-                'password': pwd.strip(),
-                'saved_at': datetime.now().isoformat(timespec='seconds'),
-            }
-            with open(self._creds_path(), 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2)
-            self._creds = {'user': data['user'], 'password': data['password']}
-            self._append_log('DR credentials saved.')
+            user_s = user.strip()
+            pwd_s = pwd.strip()
+            # Save password securely if possible
+            if HAVE_KEYRING:
+                try:
+                    keyring.set_password(CREDS_SERVICE, user_s, pwd_s)
+                    # Store only username in file
+                    data = {'user': user_s, 'saved_at': datetime.now().isoformat(timespec='seconds')}
+                    with open(self._creds_path(), 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2)
+                    self._append_log('DR credentials saved securely (Windows Credential Manager).')
+                except Exception as e:
+                    # Fallback to plaintext JSON
+                    data = {'user': user_s, 'password': pwd_s, 'saved_at': datetime.now().isoformat(timespec='seconds')}
+                    with open(self._creds_path(), 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2)
+                    self._append_log('DR credentials saved (plaintext fallback).')
+            else:
+                # No keyring available; save plaintext (warn user)
+                data = {'user': user_s, 'password': pwd_s, 'saved_at': datetime.now().isoformat(timespec='seconds')}
+                with open(self._creds_path(), 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2)
+                self._append_log('DR credentials saved (plaintext file). Consider installing "keyring" for secure storage.')
+            self._creds = {'user': user_s, 'password': pwd_s}
         except Exception as e:
             messagebox.showerror('Save Error', f'Failed to save credentials: {e}')
 
@@ -585,7 +626,8 @@ class SyncApp(tk.Tk):
         pwd_entry = ttk.Entry(frm, textvariable=pwd_var, width=20, show='*')
         pwd_entry.grid(row=3, column=0, sticky='w')
 
-        status_lbl = ttk.Label(frm, text='', foreground='blue')
+        note = 'Stored in Windows Credential Manager.' if HAVE_KEYRING else 'Stored in plaintext file (install "keyring" for secure storage).'
+        status_lbl = ttk.Label(frm, text=note, foreground='blue')
         status_lbl.grid(row=4, column=0, sticky='w', pady=(8,0))
 
         def validate(u: str, p: str) -> tuple[bool, str]:
