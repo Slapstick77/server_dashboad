@@ -1159,6 +1159,13 @@ def refresh_metrics_cache(trigger='manual') -> Dict[str, Any]:
     error_msg = None
     
     try:
+        # Always refresh UnitCompletion first so trailing charts have up-to-date completions
+        try:
+            refresh_summary = refresh_unit_completion()
+        except Exception as e:
+            # Don't fail the whole refresh if completion refresh has an issue; just log
+            refresh_summary = {'error': str(e)}
+
         # Compute the expensive metrics
         unit_trends = _compute_unit_time_trends()
         incomplete_units = _compute_incomplete_units()

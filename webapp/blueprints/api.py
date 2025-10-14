@@ -689,8 +689,8 @@ def api_trailing_trend():
         'days': chart['days'],
         'trailing': chart['trailing'],
         '_cache': {
-            'computed_at': cached.get('_cache', {}).get('computed_at'),
-            'trigger_source': cached.get('_cache', {}).get('trigger_source')
+            'computed_at': cached.get('computed_at'),
+            'trigger_source': cached.get('trigger_source')
         }
     })
 
