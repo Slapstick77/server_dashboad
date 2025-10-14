@@ -333,6 +333,8 @@ def poll(args):
             'DeviationState': dvals.get('DeviationState'),
             'IsClosed': dvals.get('IsClosed'),
             'Product': dvals.get('Product'),
+            # Prefer direct ComNumber from display if present
+            'ComNumber': dvals.get('ComNumber'),
             'SalesOrderNumber': dvals.get('SalesOrderNumber'),
             'CreationComments': dvals.get('CreationComments'),
             'LatestRoutingDepartment': latest.get('RoutingDepartment') if latest else None,
@@ -375,12 +377,14 @@ def poll(args):
     # CSV output
     if args.out_csv:
         cols = [
-            'DeviationNumber','IsClosed','CurrentRouting','DeviationState','Product','SalesOrderNumber',
+            'DeviationNumber','IsClosed','CurrentRouting','DeviationState','Product','ComNumber','SalesOrderNumber',
             'RoutingStepCount','LatestRoutingDepartment','LatestRoutingUser','LatestRoutingState','LatestRoutingTouched',
             'LatestRoutingComment','LatestNonEmptyRoutingComment','Updated','UpdatedRouting','UpdatedComment'
         ]
         if any('CreationComments' in r for r in output_records):
-            cols.insert(6, 'CreationComments')
+            # Insert CreationComments before ComNumber to keep legacy positions near
+            idx = cols.index('ComNumber') if 'ComNumber' in cols else 5
+            cols.insert(idx, 'CreationComments')
         if any('NotesCount' in r for r in output_records):
             cols.append('NotesCount')
         with open(args.out_csv,'w',newline='',encoding='utf-8') as cf:
@@ -398,7 +402,7 @@ def poll(args):
         print(f"[INFO] Wrote only-updated JSON -> {args.only_updated_json} (rows={len(updated_records)})")
     if getattr(args, 'only_updated_csv', None):
         cols2 = [
-            'DeviationNumber','IsClosed','CurrentRouting','DeviationState','Product','SalesOrderNumber','CreationComments',
+            'DeviationNumber','IsClosed','CurrentRouting','DeviationState','Product','ComNumber','SalesOrderNumber','CreationComments',
             'RoutingStepCount','LatestRoutingDepartment','LatestRoutingUser','LatestRoutingState','LatestRoutingTouched',
             'LatestRoutingComment','LatestNonEmptyRoutingComment','Updated','UpdatedRouting','UpdatedComment'
         ]

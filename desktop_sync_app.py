@@ -35,6 +35,12 @@ except Exception as e:
     rus = None
     print('WARNING: report_update_service import failed:', e)
 
+# Ensure DR schema is available
+try:
+    import dr_schema
+except Exception:
+    dr_schema = None
+
 def db_conn():
     return sqlite3.connect(DB_PATH)
 
@@ -328,6 +334,13 @@ class SyncApp(tk.Tk):
         self._creds = None
         self._load_credentials()
         ensure_change_tables()
+        # Create DR tables (no-op if already exist)
+        try:
+            if dr_schema is not None:
+                with db_conn() as conn:
+                    dr_schema.ensure_dr_tables(conn)
+        except Exception as e:
+            self._append_log(f'DR schema init failed: {e}')
         self._append_log('Application initialized. Ready.')
 
     def _build_ui(self):
@@ -374,6 +387,15 @@ class SyncApp(tk.Tk):
         self._start_thread(self._parts_logic, 'Parts Tracker sync running...')
 
     def _run_drs(self):
+        # Validate credentials on the UI thread to avoid background-thread dialogs
+        creds = self._get_saved_or_env_creds()
+        if not creds:
+            messagebox.showwarning('Credentials required', 'Please set DR credentials (5 letters/numbers each) using the "Credentials..." button before running the poller.')
+            self._append_log('DR Poller: missing credentials. Opened Credentials dialog advised.')
+            return
+        user, pwd = creds
+        # Cache into instance so worker can use it
+        self._creds = {'user': user, 'password': pwd}
         self._start_thread(self._drs_logic, 'DR Poller running...')
 
     def _start_thread(self, target, status_msg):
@@ -389,7 +411,9 @@ class SyncApp(tk.Tk):
     def _wrapper(self, func):
         try:
             func()
-        except Exception as e:
+        except SystemExit as e:
+            self._set_status(f'Error: {e}')
+        except BaseException as e:
             self._set_status(f'Error: {e}')
         finally:
             self.running = False
@@ -471,33 +495,11 @@ class SyncApp(tk.Tk):
             # Lazy import to avoid startup overhead
             import types
             import poll_drs_incremental as drp
-            # Credentials: prefer environment, else prompt
-            user = None
-            pwd = None
-            if self._creds:
-                user = self._creds.get('user')
-                pwd = self._creds.get('password')
-            if not user:
-                user = os.getenv('DR_USER') or os.getenv('MOM_USER')
-            if not pwd:
-                pwd = os.getenv('DR_PASSWORD') or os.getenv('MOM_PASSWORD')
-            if not user:
-                user = simpledialog.askstring('DR Poller', 'MOM Username:', parent=self)
-            if user is None or not user.strip():
-                self._set_status('DR Poller cancelled: missing username')
-                return
-            if not pwd:
-                pwd = simpledialog.askstring('DR Poller', 'MOM Password:', parent=self, show='*')
-            if pwd is None or not pwd.strip():
-                self._set_status('DR Poller cancelled: missing password')
-                return
-
-            # Validate 5-character alphanumeric per requirement
-            if not re.fullmatch(r'[A-Za-z0-9]{5}', user.strip()):
-                self._set_status('DR Poller cancelled: username must be 5 letters/numbers')
-                return
-            if not re.fullmatch(r'[A-Za-z0-9]{5}', pwd.strip()):
-                self._set_status('DR Poller cancelled: password must be 5 letters/numbers')
+            # Credentials: must be present already (validated in _run_drs)
+            user = (self._creds or {}).get('user')
+            pwd = (self._creds or {}).get('password')
+            if not user or not pwd:
+                self._set_status('DR Poller error: credentials not set')
                 return
 
             # Output & state paths
@@ -517,7 +519,7 @@ class SyncApp(tk.Tk):
                 tz_offset_hours=0,
                 include_closed=True,
                 include_notes=False,
-                include_history=False,
+                include_history=True,
                 state_file=state_file,
                 out_json=out_json,
                 out_csv=None,
@@ -533,11 +535,54 @@ class SyncApp(tk.Tk):
                 expect_numbers=None,
             )
             self._set_status('DR Poller starting...')
+            self._append_log(f"Output folder: {archive_dir}")
+            self._append_log(f"Files: dr_incremental.json, dr_timings.json, dr_state.json")
             drp.poll(args)
-            self._set_status(f"DR Poller OK -> {out_json}")
+            # Summarize outputs
+            count = None
+            try:
+                if os.path.isfile(out_json):
+                    with open(out_json, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    # data expected is list or dict with 'rows' etc.; try best-effort
+                    if isinstance(data, list):
+                        count = len(data)
+                    elif isinstance(data, dict):
+                        if 'rows' in data and isinstance(data['rows'], list):
+                            count = len(data['rows'])
+                        elif 'drs' in data and isinstance(data['drs'], list):
+                            count = len(data['drs'])
+            except Exception:
+                pass
+            size = os.path.getsize(out_json) if os.path.isfile(out_json) else 0
+            self._set_status(f"DR Poller OK -> dr_incremental.json ({count if count is not None else '?'} items, {size} bytes)")
             self._append_log(f"DR Poller timings -> {timings_json}")
-        except Exception as e:
+            # Auto-ingest into DB
+            try:
+                import dr_ingest
+                res = dr_ingest.ingest_last_poll(DB_PATH, archive_dir)
+                self._append_log(f"DR Ingest -> run_id={res.get('run_id')} snapshots={res.get('snapshots')} events={res.get('timing_events')} state={res.get('state_rows')}")
+            except Exception as ie:
+                self._append_log(f"DR Ingest failed: {ie}")
+        except SystemExit as e:
+            self._set_status(f"DR Poller failed: {e}")
+        except BaseException as e:
             self._set_status(f"DR Poller error: {e}")
+
+    def _get_saved_or_env_creds(self):
+        """Return (user, pwd) if available and valid, else None."""
+        # Prefer saved
+        if self._creds:
+            u = (self._creds.get('user') or '').strip()
+            p = (self._creds.get('password') or '').strip()
+            if re.fullmatch(r'[A-Za-z0-9]{5}', u) and re.fullmatch(r'[A-Za-z0-9]{5}', p):
+                return (u, p)
+        # Env fallback
+        u = (os.getenv('DR_USER') or os.getenv('MOM_USER') or '').strip()
+        p = (os.getenv('DR_PASSWORD') or os.getenv('MOM_PASSWORD') or '').strip()
+        if re.fullmatch(r'[A-Za-z0-9]{5}', u) and re.fullmatch(r'[A-Za-z0-9]{5}', p):
+            return (u, p)
+        return None
 
     # ---------- Credentials persistence ---------- #
     def _creds_path(self) -> str:
