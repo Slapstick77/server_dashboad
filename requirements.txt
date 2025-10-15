@@ -1,0 +1,36 @@
+# Requirements for SQRS Desktop Sync Application
+# Includes dependencies for app.py, desktop_sync_app.py, and DR polling
+
+# Core Python dependencies
+requests>=2.31.0
+python-dateutil>=2.8.2
+
+# SOAP/WCF client for DR polling
+zeep>=4.2.1
+
+# Windows Credential Manager (secure password storage)
+keyring>=24.0.0
+pywin32>=306; sys_platform == 'win32'
+
+# Excel/CSV processing
+openpyxl>=3.1.0
+pandas>=2.0.0
+
+# Database
+# Note: sqlite3 is built-in to Python, no need to install
+
+# GUI (Tkinter is built-in to Python on Windows)
+# Note: tkinter comes with Python installation
+
+# Optional: For better CSV handling
+chardet>=5.2.0
+
+# Optional: For HTTP requests with better error handling
+urllib3>=2.0.0
+
+# Optional: For XML parsing (used by zeep)
+lxml>=4.9.0
+
+# Development/Testing (optional, comment out for production)
+# pytest>=7.4.0
+# black>=23.0.0
