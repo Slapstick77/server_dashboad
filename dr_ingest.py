@@ -86,64 +86,107 @@ def ingest_last_poll(db_path: str, archive_dir: str) -> Dict[str, Any]:
                     comnum = int(str(row.get('ComNumber')).strip())
                 except Exception:
                     comnum = None
+            
+            dn = int(row.get('DeviationNumber'))
+
+            # Delta-only: check if this DR changed since last snapshot
             cur.execute(
                 """
-                INSERT OR REPLACE INTO DRItemSnapshot (
-                    run_id, deviation_number, current_routing, deviation_state, is_closed,
-                    product, sales_order_number, sales_order_number_normalized, comnumber1,
-                    creation_comments, latest_routing_department, latest_routing_user, latest_routing_state,
-                    latest_routing_touched, latest_routing_comment, latest_non_empty_routing_comment,
-                    routing_step_count, updated, updated_routing, updated_comment
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                SELECT deviation_state, latest_routing_user, latest_routing_comment, 
+                       latest_non_empty_routing_comment, routing_step_count
+                FROM DRItemSnapshot
+                WHERE deviation_number = ?
+                ORDER BY run_id DESC
+                LIMIT 1
                 """,
-                (
-                    run_id,
-                    int(row.get('DeviationNumber')),
-                    row.get('CurrentRouting'),
-                    row.get('DeviationState'),
-                    1 if row.get('IsClosed') else 0,
-                    row.get('Product'),
-                    so,
-                    so_norm,
-                    comnum,
-                    row.get('CreationComments'),
-                    row.get('LatestRoutingDepartment'),
-                    row.get('LatestRoutingUser'),
-                    row.get('LatestRoutingState'),
-                    row.get('LatestRoutingTouched'),
-                    row.get('LatestRoutingComment'),
-                    row.get('LatestNonEmptyRoutingComment'),
-                    int(row.get('RoutingStepCount') or 0),
-                    1 if row.get('Updated') else 0,
-                    1 if row.get('UpdatedRouting') else 0,
-                    1 if row.get('UpdatedComment') else 0,
-                ),
+                (dn,)
             )
-            snap_cnt += 1
+            last_snap = cur.fetchone()
+            
+            # Compare key fields to detect changes
+            current_state = row.get('DeviationState')
+            current_user = row.get('LatestRoutingUser')
+            current_comment = row.get('LatestRoutingComment')
+            current_nonempty = row.get('LatestNonEmptyRoutingComment')
+            current_step_count = int(row.get('RoutingStepCount') or 0)
+            
+            changed = (
+                last_snap is None or  # First time seeing this DR
+                last_snap[0] != current_state or
+                last_snap[1] != current_user or
+                last_snap[2] != current_comment or
+                last_snap[3] != current_nonempty or
+                last_snap[4] != current_step_count
+            )
+            
+            if changed:
+                cur.execute(
+                    """
+                    INSERT INTO DRItemSnapshot (
+                        run_id, deviation_number, current_routing, deviation_state, is_closed,
+                        product, sales_order_number, sales_order_number_normalized, comnumber1,
+                        creation_comments, latest_routing_department, latest_routing_user, latest_routing_state,
+                        latest_routing_touched, latest_routing_comment, latest_non_empty_routing_comment,
+                        routing_step_count, updated, updated_routing, updated_comment
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        run_id,
+                        dn,
+                        row.get('CurrentRouting'),
+                        current_state,
+                        1 if row.get('IsClosed') else 0,
+                        row.get('Product'),
+                        so,
+                        so_norm,
+                        comnum,
+                        row.get('CreationComments'),
+                        row.get('LatestRoutingDepartment'),
+                        current_user,
+                        row.get('LatestRoutingState'),
+                        row.get('LatestRoutingTouched'),
+                        current_comment,
+                        current_nonempty,
+                        current_step_count,
+                        1 if row.get('Updated') else 0,
+                        1 if row.get('UpdatedRouting') else 0,
+                        1 if row.get('UpdatedComment') else 0,
+                    ),
+                )
+                snap_cnt += 1
 
             # Optional routing history list
             rh = row.get('RoutingHistory')
             if isinstance(rh, list) and rh:
-                # Insert with deterministic order
+                # Only insert new steps beyond what we already have (append-only comment model)
+                dn = int(row.get('DeviationNumber'))
+                cur.execute(
+                    "SELECT COALESCE(MAX(step_index), -1) FROM DRRoutingStep WHERE deviation_number=?",
+                    (dn,)
+                )
+                last_step_idx = cur.fetchone()[0]
+                
+                # Insert steps beyond last known index
                 for idx, step in enumerate(rh):
-                    cur.execute(
-                        """
-                        INSERT OR REPLACE INTO DRRoutingStep(
-                            run_id, deviation_number, step_index, DateTouched, UserName, RoutingDepartment, State, EmailAddress, UserComments
-                        ) VALUES (?,?,?,?,?,?,?,?,?)
-                        """,
-                        (
-                            run_id,
-                            int(row.get('DeviationNumber')),
-                            idx,
-                            step.get('DateTouched'),
-                            step.get('UserName'),
-                            step.get('RoutingDepartment'),
-                            step.get('State'),
-                            step.get('EmailAddress'),
-                            step.get('UserComments'),
-                        ),
-                    )
+                    if idx > last_step_idx:
+                        cur.execute(
+                            """
+                            INSERT INTO DRRoutingStep(
+                                run_id, deviation_number, step_index, DateTouched, UserName, RoutingDepartment, State, EmailAddress, UserComments
+                            ) VALUES (?,?,?,?,?,?,?,?,?)
+                            """,
+                            (
+                                run_id,
+                                dn,
+                                idx,
+                                step.get('DateTouched'),
+                                step.get('UserName'),
+                                step.get('RoutingDepartment'),
+                                step.get('State'),
+                                step.get('EmailAddress'),
+                                step.get('UserComments'),
+                            ),
+                        )
 
         # Upsert state
         st_cnt = 0

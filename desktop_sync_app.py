@@ -347,15 +347,17 @@ class SyncApp(tk.Tk):
         # Top controls
         top = ttk.Frame(self, padding=10)
         top.pack(fill='x')
-        ttk.Label(top, text='Data Sync', font=('Segoe UI', 14, 'bold')).grid(row=0, column=0, columnspan=6, sticky='w', pady=(0,5))
+        ttk.Label(top, text='Data Sync', font=('Segoe UI', 14, 'bold')).grid(row=0, column=0, columnspan=9, sticky='w', pady=(0,5))
         self.btn_labor = ttk.Button(top, text='Run Labor', command=self._run_labor)
         self.btn_sched = ttk.Button(top, text='Pull SCHSummary', command=self._run_sched)
         self.btn_parts = ttk.Button(top, text='Sync Parts Tracker', command=self._run_parts)
-        self.btn_drs   = ttk.Button(top, text='Poll DRs', command=self._run_drs)
+        self.btn_dr2   = ttk.Button(top, text='Poll DRs (2d)', command=lambda: self._run_drs(2))
+        self.btn_dr7   = ttk.Button(top, text='Poll DRs (7d)', command=lambda: self._run_drs(7))
+        self.btn_dr30  = ttk.Button(top, text='Poll DRs (30d)', command=lambda: self._run_drs(30))
         self.btn_creds = ttk.Button(top, text='Credentials...', command=self._open_credentials_dialog)
         self.btn_stop  = ttk.Button(top, text='Stop', command=self._request_stop, state='disabled')
         self.btn_task  = ttk.Button(top, text='Create Task...', command=self._open_scheduler_dialog)
-        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_drs, self.btn_creds, self.btn_stop, self.btn_task)):
+        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_dr2, self.btn_dr7, self.btn_dr30, self.btn_creds, self.btn_stop, self.btn_task)):
             btn.grid(row=1, column=idx, padx=4, pady=4, sticky='ew')
 
         # Central log panel
@@ -369,11 +371,11 @@ class SyncApp(tk.Tk):
 
     # --------------- Actions --------------- #
     def _disable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_creds,self.btn_stop,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_stop,self.btn_task):
             b.state(['disabled'])
 
     def _enable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_drs,self.btn_creds,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_task):
             b.state(['!disabled'])
         self.btn_stop.state(['disabled'])
 
@@ -386,7 +388,7 @@ class SyncApp(tk.Tk):
     def _run_parts(self):
         self._start_thread(self._parts_logic, 'Parts Tracker sync running...')
 
-    def _run_drs(self):
+    def _run_drs(self, window_days=7):
         # Validate credentials on the UI thread to avoid background-thread dialogs
         creds = self._get_saved_or_env_creds()
         if not creds:
@@ -396,7 +398,8 @@ class SyncApp(tk.Tk):
         user, pwd = creds
         # Cache into instance so worker can use it
         self._creds = {'user': user, 'password': pwd}
-        self._start_thread(self._drs_logic, 'DR Poller running...')
+        self._dr_window_days = window_days  # Store for worker thread
+        self._start_thread(self._drs_logic, f'DR Poller ({window_days}d) running...')
 
     def _start_thread(self, target, status_msg):
         if self.running:
@@ -490,80 +493,85 @@ class SyncApp(tk.Tk):
             self._set_status(f"Parts error: {e}")
 
     def _drs_logic(self):
-        """Run the incremental DR poller to produce JSON output (no DB writes)."""
+        """Run DR poller with history and auto-ingest to DB."""
         try:
-            # Lazy import to avoid startup overhead
-            import types
-            import poll_drs_incremental as drp
             # Credentials: must be present already (validated in _run_drs)
             user = (self._creds or {}).get('user')
             pwd = (self._creds or {}).get('password')
+            window_days = getattr(self, '_dr_window_days', 7)
+            
             if not user or not pwd:
                 self._set_status('DR Poller error: credentials not set')
                 return
 
-            # Output & state paths
+            # Output paths
             archive_dir = os.path.join(ROOT, 'download_archive')
             os.makedirs(archive_dir, exist_ok=True)
             out_json = os.path.join(archive_dir, 'dr_incremental.json')
             timings_json = os.path.join(archive_dir, 'dr_timings.json')
             state_file = os.path.join(archive_dir, 'dr_state.json')
 
-            # Build args namespace following poll() expectations
-            args = types.SimpleNamespace(
-                base_url=os.getenv('MOM_BASE_URL', getattr(drp, 'DEFAULT_BASE_URL', '')),
+            self._set_status(f'DR Poller ({window_days}d) starting...')
+            self._append_log(f"Window: {window_days} days | Output folder: {archive_dir}")
+            
+            # Safety limits based on window size
+            if window_days <= 2:
+                max_drs = 50
+                throttle_sec = 0.1
+            elif window_days <= 7:
+                max_drs = 150
+                throttle_sec = 0.2
+            else:  # 30 days
+                max_drs = 500
+                throttle_sec = 0.5
+            
+            self._append_log(f"Safety: max {max_drs} DRs, {throttle_sec}s throttle (prevents host overload)")
+            
+            # Call inline poller
+            import run_poll_with_history_and_ingest as rph
+            
+            DEFAULT_BASE_URL = 'http://service1.ahu.jci.com/MOM_WCF/ServiceManufacturingDeviationSystem/ServiceManufacturingDeviationSystem.svc'
+            base_url = os.getenv('MOM_BASE_URL', DEFAULT_BASE_URL)
+            app_name = os.getenv('MOM_APP_NAME', 'ManufacturingDeviationSystem')
+            
+            rph.poll_and_write(
+                base_url=base_url,
                 user=user.strip(),
-                password=pwd.strip(),
-                app_name=os.getenv('MOM_APP_NAME','ManufacturingDeviationSystem'),
-                window_days=7,
-                tz_offset_hours=0,
+                pwd=pwd.strip(),
+                app_name=app_name,
+                window_days=window_days,
                 include_closed=True,
-                include_notes=False,
                 include_history=True,
-                state_file=state_file,
                 out_json=out_json,
-                out_csv=None,
-                only_updated_json=None,
-                only_updated_csv=None,
-                retries=3,
-                retry_wait_seconds=1.0,
-                verbose=False,
-                jitter_seconds=0,
-                timings=True,
                 timings_json=timings_json,
-                single_closed_variant=True,
-                expect_numbers=None,
+                state_file=state_file,  # Fixed: was state_json
+                max_drs=max_drs,
+                throttle_seconds=throttle_sec,
             )
-            self._set_status('DR Poller starting...')
-            self._append_log(f"Output folder: {archive_dir}")
-            self._append_log(f"Files: dr_incremental.json, dr_timings.json, dr_state.json")
-            drp.poll(args)
-            # Summarize outputs
+            
+            # Auto-ingest to DB
+            self._append_log("Ingesting poll results to database...")
+            import dr_ingest
+            dr_ingest.ingest_last_poll(
+                db_path=DB_PATH,
+                archive_dir=archive_dir
+            )
+            
+            # Summarize
             count = None
             try:
                 if os.path.isfile(out_json):
                     with open(out_json, 'r', encoding='utf-8') as f:
                         data = json.load(f)
-                    # data expected is list or dict with 'rows' etc.; try best-effort
                     if isinstance(data, list):
                         count = len(data)
-                    elif isinstance(data, dict):
-                        if 'rows' in data and isinstance(data['rows'], list):
-                            count = len(data['rows'])
-                        elif 'drs' in data and isinstance(data['drs'], list):
-                            count = len(data['drs'])
             except Exception:
                 pass
+            
             size = os.path.getsize(out_json) if os.path.isfile(out_json) else 0
-            self._set_status(f"DR Poller OK -> dr_incremental.json ({count if count is not None else '?'} items, {size} bytes)")
-            self._append_log(f"DR Poller timings -> {timings_json}")
-            # Auto-ingest into DB
-            try:
-                import dr_ingest
-                res = dr_ingest.ingest_last_poll(DB_PATH, archive_dir)
-                self._append_log(f"DR Ingest -> run_id={res.get('run_id')} snapshots={res.get('snapshots')} events={res.get('timing_events')} state={res.get('state_rows')}")
-            except Exception as ie:
-                self._append_log(f"DR Ingest failed: {ie}")
+            self._set_status(f"DR Poller ({window_days}d) OK -> {count if count is not None else '?'} DRs ingested to DB")
+            self._append_log(f"JSON: {size} bytes | Auto-ingested with delta logic (no duplicates)")
+            
         except SystemExit as e:
             self._set_status(f"DR Poller failed: {e}")
         except BaseException as e:
