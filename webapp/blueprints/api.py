@@ -5,7 +5,7 @@ All JSON API routes are defined here.
 """
 from flask import Blueprint, jsonify, request
 import sqlite3
-import datetime
+from datetime import datetime, timedelta, timezone
 import re
 from collections import defaultdict
 from .utils import (
@@ -1740,5 +1740,147 @@ def api_parts_search():
     # Return trimmed/proportional subset of columns: include metadata and common fields
     # Let frontend render dynamically
     return jsonify({'rows': rows, 'count': len(rows)})
+
+
+@api.route('/api/dr-live')
+def api_dr_live():
+    """Get live DR data for dashboard - DRs created in last N days, sorted by touch"""
+    from datetime import datetime, timedelta
+    
+    days = int(request.args.get('days', 7))  # Default to 7 days as requested
+    cutoff = datetime.now() - timedelta(days=days)
+    
+    with get_conn() as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        
+        # Get the most recent snapshot of each DR (latest run_id per deviation_number)
+        # Filter by DRs CREATED in the last N days
+        # Sort by most recently TOUCHED
+        sql = '''
+            WITH LatestDRs AS (
+                SELECT deviation_number, MAX(run_id) as latest_run
+                FROM DRItemSnapshot
+                GROUP BY deviation_number
+            ),
+            -- Get the EARLIEST routing step (by DateTouched) = creator/original
+            FirstRouting AS (
+                SELECT deviation_number, MIN(DateTouched) as earliest_date
+                FROM DRRoutingStep
+                GROUP BY deviation_number
+            ),
+            CreatorInfo AS (
+                SELECT r.deviation_number, 
+                       r.UserName as creator_name, 
+                       r.UserComments as creator_comment,
+                       r.step_index
+                FROM DRRoutingStep r
+                INNER JOIN FirstRouting f ON r.deviation_number = f.deviation_number 
+                    AND r.DateTouched = f.earliest_date
+            ),
+            CreatorInfoDeduped AS (
+                SELECT deviation_number,
+                       MAX(creator_name) as creator_name,
+                       MAX(creator_comment) as creator_comment
+                FROM CreatorInfo
+                GROUP BY deviation_number
+            ),
+            -- Get the LATEST routing step with a non-NULL comment
+            LatestRouting AS (
+                SELECT deviation_number, MAX(DateTouched) as latest_date
+                FROM DRRoutingStep
+                WHERE UserComments IS NOT NULL
+                GROUP BY deviation_number
+            ),
+            LatestCommentInfo AS (
+                SELECT r.deviation_number, 
+                       r.UserName as latest_user, 
+                       r.UserComments as latest_comment
+                FROM DRRoutingStep r
+                INNER JOIN LatestRouting l ON r.deviation_number = l.deviation_number 
+                    AND r.DateTouched = l.latest_date
+            ),
+            LatestCommentDeduped AS (
+                SELECT deviation_number,
+                       MAX(latest_user) as latest_user,
+                       MAX(latest_comment) as latest_comment
+                FROM LatestCommentInfo
+                GROUP BY deviation_number
+            )
+            SELECT 
+                d.deviation_number,
+                d.current_routing,
+                d.deviation_state,
+                d.creation_comments,
+                d.latest_routing_touched,
+                d.latest_routing_comment,
+                d.latest_routing_user,
+                d.comnumber1,
+                m.urgency,
+                m.date_created,
+                m.user_created,
+                c.creator_name,
+                c.creator_comment,
+                lc.latest_user as routing_latest_user,
+                lc.latest_comment as routing_latest_comment
+            FROM DRItemSnapshot d
+            INNER JOIN LatestDRs l ON d.deviation_number = l.deviation_number AND d.run_id = l.latest_run
+            LEFT JOIN DRStaticMetadata m ON d.deviation_number = m.deviation_number
+            LEFT JOIN CreatorInfoDeduped c ON d.deviation_number = c.deviation_number
+            LEFT JOIN LatestCommentDeduped lc ON d.deviation_number = lc.deviation_number
+            WHERE m.date_created IS NOT NULL
+              AND datetime(m.date_created) >= datetime(?)
+            ORDER BY datetime(d.latest_routing_touched) DESC
+        '''
+        
+        cur.execute(sql, (cutoff.isoformat(),))
+        rows = cur.fetchall()
+        
+        results = []
+        for r in rows:
+            # Parse dates for client-side timer calculation
+            # Timestamps in DB are stored as UTC but without timezone indicator
+            created_ms = None
+            if r['date_created']:
+                try:
+                    # Parse as naive datetime then treat as UTC
+                    dt = datetime.fromisoformat(r['date_created'].split('.')[0])  # Remove microseconds
+                    # Add UTC timezone
+                    dt = dt.replace(tzinfo=timezone.utc)
+                    # Convert to epoch milliseconds
+                    created_ms = int(dt.timestamp() * 1000)
+                except:
+                    pass
+            
+            # Use latest_routing_touched for time in current route
+            touched_ms = None
+            if r['latest_routing_touched']:
+                try:
+                    # Parse as naive datetime then treat as UTC
+                    dt = datetime.fromisoformat(r['latest_routing_touched'].split('.')[0])  # Remove microseconds
+                    # Add UTC timezone
+                    dt = dt.replace(tzinfo=timezone.utc)
+                    # Convert to epoch milliseconds
+                    touched_ms = int(dt.timestamp() * 1000)
+                except:
+                    pass
+            
+            results.append({
+                'deviation_number': r['deviation_number'],
+                'current_routing': r['current_routing'],
+                'state': r['deviation_state'],
+                'creation_comments': r['creation_comments'],
+                'latest_comment': r['routing_latest_comment'],  # From DRRoutingStep latest with comment
+                'latest_user': r['routing_latest_user'],  # From DRRoutingStep latest with comment
+                'creator_user': r['creator_name'],  # From DRRoutingStep earliest by DateTouched
+                'creator_comment': r['creator_comment'],  # Original comment from creator
+                'com': r['comnumber1'],
+                'urgency': r['urgency'],
+                'created_ms': created_ms,
+                'touched_ms': touched_ms  # This is the latest_routing_touched
+            })
+        
+        return jsonify(results)
+
 
 

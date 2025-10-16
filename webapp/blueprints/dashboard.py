@@ -2813,3 +2813,408 @@ def com_lookup():
     """
     return render_template_string(page)
 
+
+@dashboard.route('/dr-dashboard')
+def dr_dashboard():
+    """Live DR Dashboard - Last 3 days with real-time timers"""
+    from datetime import datetime, timedelta
+    
+    page = """<!doctype html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>DR Live Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .fullscreen-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .fullscreen-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+        .refresh-indicator {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .dr-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .dr-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+            border-color: rgba(148, 163, 184, 0.4);
+        }
+        .dr-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--urgency-color), var(--urgency-color-light));
+        }
+        .dr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .dr-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        .urgency-badge {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            box-shadow: 0 0 12px var(--urgency-color);
+            animation: glow 2s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 8px var(--urgency-color); }
+            50% { box-shadow: 0 0 20px var(--urgency-color); }
+        }
+        .dr-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .info-row {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .info-label {
+            opacity: 0.6;
+            min-width: 80px;
+        }
+        .info-value {
+            font-weight: 500;
+        }
+        .comment-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 3px solid #3b82f6;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .comment-label {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .routing-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        .routing-dept {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+        .timers {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        .timer {
+            flex: 1;
+            text-align: center;
+        }
+        .timer-label {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .timer-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #60a5fa;
+        }
+        .no-data {
+            text-align: center;
+            padding: 4rem 2rem;
+            opacity: 0.5;
+            font-size: 1.2rem;
+        }
+        :fullscreen {
+            padding: 2rem;
+        }
+        :fullscreen .header {
+            margin-bottom: 3rem;
+        }
+        :fullscreen .cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔴 Live DR Dashboard</h1>
+        <div class="header-controls">
+            <div class="refresh-indicator">
+                <span class="pulse">●</span>
+                <span>Auto-refresh: 30s</span>
+            </div>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                ⛶ Fullscreen
+            </button>
+        </div>
+    </div>
+    <div class="cards-container" id="cards"></div>
+    <div class="no-data" id="no-data" style="display:none">
+        No DRs created in the last 7 days
+    </div>
+    
+    <script>
+        let drs = [];
+        let updateInterval;
+        
+        function getUrgencyColor(urgency) {
+            if (!urgency) return { color: '#6366f1', light: '#818cf8' }; // blue
+            const u = urgency.toLowerCase();
+            if (u.includes('critical') || u.includes('asap')) {
+                return { color: '#dc2626', light: '#ef4444' }; // red
+            }
+            if (u.includes('end of shift')) {
+                return { color: '#ea580c', light: '#f97316' }; // orange
+            }
+            if (u.includes('next day') || u.includes('24')) {
+                return { color: '#ca8a04', light: '#eab308' }; // yellow
+            }
+            return { color: '#16a34a', light: '#22c55e' }; // green
+        }
+        
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m`;
+            return `${seconds}s`;
+        }
+        
+        function updateTimers() {
+            const now = Date.now();
+            drs.forEach((dr, idx) => {
+                const card = document.querySelector(`[data-dr-idx="${idx}"]`);
+                if (!card) return;
+                
+                // Time since creation
+                if (dr.created_ms) {
+                    const elapsed = Math.abs(now - dr.created_ms);
+                    const el = card.querySelector('.timer-created');
+                    if (el) el.textContent = formatDuration(elapsed);
+                }
+                
+                // Time in current route
+                if (dr.touched_ms) {
+                    const elapsed = Math.abs(now - dr.touched_ms);
+                    const el = card.querySelector('.timer-routing');
+                    if (el) el.textContent = formatDuration(elapsed);
+                }
+                
+                // Time since last action (same as touched_ms, but labeled differently for clarity)
+                if (dr.touched_ms) {
+                    const elapsed = Math.abs(now - dr.touched_ms);
+                    const el = card.querySelector('.timer-lastaction');
+                    if (el) el.textContent = formatDuration(elapsed) + ' ago';
+                }
+            });
+        }
+        
+        function renderCard(dr, idx) {
+            const colors = getUrgencyColor(dr.urgency);
+            const card = document.createElement('div');
+            card.className = 'dr-card';
+            card.dataset.drIdx = idx;
+            card.style.setProperty('--urgency-color', colors.color);
+            card.style.setProperty('--urgency-color-light', colors.light);
+            
+            card.innerHTML = `
+                <div class="dr-header">
+                    <div class="dr-number">DR #${dr.deviation_number}</div>
+                    <div class="urgency-badge" style="background:${colors.color}"></div>
+                </div>
+                <div class="dr-info">
+                    ${dr.com ? `<div class="info-row"><span class="info-label">COM#:</span><span class="info-value">${dr.com}</span></div>` : ''}
+                    ${dr.urgency ? `<div class="info-row"><span class="info-label">Urgency:</span><span class="info-value">${dr.urgency}</span></div>` : ''}
+                    ${dr.state ? `<div class="info-row"><span class="info-label">State:</span><span class="info-value">${dr.state}</span></div>` : ''}
+                </div>
+                ${dr.creator_comment ? `
+                    <div class="comment-box">
+                        <div class="comment-label">Original Issue${dr.creator_user ? ` • ${dr.creator_user}` : ''}</div>
+                        ${dr.creator_comment}
+                    </div>
+                ` : ''}
+                ${(dr.latest_comment && dr.latest_comment !== dr.creator_comment) ? `
+                    <div class="comment-box">
+                        <div class="comment-label">Latest Comment${dr.latest_user ? ` • ${dr.latest_user}` : ''}</div>
+                        ${dr.latest_comment}
+                    </div>
+                ` : (!dr.latest_comment && dr.creator_comment && dr.latest_user && dr.latest_user !== dr.creator_user) ? `
+                    <div class="comment-box">
+                        <div class="comment-label">Latest Comment • ${dr.latest_user}</div>
+                        ${dr.creator_comment}
+                    </div>
+                ` : ''}
+                <div class="routing-info">
+                    <div class="routing-dept">${dr.current_routing || 'Unknown Dept'}</div>
+                </div>
+                <div class="timers">
+                    <div class="timer">
+                        <div class="timer-label">Since Created</div>
+                        <div class="timer-value timer-created">--</div>
+                    </div>
+                    <div class="timer">
+                        <div class="timer-label">In Current Route</div>
+                        <div class="timer-value timer-routing">--</div>
+                    </div>
+                    <div class="timer">
+                        <div class="timer-label">Last Action</div>
+                        <div class="timer-value timer-lastaction">--</div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+        
+        async function loadData() {
+            try {
+                const resp = await fetch('/api/dr-live?days=7');
+                drs = await resp.json();
+                
+                // Sort by touched_ms DESC (most recent first)
+                drs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));
+                
+                const container = document.getElementById('cards');
+                const noData = document.getElementById('no-data');
+                
+                if (drs.length === 0) {
+                    container.innerHTML = '';
+                    noData.style.display = 'block';
+                    return;
+                }
+                
+                noData.style.display = 'none';
+                container.innerHTML = '';
+                drs.forEach((dr, idx) => {
+                    container.appendChild(renderCard(dr, idx));
+                });
+                
+                updateTimers();
+            } catch (e) {
+                console.error('Failed to load DR data:', e);
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Initial load
+        loadData();
+        
+        // Update timers every second
+        setInterval(updateTimers, 1000);
+        
+        // Reload data every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
+    """
+    return render_template_string(page)
+
