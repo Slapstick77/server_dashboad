@@ -1330,6 +1330,8 @@ def main():
     parser = argparse.ArgumentParser(description='Desktop Data Sync App')
     parser.add_argument('--headless', action='store_true', 
                        help='Run in headless mode (no GUI, auto-scheduler only)')
+    parser.add_argument('--log-file', type=str, default=None,
+                       help='Log file for headless mode output')
     args = parser.parse_args()
     
     if not os.path.isfile(DB_PATH):
@@ -1343,16 +1345,74 @@ def main():
     if args.headless:
         # Run in headless mode - no GUI, just scheduler
         from threading import Event
-        print('Starting in headless mode...')
+        
+        # Set up logging if requested
+        if args.log_file:
+            log_path = args.log_file
+        else:
+            log_path = os.path.join(ROOT, 'auto_sync_headless.log')
+        
+        # Log to file
+        class Logger:
+            def __init__(self, filename):
+                self.terminal = sys.stdout
+                self.log = open(filename, 'a', encoding='utf-8')
+            
+            def write(self, message):
+                self.terminal.write(message)
+                self.log.write(message)
+                self.log.flush()
+            
+            def flush(self):
+                self.terminal.flush()
+                self.log.flush()
+        
+        sys.stdout = Logger(log_path)
+        sys.stderr = sys.stdout
+        
+        print(f'\n{"="*60}')
+        print(f'Desktop Sync App - HEADLESS MODE')
+        print(f'Started: {datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")}')
+        print(f'Config: {CONFIG_FILE}')
+        print(f'Log: {log_path}')
+        print(f'{"="*60}\n')
+        
+        # Check for credentials
+        creds = _get_creds_headless()
+        if creds:
+            print(f'✓ Credentials loaded for user: {creds[0]}')
+        else:
+            print('⚠ WARNING: No DR credentials found (DR tasks will fail)')
+            print('  Set via Windows Credential Manager or environment variables:')
+            print('  - DR_USERNAME')
+            print('  - DR_PASSWORD')
+        
+        # Load and start scheduler
         scheduler = AutoScheduler(headless=True)
         scheduler.load_config()
+        
+        enabled_tasks = [name for name, cfg in scheduler.config.items() if cfg['enabled']]
+        if not enabled_tasks:
+            print('\n⚠ WARNING: No tasks are enabled!')
+            print(f'  Edit {CONFIG_FILE} to enable tasks, or run GUI mode to configure.')
+            print('  Exiting...\n')
+            sys.exit(0)
+        
+        print(f'\nEnabled tasks: {", ".join(enabled_tasks)}')
         scheduler.start_all_enabled()
-        print('Auto-scheduler started. Press Ctrl+C to stop.')
+        
+        print('\n✓ Auto-scheduler started. Press Ctrl+C to stop.\n')
+        print(f'{"="*60}\n')
+        
         try:
             Event().wait()  # Wait forever
         except KeyboardInterrupt:
-            print('\nStopping...')
+            print(f'\n\n{"="*60}')
+            print('Received shutdown signal...')
             scheduler.stop_all()
+            print('✓ All tasks stopped')
+            print(f'Stopped: {datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")}')
+            print(f'{"="*60}\n')
     else:
         # Run with GUI
         app = SyncApp()

@@ -2891,21 +2891,35 @@ def dr_dashboard():
         }
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 1.5rem;
-            max-width: 1800px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            max-width: 100%;
             margin: 0 auto;
         }
         .dr-card {
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1rem;
             border: 1px solid rgba(148, 163, 184, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        .dr-card.completed {
+            background: linear-gradient(135deg, rgba(5, 46, 22, 0.8) 0%, rgba(6, 78, 59, 0.6) 100%);
+            border-color: rgba(34, 197, 94, 0.4);
+            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
+        }
+        .dr-card.completed::before {
+            background: linear-gradient(90deg, #22c55e, #10b981) !important;
+        }
+        .dr-card.completed .routing-dept {
+            color: #86efac;
         }
         .dr-card:hover {
             transform: translateY(-4px);
@@ -2928,75 +2942,103 @@ def dr_dashboard():
             margin-bottom: 1rem;
         }
         .dr-number {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         .urgency-badge {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-            box-shadow: 0 0 12px var(--urgency-color);
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--urgency-color);
             animation: glow 2s ease-in-out infinite;
         }
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 8px var(--urgency-color); }
-            50% { box-shadow: 0 0 20px var(--urgency-color); }
+            0%, 100% { box-shadow: 0 0 6px var(--urgency-color); }
+            50% { box-shadow: 0 0 16px var(--urgency-color); }
         }
         .dr-info {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+            flex: 1;
         }
         .info-row {
             display: flex;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            gap: 0.4rem;
+            font-size: 0.75rem;
         }
         .info-label {
             opacity: 0.6;
-            min-width: 80px;
+            min-width: 65px;
         }
         .info-value {
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .comment-box {
             background: rgba(15, 23, 42, 0.6);
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-left: 3px solid #3b82f6;
-            font-size: 0.85rem;
-            line-height: 1.5;
+            border-radius: 8px;
+            padding: 0.6rem;
+            margin: 0.5rem 0;
+            border-left: 2px solid #3b82f6;
+            font-size: 0.7rem;
+            line-height: 1.4;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .comment-box.complete {
+            border-left-color: #22c55e;
+            background: rgba(5, 46, 22, 0.4);
+        }
+        .completion-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+        .completion-time {
+            font-size: 0.65rem;
+            opacity: 0.8;
+            margin-top: 0.3rem;
+            font-style: italic;
         }
         .comment-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             opacity: 0.6;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         .routing-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(15, 23, 42, 0.4);
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-top: 1rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
         }
         .routing-dept {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #60a5fa;
         }
         .timers {
             display: flex;
-            gap: 1.5rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
+            gap: 0.75rem;
+            margin-top: auto;
+            padding-top: 0.75rem;
             border-top: 1px solid rgba(148, 163, 184, 0.2);
         }
         .timer {
@@ -3004,14 +3046,14 @@ def dr_dashboard():
             text-align: center;
         }
         .timer-label {
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             opacity: 0.6;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         .timer-value {
-            font-size: 1.25rem;
+            font-size: 0.95rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
@@ -3023,19 +3065,55 @@ def dr_dashboard():
             font-size: 1.2rem;
         }
         :fullscreen {
-            padding: 2rem;
+            padding: 1.5rem;
         }
         :fullscreen .header {
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
         :fullscreen .cards-container {
-            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.2rem;
+        }
+        :fullscreen .dr-card {
+            min-height: 320px;
+        }
+        
+        /* Responsive breakpoints */
+        @media (max-width: 1920px) {
+            .cards-container {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        @media (max-width: 1600px) {
+            .cards-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        @media (max-width: 1200px) {
+            .cards-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 900px) {
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🔴 Live DR Dashboard</h1>
+        <div style="flex: 1;">
+            <h1>🔴 Live DR Dashboard</h1>
+            <div id="avg-completion" style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">
+                Loading metrics...
+            </div>
+        </div>
         <div class="header-controls">
             <div class="refresh-indicator">
                 <span class="pulse">●</span>
@@ -3088,6 +3166,9 @@ def dr_dashboard():
                 const card = document.querySelector(`[data-dr-idx="${idx}"]`);
                 if (!card) return;
                 
+                // Skip timer updates for completed DRs (they show static completion time)
+                if (card.dataset.completed === 'true') return;
+                
                 // Time since creation
                 if (dr.created_ms) {
                     const elapsed = Math.abs(now - dr.created_ms);
@@ -3113,16 +3194,62 @@ def dr_dashboard():
         
         function renderCard(dr, idx) {
             const colors = getUrgencyColor(dr.urgency);
+            
+            // Check if latest comment contains "complete"
+            const isComplete = dr.latest_comment && dr.latest_comment.toLowerCase().includes('complete');
+            
+            // Calculate completion time (from creation to latest comment with "complete")
+            let completionDuration = 0;
+            if (isComplete && dr.created_ms && dr.touched_ms) {
+                completionDuration = Math.abs(dr.touched_ms - dr.created_ms);
+            }
+            
             const card = document.createElement('div');
-            card.className = 'dr-card';
+            card.className = 'dr-card' + (isComplete ? ' completed' : '');
             card.dataset.drIdx = idx;
-            card.style.setProperty('--urgency-color', colors.color);
-            card.style.setProperty('--urgency-color-light', colors.light);
+            card.dataset.completed = isComplete ? 'true' : 'false';
+            card.dataset.completionMs = completionDuration;
+            card.style.setProperty('--urgency-color', isComplete ? '#22c55e' : colors.color);
+            card.style.setProperty('--urgency-color-light', isComplete ? '#4ade80' : colors.light);
+            
+            // Different timer sections for completed vs in-progress DRs
+            let timersHtml;
+            if (isComplete) {
+                // Show only completion time for completed DRs
+                timersHtml = `
+                    <div class="timers">
+                        <div class="timer" style="flex: 1; text-align: center;">
+                            <div class="timer-label">✓ DR Completed In</div>
+                            <div class="timer-value" style="color: #22c55e; font-size: 1.2rem;">
+                                ${formatDuration(completionDuration)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Show all three timers for in-progress DRs
+                timersHtml = `
+                    <div class="timers">
+                        <div class="timer">
+                            <div class="timer-label">Since Created</div>
+                            <div class="timer-value timer-created">--</div>
+                        </div>
+                        <div class="timer">
+                            <div class="timer-label">In Current Route</div>
+                            <div class="timer-value timer-routing">--</div>
+                        </div>
+                        <div class="timer">
+                            <div class="timer-label">Last Action</div>
+                            <div class="timer-value timer-lastaction">--</div>
+                        </div>
+                    </div>
+                `;
+            }
             
             card.innerHTML = `
                 <div class="dr-header">
                     <div class="dr-number">DR #${dr.deviation_number}</div>
-                    <div class="urgency-badge" style="background:${colors.color}"></div>
+                    <div class="urgency-badge" style="background:${isComplete ? '#22c55e' : colors.color}"></div>
                 </div>
                 <div class="dr-info">
                     ${dr.com ? `<div class="info-row"><span class="info-label">COM#:</span><span class="info-value">${dr.com}</span></div>` : ''}
@@ -3136,7 +3263,7 @@ def dr_dashboard():
                     </div>
                 ` : ''}
                 ${(dr.latest_comment && dr.latest_comment !== dr.creator_comment) ? `
-                    <div class="comment-box">
+                    <div class="comment-box${isComplete ? ' complete' : ''}">
                         <div class="comment-label">Latest Comment${dr.latest_user ? ` • ${dr.latest_user}` : ''}</div>
                         ${dr.latest_comment}
                     </div>
@@ -3149,20 +3276,7 @@ def dr_dashboard():
                 <div class="routing-info">
                     <div class="routing-dept">${dr.current_routing || 'Unknown Dept'}</div>
                 </div>
-                <div class="timers">
-                    <div class="timer">
-                        <div class="timer-label">Since Created</div>
-                        <div class="timer-value timer-created">--</div>
-                    </div>
-                    <div class="timer">
-                        <div class="timer-label">In Current Route</div>
-                        <div class="timer-value timer-routing">--</div>
-                    </div>
-                    <div class="timer">
-                        <div class="timer-label">Last Action</div>
-                        <div class="timer-value timer-lastaction">--</div>
-                    </div>
-                </div>
+                ${timersHtml}
             `;
             return card;
         }
@@ -3177,11 +3291,43 @@ def dr_dashboard():
                 
                 const container = document.getElementById('cards');
                 const noData = document.getElementById('no-data');
+                const avgDiv = document.getElementById('avg-completion');
                 
                 if (drs.length === 0) {
                     container.innerHTML = '';
                     noData.style.display = 'block';
+                    avgDiv.textContent = 'No data available';
                     return;
+                }
+                
+                // Calculate average completion time for completed DRs
+                const completedDRs = drs.filter(dr => 
+                    dr.latest_comment && 
+                    dr.latest_comment.toLowerCase().includes('complete') &&
+                    dr.created_ms && 
+                    dr.touched_ms
+                );
+                
+                if (completedDRs.length > 0) {
+                    const totalCompletionTime = completedDRs.reduce((sum, dr) => {
+                        return sum + Math.abs(dr.touched_ms - dr.created_ms);
+                    }, 0);
+                    const avgCompletionTime = totalCompletionTime / completedDRs.length;
+                    
+                    avgDiv.innerHTML = `
+                        <span style="color: #22c55e; font-weight: 600;">
+                            ⏱ Average Manufactured Part DR Completion Time: ${formatDuration(avgCompletionTime)}
+                        </span>
+                        <span style="opacity: 0.7; margin-left: 1rem; font-size: 0.9rem;">
+                            (${completedDRs.length} completed / ${drs.length} total)
+                        </span>
+                    `;
+                } else {
+                    avgDiv.innerHTML = `
+                        <span style="opacity: 0.7;">
+                            ${drs.length} active DRs • No completed DRs in this period
+                        </span>
+                    `;
                 }
                 
                 noData.style.display = 'none';
