@@ -1,0 +1,26 @@
+{
+  "labor": {
+    "enabled": false,
+    "interval_minutes": 1440
+  },
+  "scheduling": {
+    "enabled": false,
+    "interval_minutes": 480
+  },
+  "parts": {
+    "enabled": false,
+    "interval_minutes": 720
+  },
+  "dr_2d": {
+    "enabled": false,
+    "interval_minutes": 60
+  },
+  "dr_7d": {
+    "enabled": true,
+    "interval_minutes": 60
+  },
+  "dr_30d": {
+    "enabled": false,
+    "interval_minutes": 180
+  }
+}

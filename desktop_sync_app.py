@@ -1,24 +1,30 @@
 """Desktop Data Sync App (Windows GUI)
 
-Simplified log‑centric UI.
+Simplified log‑centric UI with auto-refresh capabilities.
 
 Functions:
     - Labor Backfill (full reprocess with dedupe)
     - Scheduling Summary 120‑Day Upsert (past 60 / next 60 days) with change stats
-    - Create Windows Scheduled Tasks (labor+schedule combined)
+    - Parts Tracker sync
+    - DR Polling (2d, 7d, 30d windows)
+    - Auto-refresh timers for all tasks (configurable intervals)
+    - Headless mode for background execution
+
+Run with GUI:  python desktop_sync_app.py
+Run headless:  python desktop_sync_app.py --headless
 
 Depends on: SCHLabor.db, report_update_service.py, clean.py, PowerShell scripts.
-Run:  python desktop_sync_app.py
 """
 from __future__ import annotations
-import os, sqlite3, threading, csv, subprocess, sys, glob, shutil, time, hashlib, re, json
-from datetime import datetime
+import os, sqlite3, threading, csv, subprocess, sys, glob, shutil, time, hashlib, re, json, argparse
+from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
 
 ROOT = os.path.dirname(__file__)
 DB_PATH = os.path.join(ROOT, 'SCHLabor.db')
 CREDS_SERVICE = 'SQRS_DR'
+CONFIG_FILE = os.path.join(ROOT, 'auto_sync_config.json')
 
 # Optional secure storage via Windows Credential Manager (keyring)
 try:
@@ -307,6 +313,269 @@ def sync_parts_tracker(csv_path: str, progress=None) -> dict:
     skipped = max(0, rows_total - last_row - new_cnt)
     return {'ok': True, 'rows': rows_total, 'new': new_cnt, 'updated': 0, 'skipped': skipped, 'key_cols': key_cols}
 
+# ---------- Auto-Scheduler for Background Polling ---------- #
+
+class AutoScheduler:
+    """Manages auto-refresh timers for all sync operations.
+    
+    Can run in headless mode (no GUI) or be controlled by GUI.
+    Saves/loads config from JSON file.
+    """
+    
+    DEFAULT_CONFIG = {
+        'labor': {'enabled': False, 'interval_minutes': 1440},  # Daily
+        'scheduling': {'enabled': False, 'interval_minutes': 480},  # 8 hours
+        'parts': {'enabled': False, 'interval_minutes': 720},  # 12 hours
+        'dr_2d': {'enabled': False, 'interval_minutes': 60},  # Hourly
+        'dr_7d': {'enabled': False, 'interval_minutes': 60},  # Hourly
+        'dr_30d': {'enabled': False, 'interval_minutes': 180}  # 3 hours
+    }
+    
+    def __init__(self, headless=False, gui_app=None):
+        """Initialize scheduler.
+        
+        Args:
+            headless: If True, runs without GUI (uses threading.Timer instead of tk.after)
+            gui_app: Reference to SyncApp instance if running with GUI
+        """
+        self.headless = headless
+        self.gui_app = gui_app
+        self.config = self.DEFAULT_CONFIG.copy()
+        self.timers = {}  # task_name -> timer_id or threading.Timer
+        self.next_runs = {}  # task_name -> datetime
+        
+    def load_config(self):
+        """Load config from JSON file."""
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, 'r') as f:
+                    loaded = json.load(f)
+                    # Merge with defaults to handle missing keys
+                    for task, defaults in self.DEFAULT_CONFIG.items():
+                        if task in loaded:
+                            self.config[task] = {**defaults, **loaded[task]}
+                print(f'Loaded config from {CONFIG_FILE}')
+            except Exception as e:
+                print(f'Failed to load config: {e}')
+                
+    def save_config(self):
+        """Save config to JSON file."""
+        try:
+            with open(CONFIG_FILE, 'w') as f:
+                json.dump(self.config, f, indent=2)
+            print(f'Saved config to {CONFIG_FILE}')
+        except Exception as e:
+            print(f'Failed to save config: {e}')
+            
+    def set_task_config(self, task_name, enabled, interval_minutes):
+        """Update config for a specific task."""
+        if task_name in self.config:
+            self.config[task_name]['enabled'] = enabled
+            self.config[task_name]['interval_minutes'] = interval_minutes
+            self.save_config()
+            
+    def start_task(self, task_name):
+        """Start auto-refresh timer for a task."""
+        if task_name not in self.config:
+            return
+            
+        cfg = self.config[task_name]
+        if not cfg['enabled']:
+            return
+            
+        interval_mins = cfg['interval_minutes']
+        next_run = datetime.now() + timedelta(minutes=interval_mins)
+        self.next_runs[task_name] = next_run
+        
+        if self.headless:
+            # Use threading.Timer for headless mode
+            import threading
+            timer = threading.Timer(interval_mins * 60, lambda: self._task_callback(task_name))
+            timer.daemon = True
+            timer.start()
+            self.timers[task_name] = timer
+            print(f'[{task_name}] Scheduled for {next_run.strftime("%I:%M %p")} ({interval_mins}m)')
+        else:
+            # Use tk.after for GUI mode
+            if self.gui_app:
+                timer_id = self.gui_app.after(interval_mins * 60 * 1000, 
+                                              lambda: self._task_callback(task_name))
+                self.timers[task_name] = timer_id
+                self.gui_app._append_log(f'[AUTO] {task_name}: scheduled for {next_run.strftime("%I:%M %p")}')
+                
+    def stop_task(self, task_name):
+        """Stop auto-refresh timer for a task."""
+        if task_name in self.timers:
+            timer = self.timers[task_name]
+            if self.headless:
+                if hasattr(timer, 'cancel'):
+                    timer.cancel()
+            else:
+                if self.gui_app:
+                    self.gui_app.after_cancel(timer)
+            del self.timers[task_name]
+            
+        if task_name in self.next_runs:
+            del self.next_runs[task_name]
+            
+    def start_all_enabled(self):
+        """Start timers for all enabled tasks."""
+        for task_name, cfg in self.config.items():
+            if cfg['enabled']:
+                self.start_task(task_name)
+                
+    def stop_all(self):
+        """Stop all running timers."""
+        for task_name in list(self.timers.keys()):
+            self.stop_task(task_name)
+            
+    def _task_callback(self, task_name):
+        """Called when a task timer fires."""
+        if self.headless:
+            print(f'[AUTO-REFRESH] Running {task_name}...')
+            self._execute_task_headless(task_name)
+        else:
+            if self.gui_app:
+                self.gui_app._append_log(f'[AUTO-REFRESH] Running {task_name}...')
+                self._execute_task_gui(task_name)
+                
+        # Reschedule if still enabled
+        if self.config[task_name]['enabled']:
+            self.start_task(task_name)
+            
+    def _execute_task_headless(self, task_name):
+        """Execute a task in headless mode (direct function calls)."""
+        try:
+            if task_name == 'labor':
+                if rus:
+                    print(f'[{task_name}] Starting labor backfill...')
+                    rus.labor_backfill(progress=None)
+                    print(f'[{task_name}] Completed')
+                else:
+                    print(f'[{task_name}] ERROR: rus module not available')
+                    
+            elif task_name == 'scheduling':
+                if rus:
+                    print(f'[{task_name}] Starting scheduling summary...')
+                    rus.update_scheduling_summary(progress=None)
+                    print(f'[{task_name}] Completed')
+                else:
+                    print(f'[{task_name}] ERROR: rus module not available')
+                    
+            elif task_name == 'parts':
+                csv_path = r"P:\\Database Parts Tracker\\Database Part Tracker II.csv"
+                print(f'[{task_name}] Starting parts sync from {csv_path}...')
+                result = sync_parts_tracker(csv_path, progress=None)
+                if result.get('ok'):
+                    print(f'[{task_name}] Completed: rows={result["rows"]} new={result["new"]}')
+                else:
+                    print(f'[{task_name}] ERROR: {result.get("error")}')
+                    
+            elif task_name.startswith('dr_'):
+                days = int(task_name.split('_')[1].replace('d', ''))
+                creds = _get_creds_headless()
+                if not creds:
+                    print(f'[{task_name}] ERROR: No credentials available')
+                    return
+                    
+                print(f'[{task_name}] Starting DR poll ({days} days)...')
+                
+                # Run DR poller
+                import run_poll_with_history_and_ingest as rph
+                import dr_ingest
+                
+                archive_dir = os.path.join(ROOT, 'download_archive')
+                os.makedirs(archive_dir, exist_ok=True)
+                out_json = os.path.join(archive_dir, 'dr_incremental.json')
+                timings_json = os.path.join(archive_dir, 'dr_timings.json')
+                state_file = os.path.join(archive_dir, 'dr_state.json')
+                
+                # Safety limits
+                if days <= 2:
+                    max_drs, throttle = 50, 0.1
+                elif days <= 7:
+                    max_drs, throttle = 150, 0.2
+                else:
+                    max_drs, throttle = 500, 0.5
+                
+                DEFAULT_BASE_URL = 'http://service1.ahu.jci.com/MOM_WCF/ServiceManufacturingDeviationSystem/ServiceManufacturingDeviationSystem.svc'
+                base_url = os.getenv('MOM_BASE_URL', DEFAULT_BASE_URL)
+                app_name = os.getenv('MOM_APP_NAME', 'ManufacturingDeviationSystem')
+                
+                urgency_map = rph.poll_and_write(
+                    base_url=base_url,
+                    user=creds[0].strip(),
+                    pwd=creds[1].strip(),
+                    app_name=app_name,
+                    window_days=days,
+                    include_closed=True,
+                    include_history=True,
+                    out_json=out_json,
+                    timings_json=timings_json,
+                    state_file=state_file,
+                    max_drs=max_drs,
+                    throttle_seconds=throttle,
+                )
+                
+                # Ingest to DB
+                dr_ingest.ingest_last_poll(
+                    db_path=DB_PATH,
+                    archive_dir=archive_dir,
+                    urgency_map=urgency_map or {}
+                )
+                
+                # Count results
+                count = 0
+                if os.path.isfile(out_json):
+                    with open(out_json, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    if isinstance(data, list):
+                        count = len(data)
+                print(f'[{task_name}] Completed: {count} DRs processed')
+                
+        except Exception as e:
+            import traceback
+            print(f'[{task_name}] ERROR: {e}')
+            traceback.print_exc()
+            
+    def _execute_task_gui(self, task_name):
+        """Execute a task in GUI mode (use existing button methods)."""
+        if not self.gui_app:
+            return
+            
+        try:
+            if task_name == 'labor':
+                self.gui_app._run_labor()
+            elif task_name == 'scheduling':
+                self.gui_app._run_sched()
+            elif task_name == 'parts':
+                self.gui_app._run_parts()
+            elif task_name == 'dr_2d':
+                self.gui_app._run_drs(2)
+            elif task_name == 'dr_7d':
+                self.gui_app._run_drs(7)
+            elif task_name == 'dr_30d':
+                self.gui_app._run_drs(30)
+        except Exception as e:
+            self.gui_app._append_log(f'[AUTO] {task_name} error: {e}')
+
+def _get_creds_headless():
+    """Get DR credentials in headless mode (from keyring or env)."""
+    if HAVE_KEYRING:
+        try:
+            usr = keyring.get_password(CREDS_SERVICE, 'username')
+            pwd = keyring.get_password(CREDS_SERVICE, 'password')
+            if usr and pwd:
+                return (usr, pwd)
+        except Exception:
+            pass
+    # Fallback to environment variables
+    usr = os.environ.get('DR_USERNAME')
+    pwd = os.environ.get('DR_PASSWORD')
+    if usr and pwd:
+        return (usr, pwd)
+    return None
+
 def get_last_sched_run_changes(limit:int|None=None):
     if not os.path.isfile(DB_PATH):
         return None, []
@@ -330,6 +599,11 @@ class SyncApp(tk.Tk):
         self.geometry('820x520')
         self.running = False
         self._stop_event = None
+        
+        # Initialize auto-scheduler
+        self.scheduler = AutoScheduler(headless=False, gui_app=self)
+        self.scheduler.load_config()
+        
         self._build_ui()
         self._creds = None
         self._load_credentials()
@@ -341,7 +615,12 @@ class SyncApp(tk.Tk):
                     dr_schema.ensure_dr_tables(conn)
         except Exception as e:
             self._append_log(f'DR schema init failed: {e}')
+        
+        # Start enabled auto-refresh tasks
+        self.scheduler.start_all_enabled()
+        
         self._append_log('Application initialized. Ready.')
+        self._update_scheduler_status()
 
     def _build_ui(self):
         # Top controls
@@ -356,9 +635,17 @@ class SyncApp(tk.Tk):
         self.btn_dr30  = ttk.Button(top, text='Poll DRs (30d)', command=lambda: self._run_drs(30))
         self.btn_creds = ttk.Button(top, text='Credentials...', command=self._open_credentials_dialog)
         self.btn_stop  = ttk.Button(top, text='Stop', command=self._request_stop, state='disabled')
-        self.btn_task  = ttk.Button(top, text='Create Task...', command=self._open_scheduler_dialog)
-        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_dr2, self.btn_dr7, self.btn_dr30, self.btn_creds, self.btn_stop, self.btn_task)):
+        self.btn_auto  = ttk.Button(top, text='Auto-Refresh...', command=self._open_auto_settings)
+        for idx, btn in enumerate((self.btn_labor, self.btn_sched, self.btn_parts, self.btn_dr2, self.btn_dr7, self.btn_dr30, self.btn_creds, self.btn_stop, self.btn_auto)):
             btn.grid(row=1, column=idx, padx=4, pady=4, sticky='ew')
+
+        # Auto-scheduler status display
+        auto_frame = ttk.LabelFrame(top, text='Auto-Refresh Status', padding=8)
+        auto_frame.grid(row=2, column=0, columnspan=9, sticky='ew', pady=(8,0))
+        
+        self.auto_status_var = tk.StringVar(value='Click "Auto-Refresh..." to configure')
+        ttk.Label(auto_frame, textvariable=self.auto_status_var, foreground='gray', 
+                 font=('Segoe UI', 9)).pack(anchor='w')
 
         # Central log panel
         log_frame = ttk.Frame(self, padding=(10,4))
@@ -371,11 +658,11 @@ class SyncApp(tk.Tk):
 
     # --------------- Actions --------------- #
     def _disable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_stop,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_stop,self.btn_auto):
             b.state(['disabled'])
 
     def _enable(self):
-        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_task):
+        for b in (self.btn_labor,self.btn_sched,self.btn_parts,self.btn_dr2,self.btn_dr7,self.btn_dr30,self.btn_creds,self.btn_auto):
             b.state(['!disabled'])
         self.btn_stop.state(['disabled'])
 
@@ -400,6 +687,30 @@ class SyncApp(tk.Tk):
         self._creds = {'user': user, 'password': pwd}
         self._dr_window_days = window_days  # Store for worker thread
         self._start_thread(self._drs_logic, f'DR Poller ({window_days}d) running...')
+    
+    def _open_auto_settings(self):
+        """Open auto-refresh settings dialog."""
+        AutoSettingsDialog(self, self.scheduler)
+    
+    def _update_scheduler_status(self):
+        """Update the status display with info about enabled auto-refresh tasks."""
+        enabled = [name for name, cfg in self.scheduler.config.items() if cfg['enabled']]
+        if not enabled:
+            self.auto_status_var.set('No tasks enabled. Click "Auto-Refresh..." to configure')
+        else:
+            # Show next run times
+            status_parts = []
+            for task_name in enabled:
+                if task_name in self.scheduler.next_runs:
+                    next_time = self.scheduler.next_runs[task_name].strftime('%I:%M %p')
+                    status_parts.append(f'{task_name}: {next_time}')
+            if status_parts:
+                self.auto_status_var.set(' | '.join(status_parts))
+            else:
+                self.auto_status_var.set(f'{len(enabled)} task(s) enabled')
+        
+        # Schedule next update in 30 seconds
+        self.after(30000, self._update_scheduler_status)
 
     def _start_thread(self, target, status_msg):
         if self.running:
@@ -853,6 +1164,158 @@ class SyncApp(tk.Tk):
         except Exception as e:
             return False, str(e)
 
+# ---------- Auto-Refresh Settings Dialog ---------- #
+
+class AutoSettingsDialog(tk.Toplevel):
+    """Dialog to configure auto-refresh intervals for all tasks."""
+    
+    TASK_LABELS = {
+        'labor': 'Labor Backfill',
+        'scheduling': 'Scheduling Summary',
+        'parts': 'Parts Tracker',
+        'dr_2d': 'DR Polling (2 days)',
+        'dr_7d': 'DR Polling (7 days)',
+        'dr_30d': 'DR Polling (30 days)'
+    }
+    
+    def __init__(self, parent, scheduler):
+        super().__init__(parent)
+        self.parent = parent
+        self.scheduler = scheduler
+        self.title('Auto-Refresh Settings')
+        self.geometry('600x400')
+        self.resizable(False, False)
+        
+        # Storage for widgets
+        self.enabled_vars = {}
+        self.interval_vars = {}
+        
+        self._build_ui()
+        
+    def _build_ui(self):
+        # Header
+        ttk.Label(self, text='Configure Auto-Refresh Intervals', 
+                 font=('Segoe UI', 12, 'bold')).pack(pady=10)
+        
+        ttk.Label(self, text='Enable tasks to run automatically at specified intervals.\n'
+                            'Changes are saved and persist across restarts.',
+                 font=('Segoe UI', 9)).pack(pady=(0, 10))
+        
+        # Scrollable frame for task list
+        canvas = tk.Canvas(self, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self, orient='vertical', command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            '<Configure>',
+            lambda e: canvas.configure(scrollregion=canvas.bbox('all'))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Grid headers
+        ttk.Label(scrollable_frame, text='Task', font=('Segoe UI', 9, 'bold')).grid(
+            row=0, column=0, padx=10, pady=5, sticky='w')
+        ttk.Label(scrollable_frame, text='Enabled', font=('Segoe UI', 9, 'bold')).grid(
+            row=0, column=1, padx=10, pady=5)
+        ttk.Label(scrollable_frame, text='Interval (minutes)', font=('Segoe UI', 9, 'bold')).grid(
+            row=0, column=2, padx=10, pady=5)
+        
+        # Create row for each task
+        row = 1
+        for task_name in ['labor', 'scheduling', 'parts', 'dr_2d', 'dr_7d', 'dr_30d']:
+            cfg = self.scheduler.config[task_name]
+            
+            # Task label
+            ttk.Label(scrollable_frame, text=self.TASK_LABELS[task_name]).grid(
+                row=row, column=0, padx=10, pady=8, sticky='w')
+            
+            # Enabled checkbox
+            enabled_var = tk.BooleanVar(value=cfg['enabled'])
+            self.enabled_vars[task_name] = enabled_var
+            ttk.Checkbutton(scrollable_frame, variable=enabled_var).grid(
+                row=row, column=1, padx=10, pady=8)
+            
+            # Interval spinbox
+            interval_var = tk.StringVar(value=str(cfg['interval_minutes']))
+            self.interval_vars[task_name] = interval_var
+            
+            # Different defaults based on task type
+            if task_name == 'labor':
+                from_val, to_val = 60, 10080  # 1 hour to 1 week
+            elif task_name == 'scheduling':
+                from_val, to_val = 60, 1440  # 1 hour to 1 day
+            elif task_name == 'parts':
+                from_val, to_val = 60, 1440  # 1 hour to 1 day
+            else:  # DR tasks
+                from_val, to_val = 5, 1440  # 5 min to 1 day
+            
+            spinbox = ttk.Spinbox(scrollable_frame, from_=from_val, to=to_val, 
+                                 increment=5, textvariable=interval_var, width=10)
+            spinbox.grid(row=row, column=2, padx=10, pady=8)
+            
+            row += 1
+        
+        canvas.pack(side='left', fill='both', expand=True, padx=10, pady=10)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Buttons
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(fill='x', padx=10, pady=(0, 10))
+        
+        ttk.Button(btn_frame, text='Save & Apply', command=self._save).pack(side='left', padx=5)
+        ttk.Button(btn_frame, text='Cancel', command=self.destroy).pack(side='left', padx=5)
+        ttk.Button(btn_frame, text='Test (Run Now)', command=self._test).pack(side='right', padx=5)
+        
+    def _save(self):
+        """Save settings and restart scheduler."""
+        # Validate intervals
+        for task_name, interval_var in self.interval_vars.items():
+            try:
+                interval = int(interval_var.get())
+                if interval < 1:
+                    raise ValueError()
+            except:
+                messagebox.showerror('Invalid Interval', 
+                    f'Please enter a valid interval for {self.TASK_LABELS[task_name]}')
+                return
+        
+        # Stop all tasks
+        self.scheduler.stop_all()
+        
+        # Update config
+        for task_name in self.enabled_vars.keys():
+            enabled = self.enabled_vars[task_name].get()
+            interval = int(self.interval_vars[task_name].get())
+            self.scheduler.set_task_config(task_name, enabled, interval)
+        
+        # Start enabled tasks
+        self.scheduler.start_all_enabled()
+        
+        # Update parent status
+        self.parent._update_scheduler_status()
+        self.parent._append_log('Auto-refresh settings saved and applied')
+        
+        messagebox.showinfo('Settings Saved', 
+            'Auto-refresh settings have been saved and will persist across restarts.')
+        self.destroy()
+        
+    def _test(self):
+        """Run a test execution of selected tasks."""
+        enabled_tasks = [name for name, var in self.enabled_vars.items() if var.get()]
+        if not enabled_tasks:
+            messagebox.showwarning('No Tasks Selected', 
+                'Please enable at least one task to test.')
+            return
+        
+        # Ask which one to test
+        task = simpledialog.askstring('Test Task', 
+            f'Which task to test?\n{", ".join(enabled_tasks)}')
+        if task and task in enabled_tasks:
+            self.parent._append_log(f'[TEST] Running {task}...')
+            self.scheduler._execute_task_gui(task)
+
 def _valid_time(s: str) -> bool:
     if len(s)!=5 or s[2] != ':':
         return False
@@ -863,11 +1326,37 @@ def _valid_time(s: str) -> bool:
         return False
 
 def main():
+    """Main entry point with headless mode support."""
+    parser = argparse.ArgumentParser(description='Desktop Data Sync App')
+    parser.add_argument('--headless', action='store_true', 
+                       help='Run in headless mode (no GUI, auto-scheduler only)')
+    args = parser.parse_args()
+    
     if not os.path.isfile(DB_PATH):
-        messagebox.showerror('Missing DB', f'Database not found: {DB_PATH}')
-        return
-    app = SyncApp()
-    app.mainloop()
+        if args.headless:
+            print(f'ERROR: Database not found: {DB_PATH}')
+            sys.exit(1)
+        else:
+            messagebox.showerror('Missing DB', f'Database not found: {DB_PATH}')
+            return
+    
+    if args.headless:
+        # Run in headless mode - no GUI, just scheduler
+        from threading import Event
+        print('Starting in headless mode...')
+        scheduler = AutoScheduler(headless=True)
+        scheduler.load_config()
+        scheduler.start_all_enabled()
+        print('Auto-scheduler started. Press Ctrl+C to stop.')
+        try:
+            Event().wait()  # Wait forever
+        except KeyboardInterrupt:
+            print('\nStopping...')
+            scheduler.stop_all()
+    else:
+        # Run with GUI
+        app = SyncApp()
+        app.mainloop()
 
 if __name__ == '__main__':
     main()
