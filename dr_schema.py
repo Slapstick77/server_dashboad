@@ -119,6 +119,35 @@ def ensure_dr_tables(conn: sqlite3.Connection) -> None:
     except Exception:
         pass
 
+    # Static metadata captured once per DR (never changes after creation)
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS DRStaticMetadata (
+            deviation_number INTEGER PRIMARY KEY,
+            urgency TEXT,
+            defect_description TEXT,
+            charged_to_dept TEXT,
+            deviation_type TEXT,
+            component TEXT,
+            date_created TEXT,
+            user_created TEXT,
+            first_captured_run_id INTEGER,
+            first_captured_at TEXT
+        )
+        """
+    )
+    
+    # Backfill new columns if table existed before
+    try:
+        cur.execute("PRAGMA table_info(DRStaticMetadata)")
+        meta_cols = {r[1] for r in cur.fetchall()}
+        if 'deviation_type' not in meta_cols:
+            cur.execute("ALTER TABLE DRStaticMetadata ADD COLUMN deviation_type TEXT")
+        if 'component' not in meta_cols:
+            cur.execute("ALTER TABLE DRStaticMetadata ADD COLUMN component TEXT")
+    except Exception:
+        pass
+
     # Routing history steps per run/DR (optional when include_history is enabled)
     cur.execute(
         """

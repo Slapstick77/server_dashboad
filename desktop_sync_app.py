@@ -534,7 +534,7 @@ class SyncApp(tk.Tk):
             base_url = os.getenv('MOM_BASE_URL', DEFAULT_BASE_URL)
             app_name = os.getenv('MOM_APP_NAME', 'ManufacturingDeviationSystem')
             
-            rph.poll_and_write(
+            urgency_map = rph.poll_and_write(
                 base_url=base_url,
                 user=user.strip(),
                 pwd=pwd.strip(),
@@ -554,7 +554,8 @@ class SyncApp(tk.Tk):
             import dr_ingest
             dr_ingest.ingest_last_poll(
                 db_path=DB_PATH,
-                archive_dir=archive_dir
+                archive_dir=archive_dir,
+                urgency_map=urgency_map or {}
             )
             
             # Summarize

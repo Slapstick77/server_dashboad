@@ -65,10 +65,26 @@ def poll_and_write(base_url, user, pwd, app_name, window_days, include_closed, i
     except Exception:
         pass
     
-    # Date window
-    now = datetime.now(timezone.utc)
-    end_dt = now
-    start_dt = (end_dt - timedelta(days=window_days)).replace(hour=0, minute=0, second=0, microsecond=0)
+    # Date window - use local time, not UTC (SOAP service expects local time)
+    now = datetime.now()
+    # Add 1 day buffer to end_dt to catch DRs created "today"
+    end_dt = now + timedelta(days=1)
+    start_dt = (now - timedelta(days=window_days)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Build urgency lookup map (one call per poll)
+    urgency_map = {}
+    try:
+        urgency_list = client.service.GetUrgencyList(devUser=dev_user)
+        if urgency_list:
+            for u in urgency_list:
+                u_vals = getattr(u, '__values__', {})
+                pk = u_vals.get('PK')
+                long_name = u_vals.get('LongName')
+                if pk:
+                    urgency_map[pk] = long_name
+        print(f'[INFO] Loaded {len(urgency_map)} urgency options')
+    except Exception as e:
+        print(f'[WARN] GetUrgencyList failed: {e}')
     
     # Fetch DRs (single attempt, handle null response gracefully)
     try:
@@ -92,6 +108,50 @@ def poll_and_write(base_url, user, pwd, app_name, window_days, include_closed, i
     
     def iso(dt):
         return dt.isoformat() if isinstance(dt, datetime) else (str(dt) if dt else None)
+    
+    def extract_master_metadata(master):
+        """Extract metadata fields from Master object for static storage."""
+        if not master:
+            return {}
+        m_vals = getattr(master, '__values__', {})
+        
+        # Urgency PK
+        urgency_pk = m_vals.get('UrgencyPK')
+        
+        # Defect
+        defect_description = None
+        defect_type_obj = m_vals.get('DefectType')
+        if defect_type_obj:
+            dt_vals = getattr(defect_type_obj, '__values__', {})
+            defect_description = dt_vals.get('Name')
+        
+        # ChargedTo
+        charged_to_dept = m_vals.get('ChargedToDeptName')
+        
+        # Deviation Type and Component from ReasonLink
+        deviation_type = None
+        component = None
+        reason_link_obj = m_vals.get('ReasonLink')
+        if reason_link_obj:
+            rl_vals = getattr(reason_link_obj, '__values__', {})
+            deviation_type = rl_vals.get('DeviationTypeName')
+            component = rl_vals.get('ComponentTypeName')
+        
+        # Creation info
+        date_created = m_vals.get('DateCreated')
+        if date_created and hasattr(date_created, 'isoformat'):
+            date_created = date_created.isoformat()
+        
+        return {
+            'UrgencyPK': urgency_pk,
+            'DefectType': {'Name': defect_description} if defect_description else None,
+            'ChargedToDeptName': charged_to_dept,
+            'ReasonLink': {
+                'DeviationTypeName': deviation_type,
+                'ComponentTypeName': component
+            } if (deviation_type or component) else None,
+            'DateCreated': str(date_created) if date_created else None
+        }
     
     output = []
     for idx, item in enumerate(items):
@@ -126,6 +186,9 @@ def poll_and_write(base_url, user, pwd, app_name, window_days, include_closed, i
             latest = history[-1] if history else {}
             nonempty_comment = next((h['UserComments'] for h in reversed(history) if h.get('UserComments')), None)
             
+            # Extract Master metadata for static capture
+            master_metadata = extract_master_metadata(master) if master else {}
+            
             output.append({
                 'DeviationNumber': dn,
                 'CurrentRouting': vals.get('CurrentRouting'),
@@ -146,6 +209,8 @@ def poll_and_write(base_url, user, pwd, app_name, window_days, include_closed, i
                 'Updated': False,
                 'UpdatedRouting': False,
                 'UpdatedComment': False,
+                # Include Master metadata for ingest to capture
+                '_Master': master_metadata if master_metadata else None,
             })
         except Exception:
             # Skip individual DR on failure, continue with next
@@ -171,6 +236,9 @@ def poll_and_write(base_url, user, pwd, app_name, window_days, include_closed, i
             json.dump({'last_run': datetime.now(timezone.utc).isoformat(), 'drs': {}}, f, indent=2)
     
     print(f'[INFO] Retrieved {len(output)} DRs in {elapsed:.2f}s')
+    
+    # Return urgency_map for use in ingestion
+    return urgency_map
 
 # Standalone execution (only when run directly, not when imported)
 if __name__ == '__main__':
@@ -190,7 +258,7 @@ if __name__ == '__main__':
         throttle_sec = 0.5
 
     print(f'[RUN] Polling with history (window={window_days}d, max={max_drs} DRs, throttle={throttle_sec}s)...')
-    poll_and_write(
+    urgency_map = poll_and_write(
         base_url=os.getenv('MOM_BASE_URL', DEFAULT_BASE_URL),
         user=user,
         pwd=pwd,
@@ -209,7 +277,7 @@ if __name__ == '__main__':
     # Ingest into DB
     import dr_ingest
     print('[RUN] Ingesting into DB...')
-    res = dr_ingest.ingest_last_poll(DB, ARCH)
+    res = dr_ingest.ingest_last_poll(DB, ARCH, urgency_map)
     print('[RESULT] Ingest:', res)
 
     # Quick verification for a few present DRs (sample known from recent outputs)

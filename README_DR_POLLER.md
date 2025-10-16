@@ -1,13 +1,27 @@
 ## DR Poller Unified README (Operational + Continuity)
 
+> **⚠️ DEPRECATED**: This README documents `poll_drs_incremental.py` which has been **replaced** by `run_poll_with_history_and_ingest.py`.
+> 
+> The new poller includes:
+> - Routing history tracking (not just latest step)
+> - Direct database ingestion via `dr_ingest.py`
+> - Static metadata capture (urgency, defect, deviation_type, component)
+> - Automatic backfill support
+> 
+> **For current documentation, see the main README.md**
+> 
+> This file is kept for historical reference only. The script `poll_drs_incremental.py` is archived in `_temp_scripts_archive/`.
+
+---
+
 This single document merges the concise project overview and the extended continuity context so it can be relocated to a new workspace without losing institutional knowledge.
 
 ---
 ### 1. Purpose
 Automated, read‑only polling of the MOM WCF service to obtain recent Deviation Reports (DRs) with current routing status, latest routing step, and latest non‑empty routing comment, while flagging incremental changes.
 
-### 2. Core Script
-`poll_drs_incremental.py` – production poller (Python 3 + `zeep`).
+### 2. Core Script (DEPRECATED)
+`poll_drs_incremental.py` – **ARCHIVED** (replaced by `run_poll_with_history_and_ingest.py`).
 
 ### 2.1 Prerequisites / Requirements
 Runtime:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os, json, sqlite3, re
 from typing import Dict, Any
+from datetime import datetime, timezone
 
 
 def _norm_so(so: str|None) -> str|None:
@@ -9,11 +10,58 @@ def _norm_so(so: str|None) -> str|None:
     return re.sub(r"-", "", so.strip())
 
 
-def ingest_last_poll(db_path: str, archive_dir: str) -> Dict[str, Any]:
+def _extract_metadata_from_json(row: Dict, urgency_map: Dict[str, str]) -> Dict[str, Any]:
+    """Extract static metadata from DR JSON row (if Master is present)."""
+    master = row.get('_Master')  # Will be added by poller
+    if not master:
+        return {}
+    
+    # Urgency
+    urgency_pk = master.get('UrgencyPK')
+    urgency = urgency_map.get(urgency_pk) if urgency_pk else None
+    
+    # Defect description
+    defect_description = None
+    defect_type = master.get('DefectType')
+    if defect_type and isinstance(defect_type, dict):
+        defect_description = defect_type.get('Name')
+    
+    # ChargedTo department
+    charged_to_dept = master.get('ChargedToDeptName')
+    
+    # Deviation Type and Component from ReasonLink
+    deviation_type = None
+    component = None
+    reason_link = master.get('ReasonLink')
+    if reason_link and isinstance(reason_link, dict):
+        deviation_type = reason_link.get('DeviationTypeName')
+        component = reason_link.get('ComponentTypeName')
+    
+    # Creation info
+    date_created = master.get('DateCreated')
+    user_created = None  # Would need UserCreatedPK lookup
+    
+    return {
+        'urgency': urgency,
+        'defect_description': defect_description,
+        'charged_to_dept': charged_to_dept,
+        'deviation_type': deviation_type,
+        'component': component,
+        'date_created': date_created,
+        'user_created': user_created
+    }
+
+
+def ingest_last_poll(db_path: str, archive_dir: str, urgency_map: Dict[str, str] | None = None) -> Dict[str, Any]:
     """Ingest dr_incremental.json, dr_timings.json, dr_state.json from archive_dir into DB.
 
-    Returns counts: {run_id, snapshots, timing_events, state_rows}
+    Args:
+        urgency_map: Optional urgency PK -> name lookup (for metadata capture)
+
+    Returns counts: {run_id, snapshots, timing_events, state_rows, metadata_captured}
     """
+    if urgency_map is None:
+        urgency_map = {}
     inc_path = os.path.join(archive_dir, 'dr_incremental.json')
     tim_path = os.path.join(archive_dir, 'dr_timings.json')
     st_path  = os.path.join(archive_dir, 'dr_state.json')
@@ -154,6 +202,33 @@ def ingest_last_poll(db_path: str, archive_dir: str) -> Dict[str, Any]:
                     ),
                 )
                 snap_cnt += 1
+            
+            # Capture static metadata for NEW DRs only (first time we see them)
+            if last_snap is None and urgency_map:
+                # Check if metadata already exists
+                cur.execute("SELECT 1 FROM DRStaticMetadata WHERE deviation_number = ?", (dn,))
+                if not cur.fetchone():
+                    # Extract metadata from JSON
+                    metadata = _extract_metadata_from_json(row, urgency_map)
+                    if metadata:
+                        cur.execute("""
+                            INSERT OR IGNORE INTO DRStaticMetadata (
+                                deviation_number, urgency, defect_description, charged_to_dept,
+                                deviation_type, component,
+                                date_created, user_created, first_captured_run_id, first_captured_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            dn,
+                            metadata.get('urgency'),
+                            metadata.get('defect_description'),
+                            metadata.get('charged_to_dept'),
+                            metadata.get('deviation_type'),
+                            metadata.get('component'),
+                            metadata.get('date_created'),
+                            metadata.get('user_created'),
+                            run_id,
+                            datetime.now(timezone.utc).isoformat()
+                        ))
 
             # Optional routing history list
             rh = row.get('RoutingHistory')
