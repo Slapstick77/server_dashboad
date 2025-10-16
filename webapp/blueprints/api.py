@@ -1898,7 +1898,27 @@ def api_dr_live():
                 'latest_comment_ms': latest_comment_ms  # Timestamp of latest comment
             })
         
-        return jsonify(results)
+        # Get the last poll run time
+        cur.execute('''
+            SELECT generated_at_utc 
+            FROM DRPollRun 
+            ORDER BY id DESC 
+            LIMIT 1
+        ''')
+        last_poll_row = cur.fetchone()
+        last_poll_ms = None
+        if last_poll_row and last_poll_row[0]:
+            try:
+                dt = datetime.fromisoformat(last_poll_row[0].split('.')[0])
+                dt = dt.replace(tzinfo=timezone.utc)
+                last_poll_ms = int(dt.timestamp() * 1000)
+            except:
+                pass
+        
+        return jsonify({
+            'drs': results,
+            'last_poll_ms': last_poll_ms
+        })
 
 
 

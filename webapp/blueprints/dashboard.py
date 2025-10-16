@@ -3115,6 +3115,9 @@ def dr_dashboard():
             </div>
         </div>
         <div class="header-controls">
+            <div id="last-poll-time" style="font-size: 0.85rem; opacity: 0.7; margin-right: 1rem;">
+                Last MOM Pull: --
+            </div>
             <div class="refresh-indicator">
                 <span class="pulse">●</span>
                 <span>Auto-refresh: 30s</span>
@@ -3315,7 +3318,19 @@ def dr_dashboard():
         async function loadData() {
             try {
                 const resp = await fetch('/api/dr-live?days=7');
-                drs = await resp.json();
+                const data = await resp.json();
+                drs = data.drs || [];
+                const lastPollMs = data.last_poll_ms;
+                
+                // Update last poll time display
+                const lastPollEl = document.getElementById('last-poll-time');
+                if (lastPollMs) {
+                    const lastPollDate = new Date(lastPollMs);
+                    const formatted = lastPollDate.toLocaleString();
+                    lastPollEl.textContent = `Last MOM Pull: ${formatted}`;
+                } else {
+                    lastPollEl.textContent = 'Last MOM Pull: Never';
+                }
                 
                 // Sort by touched_ms DESC (most recent first)
                 drs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));

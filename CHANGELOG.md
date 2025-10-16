@@ -5,6 +5,45 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-10-16
+
+### Added
+- **Desktop Sync App Auto-Scheduler**: New auto-refresh feature for all sync operations
+  - Configure independent intervals for Labor, SCHSummary, Parts, and DR polls (2d/7d/30d)
+  - GUI mode with settings dialog for easy configuration
+  - Headless mode (`--headless` flag) for background execution without GUI
+  - Config persistence in `auto_sync_config.json`
+  - Startup scripts: `start_auto_sync_gui.bat` and `start_auto_sync_headless.bat/ps1`
+  - Complete documentation in `AUTO_REFRESH_README.md`, `STARTUP_OPTIONS.md`, `IMPLEMENTATION_SUMMARY.md`
+- **DR Dashboard Enhancements**: Major improvements to deviation request tracking
+  - 6-column grid layout for compact display (previously 4 columns)
+  - Completion detection: Green cards for DRs with "Complete sent to sheet metal/shop" comments
+  - Accurate completion times using comment timestamps (not routing activity timestamps)
+  - Single "DR Completed In" timer for completed DRs vs three timers for in-progress
+  - Average completion time metric with prominent disclaimer about "handling" vs "full completion"
+  - "Last MOM Pull" timestamp showing when DR data was last synced
+  - Auto-refresh every 30 seconds
+- **DR Metadata Capture**: Added `deviation_type` and `component` fields to DRStaticMetadata table
+  - Migration script: `migrate_add_metadata_columns.py`
+
+### Changed
+- **DR API Endpoint**: `/api/dr-live` now returns structured response with metadata
+  - Response format: `{ "drs": [...], "last_poll_ms": 1234567890 }`
+  - Added `latest_comment_ms` field for accurate completion time calculations
+  - Filters out DRs with `state='complete'` to show only active/handling status
+- **DR Dashboard Styling**: Updated card layout and completion indicators
+  - Completed DR cards show green background
+  - Yellow warning banner for average completion metric disclaimer
+  - Improved header layout with poll timestamp
+
+### Fixed
+- **DR Completion Detection**: Strict regex patterns prevent false positives
+  - Only matches exact phrases: "complete [and] sent to sheet metal/shop"
+  - Prevents "Complete?" questions from triggering completion status
+- **DR Completion Times**: Now uses comment timestamp instead of routing activity
+  - Previously used `touched_ms` which reflected any routing activity
+  - Now uses `latest_comment_ms` for accurate time-to-completion calculation
+
 ## [1.2.0] - 2025-10-07
 
 ### Fixed
