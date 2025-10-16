@@ -1795,7 +1795,8 @@ def api_dr_live():
             LatestCommentInfo AS (
                 SELECT r.deviation_number, 
                        r.UserName as latest_user, 
-                       r.UserComments as latest_comment
+                       r.UserComments as latest_comment,
+                       r.DateTouched as latest_comment_date
                 FROM DRRoutingStep r
                 INNER JOIN LatestRouting l ON r.deviation_number = l.deviation_number 
                     AND r.DateTouched = l.latest_date
@@ -1803,7 +1804,8 @@ def api_dr_live():
             LatestCommentDeduped AS (
                 SELECT deviation_number,
                        MAX(latest_user) as latest_user,
-                       MAX(latest_comment) as latest_comment
+                       MAX(latest_comment) as latest_comment,
+                       MAX(latest_comment_date) as latest_comment_date
                 FROM LatestCommentInfo
                 GROUP BY deviation_number
             )
@@ -1822,7 +1824,8 @@ def api_dr_live():
                 c.creator_name,
                 c.creator_comment,
                 lc.latest_user as routing_latest_user,
-                lc.latest_comment as routing_latest_comment
+                lc.latest_comment as routing_latest_comment,
+                lc.latest_comment_date as routing_latest_comment_date
             FROM DRItemSnapshot d
             INNER JOIN LatestDRs l ON d.deviation_number = l.deviation_number AND d.run_id = l.latest_run
             LEFT JOIN DRStaticMetadata m ON d.deviation_number = m.deviation_number
@@ -1830,6 +1833,7 @@ def api_dr_live():
             LEFT JOIN LatestCommentDeduped lc ON d.deviation_number = lc.deviation_number
             WHERE m.date_created IS NOT NULL
               AND datetime(m.date_created) >= datetime(?)
+              AND LOWER(d.deviation_state) != 'complete'
             ORDER BY datetime(d.latest_routing_touched) DESC
         '''
         
@@ -1865,6 +1869,19 @@ def api_dr_live():
                 except:
                     pass
             
+            # Get timestamp of latest comment (for completion time calculation)
+            latest_comment_ms = None
+            if r['routing_latest_comment_date']:
+                try:
+                    # Parse as naive datetime then treat as UTC
+                    dt = datetime.fromisoformat(r['routing_latest_comment_date'].split('.')[0])  # Remove microseconds
+                    # Add UTC timezone
+                    dt = dt.replace(tzinfo=timezone.utc)
+                    # Convert to epoch milliseconds
+                    latest_comment_ms = int(dt.timestamp() * 1000)
+                except:
+                    pass
+            
             results.append({
                 'deviation_number': r['deviation_number'],
                 'current_routing': r['current_routing'],
@@ -1877,7 +1894,8 @@ def api_dr_live():
                 'com': r['comnumber1'],
                 'urgency': r['urgency'],
                 'created_ms': created_ms,
-                'touched_ms': touched_ms  # This is the latest_routing_touched
+                'touched_ms': touched_ms,  # This is the latest_routing_touched
+                'latest_comment_ms': latest_comment_ms  # Timestamp of latest comment
             })
         
         return jsonify(results)

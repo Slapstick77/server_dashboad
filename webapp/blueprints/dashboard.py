@@ -3110,7 +3110,7 @@ def dr_dashboard():
     <div class="header">
         <div style="flex: 1;">
             <h1>🔴 Live DR Dashboard</h1>
-            <div id="avg-completion" style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">
+            <div id="avg-completion" style="font-size: 1.3rem; margin-top: 0.75rem; font-weight: 600;">
                 Loading metrics...
             </div>
         </div>
@@ -3192,16 +3192,47 @@ def dr_dashboard():
             });
         }
         
+        function isCompletedDR(comment) {
+            if (!comment) return false;
+            
+            const lower = comment.toLowerCase();
+            
+            // Only match variations of "complete [and] sent to sheet [shop/metal]"
+            const completionPatterns = [
+                /complete\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                // Common misspellings
+                /compelte\s+(and\s+)?sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+(and\s+)?send\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+(and\s+)?sent\s+to\s+sheetshop/i,
+                /complete\s+(and\s+)?sent\s+to\s+sheetmetal/i
+            ];
+            
+            // Check if any pattern matches
+            for (const pattern of completionPatterns) {
+                if (pattern.test(comment)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
         function renderCard(dr, idx) {
             const colors = getUrgencyColor(dr.urgency);
             
-            // Check if latest comment contains "complete"
-            const isComplete = dr.latest_comment && dr.latest_comment.toLowerCase().includes('complete');
+            // Check if latest comment indicates completion
+            const isComplete = isCompletedDR(dr.latest_comment);
             
             // Calculate completion time (from creation to latest comment with "complete")
+            // Use latest_comment_ms (timestamp of the comment) not touched_ms
             let completionDuration = 0;
-            if (isComplete && dr.created_ms && dr.touched_ms) {
-                completionDuration = Math.abs(dr.touched_ms - dr.created_ms);
+            if (isComplete && dr.created_ms && dr.latest_comment_ms) {
+                completionDuration = Math.abs(dr.latest_comment_ms - dr.created_ms);
             }
             
             const card = document.createElement('div');
@@ -3302,25 +3333,27 @@ def dr_dashboard():
                 
                 // Calculate average completion time for completed DRs
                 const completedDRs = drs.filter(dr => 
-                    dr.latest_comment && 
-                    dr.latest_comment.toLowerCase().includes('complete') &&
+                    isCompletedDR(dr.latest_comment) &&
                     dr.created_ms && 
-                    dr.touched_ms
+                    dr.latest_comment_ms  // Use latest_comment_ms, not touched_ms
                 );
                 
                 if (completedDRs.length > 0) {
                     const totalCompletionTime = completedDRs.reduce((sum, dr) => {
-                        return sum + Math.abs(dr.touched_ms - dr.created_ms);
+                        return sum + Math.abs(dr.latest_comment_ms - dr.created_ms);
                     }, 0);
                     const avgCompletionTime = totalCompletionTime / completedDRs.length;
                     
                     avgDiv.innerHTML = `
-                        <span style="color: #22c55e; font-weight: 600;">
+                        <div style="color: #22c55e;">
                             ⏱ Average Manufactured Part DR Completion Time: ${formatDuration(avgCompletionTime)}
-                        </span>
-                        <span style="opacity: 0.7; margin-left: 1rem; font-size: 0.9rem;">
-                            (${completedDRs.length} completed / ${drs.length} total)
-                        </span>
+                            <span style="opacity: 0.7; margin-left: 1rem; font-size: 0.95rem;">
+                                (${completedDRs.length} completed / ${drs.length} total)
+                            </span>
+                        </div>
+                        <div style="font-size: 1rem; opacity: 0.85; margin-top: 0.5rem; color: #fbbf24; font-weight: 500;">
+                            ⚠ Note: This is DR handling completion and not full DR completion. Will implement full DR completion soon.
+                        </div>
                     `;
                 } else {
                     avgDiv.innerHTML = `
