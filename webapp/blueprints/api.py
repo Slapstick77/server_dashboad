@@ -5,7 +5,7 @@ All JSON API routes are defined here.
 """
 from flask import Blueprint, jsonify, request
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import re
 from collections import defaultdict
 from .utils import (
@@ -65,11 +65,11 @@ def api_incomplete():
         sched_candidates = len(sched_rows)
 
         # Labor activity windows (strftime normalizes dates)
-        today = datetime.date.today()
-        day_60 = (today - datetime.timedelta(days=60)).isoformat()
-        day_7 = (today - datetime.timedelta(days=7)).isoformat()
+        today = date.today()
+        day_60 = (today - timedelta(days=60)).isoformat()
+        day_7 = (today - timedelta(days=7)).isoformat()
         # Separate threshold for including fully-complete units if they had very recent labor
-        day_complete_recent = (today - datetime.timedelta(days=3)).isoformat()
+        day_complete_recent = (today - timedelta(days=3)).isoformat()
         cur.execute(
             """
             SELECT CAST(COMNumber AS TEXT) com,
@@ -151,7 +151,7 @@ def api_incomplete():
             # Store day_emp data for later recalculation with completion info
             
     relax = request.args.get('relax') == '1'
-    recency_cut = (today - datetime.timedelta(days=14)).isoformat() if relax else day_7
+    recency_cut = (today - timedelta(days=14)).isoformat() if relax else day_7
     fresh_coms = {normalize_com(c) for c, last in last_map_raw.items() if last >= recency_cut}
     # Normalized COM -> last labor day map for later inclusion of recent fully-complete units
     norm_last_map = {normalize_com(c): last for c, last in last_map_raw.items() if last}
@@ -188,7 +188,7 @@ def api_incomplete():
                     end_day = today.isoformat()
                     span_status = "In Progress"
                 try:
-                    span = (datetime.date.fromisoformat(end_day) - datetime.date.fromisoformat(first_day)).days + 1
+                    span = (date.fromisoformat(end_day) - date.fromisoformat(first_day)).days + 1
                     if span < 1:
                         span = 1
                 except Exception:
@@ -266,7 +266,7 @@ def api_incomplete():
             # Calculate actual span
             unit_end_day = unit_last_day
             try:
-                unit_span = (datetime.date.fromisoformat(unit_end_day) - datetime.date.fromisoformat(unit_first_day)).days + 1
+                unit_span = (date.fromisoformat(unit_end_day) - date.fromisoformat(unit_first_day)).days + 1
                 if unit_span < 1:
                     unit_span = 1
             except Exception:
@@ -286,8 +286,8 @@ def api_incomplete():
         gsrc = timeline_map.get(u['com'])
         if gsrc and gsrc.get('earliest') and gsrc.get('latest'):
             try:
-                t0 = datetime.date.fromisoformat(gsrc['earliest'])
-                tN = datetime.date.fromisoformat(gsrc['latest'])
+                t0 = date.fromisoformat(gsrc['earliest'])
+                tN = date.fromisoformat(gsrc['latest'])
                 cols = (tN - t0).days + 1
                 rows = []
                 for d in u['departments']:
@@ -298,7 +298,7 @@ def api_incomplete():
                     offs = []
                     for ds in days:
                         try:
-                            offs.append((datetime.date.fromisoformat(ds) - t0).days)
+                            offs.append((date.fromisoformat(ds) - t0).days)
                         except Exception:
                             continue
                     rows.append({'label': lbl, 'offsets': sorted(set(offs))})
@@ -395,8 +395,8 @@ def api_unit_time_trends():
 
     Uses same day stats logic (MIN_DAY_HOURS, Electrical special rule) as elsewhere.
     """
-    today = datetime.date.today()
-    day_90 = (today - datetime.timedelta(days=90)).isoformat()
+    today = date.today()
+    day_90 = (today - timedelta(days=90)).isoformat()
 
     with get_conn() as conn:
         conn.row_factory = sqlite3.Row
@@ -538,7 +538,7 @@ def api_unit_time_trends():
         last_day = rec['last']
         active_days = len(ds)
         try:
-            span_days = (datetime.date.fromisoformat(last_day) - datetime.date.fromisoformat(first_day)).days + 1
+            span_days = (date.fromisoformat(last_day) - date.fromisoformat(first_day)).days + 1
         except Exception:
             span_days = None
         items.append({'com': com, 'first_day': first_day, 'last_day': last_day, 'active_days': active_days, 'span_days': span_days})
@@ -1261,8 +1261,8 @@ def api_department_totals():
             return jsonify(response)
 
     # Fallback: compute on demand (supports arbitrary day windows)
-    today = datetime.date.today()
-    start = (today - datetime.timedelta(days=days-1)).isoformat()
+    today = date.today()
+    start = (today - timedelta(days=days-1)).isoformat()
 
     raw_code_to_label = {
         '0120':'Fab','0140':'Welding','0180':'BaseFormPaint','0200':'FanAssyTest','0220':'InsulWallFab',
@@ -1323,8 +1323,8 @@ def api_daily_hours():
         days = int(request.args.get('days', '60'))
     except Exception:
         days = 60
-    today = datetime.date.today()
-    start = (today - datetime.timedelta(days=days-1)).isoformat()
+    today = date.today()
+    start = (today - timedelta(days=days-1)).isoformat()
 
     # Map raw department codes to labels
     raw_code_to_label = {
@@ -1352,7 +1352,7 @@ def api_daily_hours():
 
     # Build series per department label
     from collections import defaultdict
-    dates = [ (today - datetime.timedelta(days=i)).isoformat() for i in range(days-1, -1, -1) ]
+    dates = [ (today - timedelta(days=i)).isoformat() for i in range(days-1, -1, -1) ]
     per_label = {lbl: {d:0.0 for d in dates} for lbl in set(raw_code_to_label.values())}
     total = {d:0.0 for d in dates}
     for r in rows:
@@ -1546,16 +1546,16 @@ def api_com_charges():
         fab_window_start = None
         if fab_days_sorted:
             try:
-                fab_anchor = datetime.date.fromisoformat(fab_days_sorted[0])
-                fab_window_start = fab_anchor - datetime.timedelta(days=pre_gap_days)
+                fab_anchor = date.fromisoformat(fab_days_sorted[0])
+                fab_window_start = fab_anchor - timedelta(days=pre_gap_days)
             except Exception:
                 fab_window_start = None
 
         assembly_window_end = None
         if assembly_days_sorted:
             try:
-                assembly_anchor = datetime.date.fromisoformat(assembly_days_sorted[-1])
-                assembly_window_end = assembly_anchor + datetime.timedelta(days=post_gap_days)
+                assembly_anchor = date.fromisoformat(assembly_days_sorted[-1])
+                assembly_window_end = assembly_anchor + timedelta(days=post_gap_days)
             except Exception:
                 assembly_window_end = None
 
@@ -1565,7 +1565,7 @@ def api_com_charges():
             trimmed_days = set()
             for day in sorted(use_days_set):
                 try:
-                    day_obj = datetime.date.fromisoformat(day)
+                    day_obj = date.fromisoformat(day)
                 except Exception:
                     day_obj = None
 
@@ -1919,6 +1919,7 @@ def api_dr_live():
             'drs': results,
             'last_poll_ms': last_poll_ms
         })
+
 
 
 

@@ -2818,6 +2818,10 @@ def com_lookup():
 def dr_dashboard():
     """Live DR Dashboard - Last 3 days with real-time timers"""
     from datetime import datetime, timedelta
+    from flask import request
+    
+    # Check for TV display mode
+    tv_mode = request.args.get('tv', '0') == '1'
     
     page = """<!doctype html>
 <html>
@@ -3101,12 +3105,81 @@ def dr_dashboard():
         }
         @media (max-width: 600px) {
             .cards-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr);
             }
         }
+        
+        /* TV Display Mode - Optimized for 4K displays viewed from distance */
+        """ + ("""
+        body.tv-mode {
+            font-size: 24px;
+            padding: 2rem;
+        }
+        body.tv-mode .header {
+            padding: 2.5rem 3rem;
+            margin-bottom: 3rem;
+        }
+        body.tv-mode h1 {
+            font-size: 4rem;
+        }
+        body.tv-mode .header-controls {
+            gap: 2rem;
+        }
+        body.tv-mode .refresh-indicator,
+        body.tv-mode #last-poll-time {
+            font-size: 1.5rem;
+        }
+        body.tv-mode .fullscreen-btn {
+            padding: 1.25rem 2.5rem;
+            font-size: 1.5rem;
+            border-radius: 16px;
+        }
+        body.tv-mode #avg-completion {
+            font-size: 2.5rem !important;
+            margin-top: 1.5rem !important;
+        }
+        body.tv-mode .cards-container {
+            gap: 2rem;
+            grid-template-columns: repeat(4, 1fr);
+        }
+        body.tv-mode .dr-card {
+            padding: 2rem;
+            border-radius: 20px;
+            min-height: 450px;
+            border-width: 2px;
+        }
+        body.tv-mode .dr-number {
+            font-size: 2rem !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+        body.tv-mode .dr-urgency {
+            font-size: 1.3rem !important;
+            padding: 0.5rem 1rem !important;
+        }
+        body.tv-mode .dr-routing {
+            font-size: 1.8rem !important;
+            margin: 1.5rem 0 !important;
+        }
+        body.tv-mode .dr-info-label {
+            font-size: 1.1rem !important;
+        }
+        body.tv-mode .dr-info-value {
+            font-size: 1.5rem !important;
+        }
+        body.tv-mode .dr-timer {
+            font-size: 1.3rem !important;
+            padding: 0.75rem !important;
+        }
+        body.tv-mode .dr-com {
+            font-size: 1.4rem !important;
+        }
+        body.tv-mode .dr-creator {
+            font-size: 1.2rem !important;
+        }
+        """ if tv_mode else "") + """
     </style>
 </head>
-<body>
+<body""" + (' class="tv-mode"' if tv_mode else '') + """>
     <div class="header">
         <div style="flex: 1;">
             <h1>🔴 Live DR Dashboard</h1>
