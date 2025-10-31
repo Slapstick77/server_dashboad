@@ -19,7 +19,25 @@ This will download the diagnostic scripts created on the dev computer.
 
 ---
 
-## Step 2: Run Diagnostics
+## Step 2: Export Metrics Snapshot (for Claude)
+
+First, export your current metrics cache to JSON files:
+
+```powershell
+python export_metrics_snapshot.py
+```
+
+This creates timestamped JSON files with ALL your metrics data:
+- `metrics_export_trailing_trend_charts_*.json` - The trend graph data
+- `metrics_export_daily_metric_charts_*.json` - Daily metrics pulse data
+- `metrics_export_database_info_*.json` - Database summary
+- Plus unit_time_trends, incomplete_units, department_totals
+
+**Give these files to Claude** to compare server vs dev computer.
+
+---
+
+## Step 3: Run Diagnostics
 
 Run these scripts **in order** and save the output:
 
@@ -95,7 +113,29 @@ python -c "from metrics_cache import get_complete_units; units = get_complete_un
 
 ---
 
-## Step 4: Fix Based on Results
+## Step 4: Compare Dev vs Server
+
+### Dev Computer Metrics Export Results:
+
+**Database Info:**
+- Labor data range: `1/10/2022` to `9/9/2024` (old data!)
+- Complete units: `2,009`
+- Last refresh: `2025-10-30T19:44:36` (manual_refresh)
+
+**Trailing Trend Charts (120_10):**
+- Efficiency range: `55.7% to 71.9%` **(range: 16.1%)**
+- Data points: `120`
+- Charts available: `90_10, 90_30, 120_10, 120_30, 365_10, 365_30`
+
+**Unit Time Trends:**
+- Last 10 units: `10 units`
+- Average Efficiency: `61.8%`
+
+**Note:** Dev computer labor data is OLD (Sept 2024), but trend calculations still work because we have 2,009 complete units with historical data.
+
+---
+
+## Step 5: Fix Based on Results
 
 ### If server shows old data (no recent dates):
 ```powershell
@@ -120,7 +160,7 @@ This recalculates all trend charts from scratch.
 
 ---
 
-## Step 5: Verify Fix
+## Step 6: Verify Fix
 
 After running fixes, check the dashboard:
 1. Open `http://10.43.22.135:5000/dash`
