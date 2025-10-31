@@ -5,6 +5,25 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2025-10-30
+
+### Added
+- **DR Dashboard TV Display Mode**: Optimized viewing for 4K TVs
+  - Access via URL parameter: `/dr-dashboard?tv=1`
+  - Larger fonts (4rem title, 2.5rem metrics) for distance viewing
+  - Increased card sizes (450px min-height) and spacing (2rem gaps)
+  - 4-column grid layout (vs 6-column default) for better readability
+  - Enhanced button sizes and timer displays
+  - Optimized for factory floor/conference room displays
+
+### Fixed
+- **API DateTime Import Errors**: Resolved AttributeError in multiple endpoints
+  - Fixed `/api/metrics/unit_time_trends` endpoint
+  - Fixed `/api/metrics/daily_hours` endpoint
+  - Added `date` to datetime imports at module level
+  - Replaced all `datetime.date` and `datetime.timedelta` references with direct imports
+  - Prevents "datetime object has no attribute 'date'" errors
+
 ## [1.3.0] - 2025-10-16
 
 ### Added
