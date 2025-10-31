@@ -278,7 +278,6 @@ USAGE (run from project root):
 
 Designed to be scheduled via Windows Task Scheduler without touching the existing Flask UI.
 """
-from __future__ import annotations
 import argparse, os, csv, sqlite3, subprocess, sys
 from datetime import date, datetime, timedelta
 from typing import List, Dict, Any, Iterable
