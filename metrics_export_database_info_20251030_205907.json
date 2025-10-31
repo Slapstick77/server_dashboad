@@ -1,0 +1,13 @@
+{
+  "exported_at": "2025-10-30T20:59:08.053061",
+  "labor_data": {
+    "earliest_date": "1/10/2022",
+    "latest_date": "9/9/2024",
+    "total_rows": 734239
+  },
+  "complete_units": 2009,
+  "last_refresh": {
+    "timestamp": "2025-10-30T20:56:01.722494",
+    "trigger": "logic_update"
+  }
+}

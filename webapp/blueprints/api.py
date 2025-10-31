@@ -1833,7 +1833,7 @@ def api_dr_live():
             LEFT JOIN LatestCommentDeduped lc ON d.deviation_number = lc.deviation_number
             WHERE m.date_created IS NOT NULL
               AND datetime(m.date_created) >= datetime(?)
-              AND LOWER(d.deviation_state) != 'complete'
+              AND LOWER(d.deviation_state) NOT IN ('complete', 'closed')
             ORDER BY datetime(d.latest_routing_touched) DESC
         '''
         
@@ -1882,6 +1882,31 @@ def api_dr_live():
                 except:
                     pass
             
+            # Get parts tracking info for this DR
+            parts_info = None
+            dr_num = r['deviation_number']
+            if dr_num:
+                # Query PartsTracker for parts made for this DR
+                # Try multiple DR format patterns: DR12345, DR 12345, DR#12345
+                cur.execute("""
+                    SELECT 
+                        COUNT(DISTINCT part) as unique_parts,
+                        COUNT(*) as total_scans,
+                        GROUP_CONCAT(DISTINCT rack) as racks
+                    FROM PartsTracker
+                    WHERE (com LIKE ? OR com LIKE ? OR com LIKE ?)
+                      AND part IS NOT NULL 
+                      AND part != ''
+                """, (f'DR{dr_num}', f'DR {dr_num}', f'DR#{dr_num}'))
+                
+                parts_row = cur.fetchone()
+                if parts_row and parts_row['unique_parts'] and parts_row['unique_parts'] > 0:
+                    parts_info = {
+                        'unique_parts': parts_row['unique_parts'],
+                        'total_scans': parts_row['total_scans'],
+                        'racks': parts_row['racks']
+                    }
+            
             results.append({
                 'deviation_number': r['deviation_number'],
                 'current_routing': r['current_routing'],
@@ -1895,7 +1920,8 @@ def api_dr_live():
                 'urgency': r['urgency'],
                 'created_ms': created_ms,
                 'touched_ms': touched_ms,  # This is the latest_routing_touched
-                'latest_comment_ms': latest_comment_ms  # Timestamp of latest comment
+                'latest_comment_ms': latest_comment_ms,  # Timestamp of latest comment
+                'parts_info': parts_info  # Parts tracking info from PartsTracker
             })
         
         # Get the last poll run time
@@ -1915,9 +1941,25 @@ def api_dr_live():
             except:
                 pass
         
+        # Get the last PartsTracker ingestion time
+        cur.execute('''
+            SELECT MAX(_ingested_at) as last_ingested
+            FROM PartsTracker
+        ''')
+        parts_pull_row = cur.fetchone()
+        last_parts_pull_ms = None
+        if parts_pull_row and parts_pull_row['last_ingested']:
+            try:
+                dt = datetime.fromisoformat(parts_pull_row['last_ingested'].split('.')[0])
+                # Assume it's already in UTC or local time
+                last_parts_pull_ms = int(dt.timestamp() * 1000)
+            except:
+                pass
+        
         return jsonify({
             'drs': results,
-            'last_poll_ms': last_poll_ms
+            'last_poll_ms': last_poll_ms,
+            'last_parts_pull_ms': last_parts_pull_ms
         })
 
 

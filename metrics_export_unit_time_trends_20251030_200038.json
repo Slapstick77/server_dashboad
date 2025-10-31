@@ -1,0 +1,25 @@
+{
+  "metric_type": "unit_time_trends",
+  "computed_at": "2025-10-30T19:44:36.809576",
+  "trigger_source": "manual_refresh",
+  "exported_at": "2025-10-30T20:00:38.094597",
+  "data": {
+    "last10": {
+      "n_units": 10,
+      "avg_active_days": 21.4,
+      "avg_span_days": 36.8,
+      "avg_efficiency": 61.772601653248536
+    },
+    "last90d": {
+      "n_units": 118,
+      "avg_active_days": 20.872881355932204,
+      "avg_span_days": 35.1271186440678,
+      "avg_efficiency": 64.26259331519144
+    },
+    "trend": {
+      "active_days_delta": 0.5271186440677944,
+      "span_days_delta": 1.6728813559321978,
+      "efficiency_delta": -2.489991661942902
+    }
+  }
+}

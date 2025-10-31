@@ -5,6 +5,84 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-10-30
+
+### Added
+- **Simple URL Access**: New easy-to-type URLs for dashboard
+  - `/tv` - Direct access to 4K milestone dashboard (auto-enables milestone mode)
+  - `/dr` - Short alias for DR dashboard
+  - `/dr-dashboard` - Original URL (still works)
+- **Parts Tracking Integration**: Real-time parts manufacturing data from PartsTracker
+  - Shows unique parts count and cart locations
+  - Displays parts scan activity and timestamps
+  - Tracks active DRs with parts in production (8 of 33 DRs currently)
+  - Handles multiple DR number formats (DR#49225, DR 49225, DR49225)
+- **Split-Screen Milestone Dashboard**: Optimized layout for 60" 4K TV at 20ft viewing distance
+  - Left panel (58%): Table view with 20 DRs
+  - Right panel (40%): 4 large cards showing most recent activity
+  - Total 24 DRs visible simultaneously
+  - Access via `/tv` or `/dr-dashboard?milestone=1`
+- **Fullscreen Mode**: One-click fullscreen button for immersive TV display
+- **Status Badges**: Visual indicators for milestone progress
+  - Green "Sent to sheet shop" badge
+  - Blue "X parts made" badge with count
+- **Refresh Timestamps**: Three-part timestamp display in header
+  - Page refresh time
+  - DR MOM data pull time
+  - Parts tracker data pull time
+  - All update every 30 seconds
+
+### Changed
+- **Terminology Updates**:
+  - "Milestones" → "Status"
+  - "Last Touch" → "Latest Activity"
+  - "DR Milestone Dashboard" → "DR Dashboard"
+- **Color Scheme**: Simplified from urgency-based to status-based
+  - Blue for active DRs
+  - Green for completed DRs
+  - Removed urgency color coding for cleaner display
+- **Font Sizes**: Increased all text by 40-150% for 20ft viewing distance
+  - Header: 2.8rem title, 1.2rem controls
+  - Cards: 1.8rem DR numbers, 1.1rem info, 1rem comments, 1.3rem timers
+  - Table: 1.2rem DR numbers, 1.1rem text, 1rem headers, 0.9rem badges
+  - Icons: 32px milestone icons, 8px status dots
+- **Table Capacity**: Expanded from 14 to 20 DRs in table view
+- **Badge Order**: "Sent to sheet shop" now appears before "parts made"
+
+### Improved
+- **4K Rendering Quality**: Optimized for high-resolution displays
+  - Added font antialiasing (`-webkit-font-smoothing: antialiased`)
+  - Firefox font smoothing (`-moz-osx-font-smoothing: grayscale`)
+  - Enabled subpixel rendering for high-DPI displays
+  - Applied `image-rendering: crisp-edges` for sharp graphics
+  - Optimized text rendering with `optimizeLegibility`
+  - GPU acceleration with `transform: translateZ(0)` and `will-change: transform`
+  - Enhanced font-family stack for better cross-platform rendering
+  - Letter spacing adjustments (`-0.02em`) for improved readability
+- **Performance**:
+  - Hardware acceleration for smoother animations
+  - Optimized backdrop filters with blur
+  - Will-change hints for transform properties
+  - Efficient DOM updates with real-time timers
+
+### Fixed
+- **Closed DRs Filter**: Excluded closed DRs from dashboard
+  - SQL filter: `state NOT IN ('complete', 'closed')`
+- **Parts Tracking Query**: Robust DR number extraction
+  - Handles multiple formats with regex pattern matching
+  - Uses separate cursor for nested queries to avoid conflicts
+- **API Response Structure**: Enhanced `/api/dr-live` endpoint
+  - Added `parts_info` object with `unique_parts`, `total_scans`, `racks`
+  - Added `last_parts_pull_ms` timestamp from PartsTracker ingestion
+  - Proper JSON structure for frontend consumption
+
+### Technical Details
+- **Database**: Integrated PartsTracker table (28,045 records, 470 distinct COMs)
+- **API Endpoint**: Enhanced `/api/dr-live` with parts tracking data
+- **Dashboard Routes**: Multiple route decorators for easy access
+- **Rendering Engine**: CSS optimizations for 4K displays with GPU acceleration
+- **Auto-refresh**: 30-second intervals for all timers and timestamps
+
 ## [1.3.1] - 2025-10-30
 
 ### Added

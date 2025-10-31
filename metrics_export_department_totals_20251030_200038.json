@@ -1,0 +1,193 @@
+{
+  "metric_type": "department_totals",
+  "computed_at": "2025-10-30T19:44:36.809576",
+  "trigger_source": "manual_refresh",
+  "exported_at": "2025-10-30T20:00:38.120442",
+  "data": {
+    "windows": {
+      "30": {
+        "start_date": "2025-10-01",
+        "end_date": "2025-10-30",
+        "total_hours": 25297.48,
+        "departments": [
+          {
+            "name": "Assembly",
+            "hours": 9887.1
+          },
+          {
+            "name": "InsulWallFab",
+            "hours": 3455.54
+          },
+          {
+            "name": "Fab",
+            "hours": 3066.33
+          },
+          {
+            "name": "Electrical",
+            "hours": 2925.43
+          },
+          {
+            "name": "Welding",
+            "hours": 2753.69
+          },
+          {
+            "name": "DoorFab",
+            "hours": 1110.96
+          },
+          {
+            "name": "Crating",
+            "hours": 701.9
+          },
+          {
+            "name": "BaseFormPaint",
+            "hours": 652.6
+          },
+          {
+            "name": "Pipe",
+            "hours": 366.26
+          },
+          {
+            "name": "Test",
+            "hours": 186.57
+          },
+          {
+            "name": "FanAssyTest",
+            "hours": 147.1
+          },
+          {
+            "name": "Paint",
+            "hours": 44.0
+          }
+        ]
+      },
+      "60": {
+        "start_date": "2025-09-01",
+        "end_date": "2025-10-30",
+        "total_hours": 51886.66,
+        "departments": [
+          {
+            "name": "Assembly",
+            "hours": 21205.27
+          },
+          {
+            "name": "InsulWallFab",
+            "hours": 7025.01
+          },
+          {
+            "name": "Fab",
+            "hours": 6091.53
+          },
+          {
+            "name": "Electrical",
+            "hours": 6072.23
+          },
+          {
+            "name": "Welding",
+            "hours": 5499.79
+          },
+          {
+            "name": "DoorFab",
+            "hours": 1914.41
+          },
+          {
+            "name": "BaseFormPaint",
+            "hours": 1319.79
+          },
+          {
+            "name": "Crating",
+            "hours": 1196.41
+          },
+          {
+            "name": "Pipe",
+            "hours": 698.83
+          },
+          {
+            "name": "Test",
+            "hours": 418.46
+          },
+          {
+            "name": "FanAssyTest",
+            "hours": 315.07
+          },
+          {
+            "name": "Paint",
+            "hours": 129.86
+          }
+        ]
+      },
+      "90": {
+        "start_date": "2025-08-02",
+        "end_date": "2025-10-30",
+        "total_hours": 79211.66,
+        "departments": [
+          {
+            "name": "Assembly",
+            "hours": 32927.05
+          },
+          {
+            "name": "InsulWallFab",
+            "hours": 11030.96
+          },
+          {
+            "name": "Electrical",
+            "hours": 9161.19
+          },
+          {
+            "name": "Fab",
+            "hours": 8981.07
+          },
+          {
+            "name": "Welding",
+            "hours": 8350.34
+          },
+          {
+            "name": "DoorFab",
+            "hours": 2552.24
+          },
+          {
+            "name": "BaseFormPaint",
+            "hours": 2052.09
+          },
+          {
+            "name": "Crating",
+            "hours": 1555.5
+          },
+          {
+            "name": "Test",
+            "hours": 1003.8
+          },
+          {
+            "name": "Pipe",
+            "hours": 963.31
+          },
+          {
+            "name": "FanAssyTest",
+            "hours": 463.59
+          },
+          {
+            "name": "Paint",
+            "hours": 170.52
+          }
+        ]
+      }
+    },
+    "max_window_days": 90,
+    "tracked_departments": {
+      "0120": "Fab",
+      "0140": "Welding",
+      "0180": "BaseFormPaint",
+      "0200": "FanAssyTest",
+      "0220": "InsulWallFab",
+      "0230": "Pipe",
+      "0260": "Assembly",
+      "0270": "DoorFab",
+      "0280": "Assembly",
+      "0300": "Electrical",
+      "0320": "Pipe",
+      "0340": "Paint",
+      "0360": "Test",
+      "0380": "Crating"
+    },
+    "generated_at": "2025-10-30T19:44:36.809576"
+  }
+}

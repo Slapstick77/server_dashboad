@@ -1,0 +1,5871 @@
+{
+  "metric_type": "incomplete_units",
+  "computed_at": "2025-10-30T20:56:01.701960",
+  "trigger_source": "logic_update",
+  "exported_at": "2025-10-30T20:59:07.934440",
+  "data": {
+    "count": 63,
+    "units": [
+      {
+        "com": "18750",
+        "jobname": "Logan MER4",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 33.46,
+            "act": 63.08,
+            "completion": 100.0,
+            "efficiency": 53.043753963221306
+          },
+          {
+            "name": "Welding",
+            "std": 38.38,
+            "act": 70.75,
+            "completion": 100.0,
+            "efficiency": 54.24734982332156
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 9.1,
+            "act": 9.0,
+            "completion": 100.0,
+            "efficiency": 101.11111111111111
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 7.38,
+            "act": 7.5,
+            "completion": 100.0,
+            "efficiency": 98.4
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 70.22,
+            "act": 123.74,
+            "completion": 100.0,
+            "efficiency": 56.7480200420236
+          },
+          {
+            "name": "DoorFab",
+            "std": 20.24,
+            "act": 17.5,
+            "completion": 100.0,
+            "efficiency": 115.65714285714286
+          },
+          {
+            "name": "Pipe",
+            "std": 0.76,
+            "act": 0.5,
+            "completion": 100.0,
+            "efficiency": 152.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 99.17,
+            "act": 99.83,
+            "completion": 100.0,
+            "efficiency": 99.3388760893519
+          },
+          {
+            "name": "Assembly",
+            "std": 205.6,
+            "act": 291.22,
+            "completion": 100.0,
+            "efficiency": 70.59954673442758
+          },
+          {
+            "name": "Crating",
+            "std": 9.92,
+            "act": 2.5,
+            "completion": 100.0,
+            "efficiency": 396.8
+          }
+        ],
+        "overall_std": 494.23,
+        "overall_act": 685.62,
+        "overall_eff_actual": 494.23,
+        "overall_completion": 100.0,
+        "overall_efficiency": 72.08512003733846,
+        "unit_days_worked": 28,
+        "unit_span": 352,
+        "unit_span_status": "Complete",
+        "first_day": "2023-11-30",
+        "last_day": "2024-11-15"
+      },
+      {
+        "com": "19403",
+        "jobname": "NIH SRLM",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 70.05,
+            "act": 48.08,
+            "completion": 100.0,
+            "efficiency": 145.6946755407654
+          },
+          {
+            "name": "Welding",
+            "std": 106.28,
+            "act": 123.01,
+            "completion": 100.0,
+            "efficiency": 86.39947971709617
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 10.37,
+            "act": 35.42,
+            "completion": 100.0,
+            "efficiency": 29.277244494635795
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.19,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 159.5
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 66.95,
+            "act": 114.68,
+            "completion": 100.0,
+            "efficiency": 58.37983955354028
+          },
+          {
+            "name": "DoorFab",
+            "std": 41.58,
+            "act": 25.25,
+            "completion": 100.0,
+            "efficiency": 164.67326732673266
+          },
+          {
+            "name": "Pipe",
+            "std": 4.1,
+            "act": 13.0,
+            "completion": 100.0,
+            "efficiency": 31.538461538461537
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 104.52,
+            "act": 163.83,
+            "completion": 100.0,
+            "efficiency": 63.79783922358542
+          },
+          {
+            "name": "Assembly",
+            "std": 179.61,
+            "act": 327.67,
+            "completion": 100.0,
+            "efficiency": 54.814294869838555
+          },
+          {
+            "name": "Crating",
+            "std": 21.24,
+            "act": 22.0,
+            "completion": 100.0,
+            "efficiency": 96.54545454545453
+          }
+        ],
+        "overall_std": 607.89,
+        "overall_act": 874.94,
+        "overall_eff_actual": 607.89,
+        "overall_completion": 100.0,
+        "overall_efficiency": 69.47790705648387,
+        "unit_days_worked": 20,
+        "unit_span": 37,
+        "unit_span_status": "Complete",
+        "first_day": "2025-02-05",
+        "last_day": "2025-03-13"
+      },
+      {
+        "com": "19763",
+        "jobname": "WA County Justice",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 15.26,
+            "act": 25.3,
+            "completion": 100.0,
+            "efficiency": 60.0
+          },
+          {
+            "name": "Welding",
+            "std": 9.28,
+            "act": 17.88,
+            "completion": 100.0,
+            "efficiency": 52.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 2.64,
+            "act": 11.5,
+            "completion": 100.0,
+            "efficiency": 23.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 25.13,
+            "act": 46.5,
+            "completion": 100.0,
+            "efficiency": 55.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 3.94,
+            "act": 7.0,
+            "completion": 100.0,
+            "efficiency": 56.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.28,
+            "act": 2.25,
+            "completion": 100.0,
+            "efficiency": 12.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 9.07,
+            "act": 17.0,
+            "completion": 100.0,
+            "efficiency": 53.0
+          },
+          {
+            "name": "Assembly",
+            "std": 27.78,
+            "act": 84.42,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "Crating",
+            "std": 3.24,
+            "act": 1.5,
+            "completion": 100.0,
+            "efficiency": 216.0
+          }
+        ],
+        "overall_std": 96.62,
+        "overall_act": 213.35,
+        "overall_eff_actual": 96.62,
+        "overall_completion": 100.0,
+        "overall_efficiency": 45.28708694633231,
+        "unit_days_worked": 16,
+        "unit_span": 92,
+        "unit_span_status": "Complete",
+        "first_day": "2025-07-24",
+        "last_day": "2025-10-23"
+      },
+      {
+        "com": "19814",
+        "jobname": "stacked fan retest",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 6.68,
+            "act": 18.82,
+            "completion": 100.0,
+            "efficiency": 35.0
+          },
+          {
+            "name": "Welding",
+            "std": 2.37,
+            "act": 9.75,
+            "completion": 100.0,
+            "efficiency": 24.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 0.76,
+            "act": 4.0,
+            "completion": 100.0,
+            "efficiency": 19.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.76,
+            "act": 2.5,
+            "completion": 100.0,
+            "efficiency": 150.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 17.63,
+            "act": 22.25,
+            "completion": 100.0,
+            "efficiency": 79.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 1.97,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 99.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 27.0,
+            "act": 10.5,
+            "completion": 100.0,
+            "efficiency": 257.0
+          },
+          {
+            "name": "Assembly",
+            "std": 28.86,
+            "act": 76.83,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "Crating",
+            "std": 1.99,
+            "act": 2.5,
+            "completion": 100.0,
+            "efficiency": 80.0
+          }
+        ],
+        "overall_std": 91.02,
+        "overall_act": 149.15,
+        "overall_eff_actual": 91.02,
+        "overall_completion": 100.0,
+        "overall_efficiency": 61.02581293999331,
+        "unit_days_worked": 11,
+        "unit_span": 31,
+        "unit_span_status": "Complete",
+        "first_day": "2025-07-29",
+        "last_day": "2025-08-28"
+      },
+      {
+        "com": "19812",
+        "jobname": "Caddell 2038 6 11 2025",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 37.32,
+            "act": 50.77,
+            "completion": 100.0,
+            "efficiency": 74.0
+          },
+          {
+            "name": "Welding",
+            "std": 30.83,
+            "act": 36.0,
+            "completion": 100.0,
+            "efficiency": 86.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 7.73,
+            "act": 12.5,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 4.96,
+            "act": 6.5,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 76.06,
+            "act": 116.25,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 28.47,
+            "act": 34.62,
+            "completion": 100.0,
+            "efficiency": 82.0
+          },
+          {
+            "name": "Pipe",
+            "std": 6.61,
+            "act": 8.5,
+            "completion": 100.0,
+            "efficiency": 78.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 17.84,
+            "act": 40.5,
+            "completion": 100.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "Assembly",
+            "std": 228.94,
+            "act": 376.24,
+            "completion": 100.0,
+            "efficiency": 61.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.79,
+            "act": 10.0,
+            "completion": 100.0,
+            "efficiency": 98.0
+          }
+        ],
+        "overall_std": 448.55,
+        "overall_act": 691.88,
+        "overall_eff_actual": 448.55,
+        "overall_completion": 100.0,
+        "overall_efficiency": 64.83060646354859,
+        "unit_days_worked": 18,
+        "unit_span": 90,
+        "unit_span_status": "Complete",
+        "first_day": "2025-07-31",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19778",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 18.93,
+            "act": 28.0,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "Welding",
+            "std": 19.37,
+            "act": 22.25,
+            "completion": 100.0,
+            "efficiency": 87.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.46,
+            "act": 9.5,
+            "completion": 100.0,
+            "efficiency": 47.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 4.0,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 33.53,
+            "act": 41.75,
+            "completion": 100.0,
+            "efficiency": 80.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 17.36,
+            "completion": 100.0,
+            "efficiency": 50.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 10.0,
+            "completion": 100.0,
+            "efficiency": 55.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 50.75,
+            "completion": 100.0,
+            "efficiency": 37.0
+          },
+          {
+            "name": "Assembly",
+            "std": 139.54,
+            "act": 162.74,
+            "completion": 100.0,
+            "efficiency": 85.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.47,
+            "act": 5.5,
+            "completion": 100.0,
+            "efficiency": 154.0
+          }
+        ],
+        "overall_std": 260.78,
+        "overall_act": 351.85,
+        "overall_eff_actual": 260.78,
+        "overall_completion": 100.0,
+        "overall_efficiency": 74.11681114111127,
+        "unit_days_worked": 20,
+        "unit_span": 47,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-08",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19779",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 19.96,
+            "act": 42.51,
+            "completion": 100.0,
+            "efficiency": 47.0
+          },
+          {
+            "name": "Welding",
+            "std": 22.38,
+            "act": 37.36,
+            "completion": 100.0,
+            "efficiency": 60.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.52,
+            "act": 21.0,
+            "completion": 100.0,
+            "efficiency": 26.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.28,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 109.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 36.43,
+            "act": 57.42,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 15.26,
+            "completion": 100.0,
+            "efficiency": 57.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 5.75,
+            "completion": 100.0,
+            "efficiency": 96.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 41.72,
+            "completion": 100.0,
+            "efficiency": 45.0
+          },
+          {
+            "name": "Assembly",
+            "std": 145.89,
+            "act": 145.76,
+            "completion": 100.0,
+            "efficiency": 100.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.87,
+            "act": 6.25,
+            "completion": 100.0,
+            "efficiency": 142.0
+          }
+        ],
+        "overall_std": 275.76,
+        "overall_act": 376.03,
+        "overall_eff_actual": 275.76,
+        "overall_completion": 100.0,
+        "overall_efficiency": 73.3345743690663,
+        "unit_days_worked": 23,
+        "unit_span": 47,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-08",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19669",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 62.18,
+            "act": 81.0,
+            "completion": 100.0,
+            "efficiency": 78.0
+          },
+          {
+            "name": "Welding",
+            "std": 75.85,
+            "act": 125.68,
+            "completion": 100.0,
+            "efficiency": 60.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 16.43,
+            "act": 22.76,
+            "completion": 100.0,
+            "efficiency": 72.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 4.56,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 228.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 77.93,
+            "act": 151.27,
+            "completion": 100.0,
+            "efficiency": 52.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 20.24,
+            "act": 33.25,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Pipe",
+            "std": 7.45,
+            "act": 9.79,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 92.67,
+            "act": 118.94,
+            "completion": 100.0,
+            "efficiency": 78.0
+          },
+          {
+            "name": "Assembly",
+            "std": 304.44,
+            "act": 412.5,
+            "completion": 100.0,
+            "efficiency": 73.0
+          },
+          {
+            "name": "Crating",
+            "std": 19.7,
+            "act": 107.1,
+            "completion": 100.0,
+            "efficiency": 18.0
+          }
+        ],
+        "overall_std": 681.45,
+        "overall_act": 1064.29,
+        "overall_eff_actual": 681.45,
+        "overall_completion": 100.0,
+        "overall_efficiency": 64.02860122710916,
+        "unit_days_worked": 24,
+        "unit_span": 44,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-15",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19780",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 18.93,
+            "act": 28.75,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "Welding",
+            "std": 21.14,
+            "act": 49.05,
+            "completion": 100.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.93,
+            "act": 13.53,
+            "completion": 100.0,
+            "efficiency": 36.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 7.0,
+            "completion": 100.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 36.22,
+            "act": 50.75,
+            "completion": 100.0,
+            "efficiency": 71.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 21.27,
+            "completion": 100.0,
+            "efficiency": 41.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 10.0,
+            "completion": 100.0,
+            "efficiency": 55.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 25.92,
+            "completion": 100.0,
+            "efficiency": 74.0
+          },
+          {
+            "name": "Assembly",
+            "std": 138.67,
+            "act": 180.77,
+            "completion": 100.0,
+            "efficiency": 77.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.39,
+            "act": 4.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 264.76,
+        "overall_act": 391.04,
+        "overall_eff_actual": 256.37,
+        "overall_completion": 96.83109231001661,
+        "overall_efficiency": 65.56106792144027,
+        "unit_days_worked": 22,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-15",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19781",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 75.41,
+            "act": 30.68,
+            "completion": 100.0,
+            "efficiency": 246.0
+          },
+          {
+            "name": "Welding",
+            "std": 19.37,
+            "act": 33.25,
+            "completion": 100.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.46,
+            "act": 9.0,
+            "completion": 100.0,
+            "efficiency": 50.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 33.99,
+            "act": 55.2,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 30.19,
+            "completion": 100.0,
+            "efficiency": 29.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 18.0,
+            "completion": 100.0,
+            "efficiency": 30.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 21.66,
+            "completion": 100.0,
+            "efficiency": 89.0
+          },
+          {
+            "name": "Assembly",
+            "std": 139.64,
+            "act": 181.86,
+            "completion": 100.0,
+            "efficiency": 77.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.47,
+            "act": 28.0,
+            "completion": 100.0,
+            "efficiency": 30.0
+          }
+        ],
+        "overall_std": 317.82,
+        "overall_act": 407.84,
+        "overall_eff_actual": 317.82,
+        "overall_completion": 100.0,
+        "overall_efficiency": 77.9276186739898,
+        "unit_days_worked": 21,
+        "unit_span": 40,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-15",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19674",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 23.37,
+            "act": 52.74,
+            "completion": 100.0,
+            "efficiency": 45.0
+          },
+          {
+            "name": "Welding",
+            "std": 30.04,
+            "act": 47.25,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.69,
+            "act": 15.37,
+            "completion": 100.0,
+            "efficiency": 37.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.52,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 47.63,
+            "act": 62.5,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.65,
+            "act": 19.42,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.25,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 35.0,
+            "act": 79.16,
+            "completion": 100.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "Assembly",
+            "std": 109.65,
+            "act": 255.33,
+            "completion": 100.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.36,
+            "act": 14.08,
+            "completion": 100.0,
+            "efficiency": 59.0
+          }
+        ],
+        "overall_std": 275.16,
+        "overall_act": 549.85,
+        "overall_eff_actual": 275.16,
+        "overall_completion": 100.0,
+        "overall_efficiency": 50.042738928798755,
+        "unit_days_worked": 18,
+        "unit_span": 37,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-18",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19782",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 19.46,
+            "act": 38.91,
+            "completion": 100.0,
+            "efficiency": 50.0
+          },
+          {
+            "name": "Welding",
+            "std": 22.38,
+            "act": 33.17,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.52,
+            "act": 8.5,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.28,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 36.43,
+            "act": 52.69,
+            "completion": 100.0,
+            "efficiency": 69.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 16.65,
+            "completion": 100.0,
+            "efficiency": 53.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 16.5,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 28.65,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "Assembly",
+            "std": 145.89,
+            "act": 272.09,
+            "completion": 100.0,
+            "efficiency": 54.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.87,
+            "act": 27.0,
+            "completion": 100.0,
+            "efficiency": 33.0
+          }
+        ],
+        "overall_std": 275.26,
+        "overall_act": 494.16,
+        "overall_eff_actual": 275.26,
+        "overall_completion": 100.0,
+        "overall_efficiency": 55.70260644325724,
+        "unit_days_worked": 20,
+        "unit_span": 37,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-18",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19783",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 18.17,
+            "act": 29.49,
+            "completion": 100.0,
+            "efficiency": 61.0
+          },
+          {
+            "name": "Welding",
+            "std": 16.24,
+            "act": 21.75,
+            "completion": 100.0,
+            "efficiency": 75.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.37,
+            "act": 8.69,
+            "completion": 100.0,
+            "efficiency": 39.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.38,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 79.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 27.95,
+            "act": 55.8,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 11.75,
+            "completion": 100.0,
+            "efficiency": 75.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 9.27,
+            "completion": 100.0,
+            "efficiency": 59.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 18.17,
+            "act": 20.3,
+            "completion": 100.0,
+            "efficiency": 90.0
+          },
+          {
+            "name": "Assembly",
+            "std": 117.84,
+            "act": 145.2,
+            "completion": 100.0,
+            "efficiency": 81.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.61,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 154.0
+          }
+        ],
+        "overall_std": 222.99,
+        "overall_act": 308.25,
+        "overall_eff_actual": 222.99,
+        "overall_completion": 100.0,
+        "overall_efficiency": 72.34063260340633,
+        "unit_days_worked": 17,
+        "unit_span": 36,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-19",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19677",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 53.99,
+            "act": 100.97,
+            "completion": 100.0,
+            "efficiency": 53.0
+          },
+          {
+            "name": "Welding",
+            "std": 63.0,
+            "act": 98.13,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 14.63,
+            "act": 19.5,
+            "completion": 100.0,
+            "efficiency": 75.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.78,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 126.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 47.37,
+            "act": 150.42,
+            "completion": 100.0,
+            "efficiency": 32.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 25.3,
+            "act": 37.56,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "Pipe",
+            "std": 7.73,
+            "act": 9.75,
+            "completion": 100.0,
+            "efficiency": 79.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 70.0,
+            "act": 100.25,
+            "completion": 100.0,
+            "efficiency": 70.0
+          },
+          {
+            "name": "Assembly",
+            "std": 274.39,
+            "act": 387.61,
+            "completion": 75.0,
+            "efficiency": 53.0
+          },
+          {
+            "name": "Crating",
+            "std": 18.32,
+            "act": 62.65,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 578.51,
+        "overall_act": 969.84,
+        "overall_eff_actual": 491.59,
+        "overall_completion": 84.97562704188344,
+        "overall_efficiency": 50.68800008248784,
+        "unit_days_worked": 23,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-22",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19785",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 18.48,
+            "act": 40.5,
+            "completion": 100.0,
+            "efficiency": 45.0
+          },
+          {
+            "name": "Welding",
+            "std": 24.59,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.19,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.99,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 100.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 31.74,
+            "act": 71.88,
+            "completion": 100.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 16.7,
+            "completion": 100.0,
+            "efficiency": 52.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 1.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 1.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 127.75,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 5.13,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 249.3,
+        "overall_act": 134.08,
+        "overall_eff_actual": 61.97,
+        "overall_completion": 24.857601283594057,
+        "overall_efficiency": 46.218675417661096,
+        "unit_days_worked": 14,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-23",
+        "last_day": "2025-10-23"
+      },
+      {
+        "com": "19681",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 57.91,
+            "act": 87.76,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "Welding",
+            "std": 67.32,
+            "act": 83.0,
+            "completion": 100.0,
+            "efficiency": 81.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 14.07,
+            "act": 12.0,
+            "completion": 100.0,
+            "efficiency": 117.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.04,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 101.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 45.05,
+            "act": 134.95,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 17.71,
+            "act": 18.7,
+            "completion": 15.0,
+            "efficiency": 14.0
+          },
+          {
+            "name": "Pipe",
+            "std": 6.77,
+            "act": 0.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 85.67,
+            "act": 3.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 250.4,
+            "act": 45.45,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 19.75,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 567.69,
+        "overall_act": 388.61,
+        "overall_eff_actual": 190.05,
+        "overall_completion": 33.47716183128115,
+        "overall_efficiency": 48.90417127711588,
+        "unit_days_worked": 21,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-24",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19815",
+        "jobname": "Komico Parts Clean",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 24.34,
+            "act": 46.88,
+            "completion": 100.0,
+            "efficiency": 52.0
+          },
+          {
+            "name": "Welding",
+            "std": 12.6,
+            "act": 25.95,
+            "completion": 100.0,
+            "efficiency": 48.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.46,
+            "act": 6.0,
+            "completion": 100.0,
+            "efficiency": 74.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.49,
+            "act": 2.5,
+            "completion": 100.0,
+            "efficiency": 100.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 44.89,
+            "act": 88.0,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 18.14,
+            "act": 27.36,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.67,
+            "act": 8.25,
+            "completion": 100.0,
+            "efficiency": 20.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 17.5,
+            "act": 46.32,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "Assembly",
+            "std": 81.31,
+            "act": 200.8,
+            "completion": 100.0,
+            "efficiency": 40.0
+          },
+          {
+            "name": "Crating",
+            "std": 1.92,
+            "act": 19.5,
+            "completion": 100.0,
+            "efficiency": 10.0
+          }
+        ],
+        "overall_std": 209.32,
+        "overall_act": 471.56,
+        "overall_eff_actual": 209.32,
+        "overall_completion": 100.0,
+        "overall_efficiency": 44.38883705148867,
+        "unit_days_worked": 18,
+        "unit_span": 30,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-24",
+        "last_day": "2025-10-23"
+      },
+      {
+        "com": "19820",
+        "jobname": "NYC Health - Cath Lab - MP",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 34.09,
+            "act": 55.5,
+            "completion": 100.0,
+            "efficiency": 61.0
+          },
+          {
+            "name": "Welding",
+            "std": 19.16,
+            "act": 29.53,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.75,
+            "act": 7.5,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 5.91,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 71.42,
+            "act": 85.5,
+            "completion": 100.0,
+            "efficiency": 84.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 27.72,
+            "act": 27.91,
+            "completion": 65.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.06,
+            "act": 8.74,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 64.79,
+            "act": 74.34,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 96.4,
+            "act": 246.1,
+            "completion": 32.0,
+            "efficiency": 13.0
+          },
+          {
+            "name": "Crating",
+            "std": 5.88,
+            "act": 2.02,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 332.18,
+        "overall_act": 537.14,
+        "overall_eff_actual": 184.2,
+        "overall_completion": 55.45065928111266,
+        "overall_efficiency": 34.29199091484529,
+        "unit_days_worked": 18,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-24",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19676",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 21.2,
+            "act": 65.0,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "Welding",
+            "std": 16.05,
+            "act": 25.19,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 2.89,
+            "act": 5.0,
+            "completion": 100.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 7.4,
+            "act": 6.0,
+            "completion": 100.0,
+            "efficiency": 123.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 35.87,
+            "act": 49.35,
+            "completion": 100.0,
+            "efficiency": 72.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 15.18,
+            "act": 27.55,
+            "completion": 100.0,
+            "efficiency": 55.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.37,
+            "act": 0.65,
+            "completion": 100.0,
+            "efficiency": 57.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 39.5,
+            "act": 54.67,
+            "completion": 100.0,
+            "efficiency": 72.0
+          },
+          {
+            "name": "Assembly",
+            "std": 69.04,
+            "act": 217.17,
+            "completion": 100.0,
+            "efficiency": 31.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.4,
+            "act": 5.24,
+            "completion": 100.0,
+            "efficiency": 84.0
+          }
+        ],
+        "overall_std": 211.9,
+        "overall_act": 455.82,
+        "overall_eff_actual": 211.9,
+        "overall_completion": 100.0,
+        "overall_efficiency": 46.48764863323242,
+        "unit_days_worked": 22,
+        "unit_span": 33,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-25",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19881",
+        "jobname": "SSR - HMH West Phase 3A Podium",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 23.28,
+            "act": 71.02,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "Welding",
+            "std": 20.48,
+            "act": 35.62,
+            "completion": 100.0,
+            "efficiency": 57.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.12,
+            "act": 5.0,
+            "completion": 100.0,
+            "efficiency": 102.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.35,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 68.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 22.67,
+            "act": 53.17,
+            "completion": 100.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 11.55,
+            "act": 17.66,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.58,
+            "act": 11.34,
+            "completion": 100.0,
+            "efficiency": 5.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 25.5,
+            "act": 39.49,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Assembly",
+            "std": 51.13,
+            "act": 155.11,
+            "completion": 100.0,
+            "efficiency": 33.0
+          },
+          {
+            "name": "Crating",
+            "std": 2.37,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 164.03,
+        "overall_act": 390.41,
+        "overall_eff_actual": 164.03,
+        "overall_completion": 100.0,
+        "overall_efficiency": 42.01480494864373,
+        "unit_days_worked": 17,
+        "unit_span": 34,
+        "unit_span_status": "Complete",
+        "first_day": "2025-09-25",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19816",
+        "jobname": "Wolverine",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 44.72,
+            "act": 92.03,
+            "completion": 100.0,
+            "efficiency": 49.0
+          },
+          {
+            "name": "Welding",
+            "std": 23.54,
+            "act": 35.56,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 12.02,
+            "act": 10.5,
+            "completion": 100.0,
+            "efficiency": 114.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.63,
+            "act": 4.0,
+            "completion": 100.0,
+            "efficiency": 91.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 109.78,
+            "act": 150.9,
+            "completion": 100.0,
+            "efficiency": 73.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 15.83,
+            "act": 23.36,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.44,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 51.33,
+            "act": 81.67,
+            "completion": 70.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "Assembly",
+            "std": 189.56,
+            "act": 332.88,
+            "completion": 70.0,
+            "efficiency": 40.0
+          },
+          {
+            "name": "Crating",
+            "std": 10.0,
+            "act": 19.4,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 460.85,
+        "overall_act": 750.3,
+        "overall_eff_actual": 378.14,
+        "overall_completion": 82.0533796246067,
+        "overall_efficiency": 50.39890710382514,
+        "unit_days_worked": 20,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-29",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19788",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 26.43,
+            "act": 40.48,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Welding",
+            "std": 25.15,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.44,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.28,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 109.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 26.14,
+            "act": 47.01,
+            "completion": 100.0,
+            "efficiency": 56.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 0.0,
+            "completion": 7.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 150.09,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.79,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 278.75,
+        "overall_act": 90.49,
+        "overall_eff_actual": 56.46,
+        "overall_completion": 20.255856502242146,
+        "overall_efficiency": 62.397170958116924,
+        "unit_days_worked": 10,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-09-30",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19678",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 79.81,
+            "act": 92.99,
+            "completion": 100.0,
+            "efficiency": 86.0
+          },
+          {
+            "name": "Welding",
+            "std": 67.21,
+            "act": 105.22,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 13.23,
+            "act": 14.22,
+            "completion": 100.0,
+            "efficiency": 93.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.04,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 152.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 88.87,
+            "act": 91.94,
+            "completion": 100.0,
+            "efficiency": 97.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 25.3,
+            "act": 25.19,
+            "completion": 50.0,
+            "efficiency": 50.0
+          },
+          {
+            "name": "Pipe",
+            "std": 3.88,
+            "act": 2.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 60.0,
+            "act": 16.35,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 228.04,
+            "act": 140.9,
+            "completion": 2.0,
+            "efficiency": 3.0
+          },
+          {
+            "name": "Crating",
+            "std": 15.43,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 584.81,
+        "overall_act": 491.06,
+        "overall_eff_actual": 269.37,
+        "overall_completion": 46.06125066260836,
+        "overall_efficiency": 54.85496680650021,
+        "unit_days_worked": 19,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-01",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19679",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 23.85,
+            "act": 55.03,
+            "completion": 100.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "Welding",
+            "std": 40.07,
+            "act": 78.15,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.8,
+            "act": 7.5,
+            "completion": 90.0,
+            "efficiency": 82.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.28,
+            "act": 4.0,
+            "completion": 100.0,
+            "efficiency": 57.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 57.47,
+            "act": 67.0,
+            "completion": 100.0,
+            "efficiency": 86.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.65,
+            "act": 29.3,
+            "completion": 25.0,
+            "efficiency": 11.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.98,
+            "act": 2.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 36.5,
+            "act": 63.82,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 128.23,
+            "act": 134.68,
+            "completion": 40.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.37,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 319.2,
+        "overall_act": 441.73,
+        "overall_eff_actual": 184.24,
+        "overall_completion": 57.72070802005014,
+        "overall_efficiency": 41.70975482760963,
+        "unit_days_worked": 19,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-03",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19680",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 28.09,
+            "act": 67.25,
+            "completion": 100.0,
+            "efficiency": 42.0
+          },
+          {
+            "name": "Welding",
+            "std": 40.07,
+            "act": 42.67,
+            "completion": 100.0,
+            "efficiency": 94.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.8,
+            "act": 10.28,
+            "completion": 100.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.28,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 23.64,
+            "act": 51.41,
+            "completion": 100.0,
+            "efficiency": 46.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.43,
+            "act": 20.17,
+            "completion": 95.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.98,
+            "act": 2.6,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 36.5,
+            "act": 67.53,
+            "completion": 60.0,
+            "efficiency": 32.0
+          },
+          {
+            "name": "Assembly",
+            "std": 128.23,
+            "act": 193.18,
+            "completion": 70.0,
+            "efficiency": 46.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.37,
+            "act": 33.24,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 289.39,
+        "overall_act": 488.33,
+        "overall_eff_actual": 224.35,
+        "overall_completion": 77.52496630844189,
+        "overall_efficiency": 45.94219073167734,
+        "unit_days_worked": 17,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-03",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19879",
+        "jobname": "SSR - HMH West Phase 3A Podium",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.16,
+            "act": 76.97,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "Welding",
+            "std": 33.89,
+            "act": 32.0,
+            "completion": 100.0,
+            "efficiency": 106.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 9.85,
+            "act": 13.2,
+            "completion": 100.0,
+            "efficiency": 74.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.13,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 71.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 67.2,
+            "act": 60.7,
+            "completion": 100.0,
+            "efficiency": 111.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 13.86,
+            "act": 22.27,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.86,
+            "act": 1.03,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 43.0,
+            "act": 15.05,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 123.33,
+            "act": 159.85,
+            "completion": 5.0,
+            "efficiency": 4.0
+          },
+          {
+            "name": "Crating",
+            "std": 12.61,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 337.89,
+        "overall_act": 384.07,
+        "overall_eff_actual": 162.26,
+        "overall_completion": 48.020509633312614,
+        "overall_efficiency": 42.24659567266383,
+        "unit_days_worked": 13,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-03",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19789",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 23.03,
+            "act": 52.49,
+            "completion": 100.0,
+            "efficiency": 44.0
+          },
+          {
+            "name": "Welding",
+            "std": 23.73,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.8,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.68,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 89.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 25.44,
+            "act": 59.58,
+            "completion": 100.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 0.0,
+            "completion": 6.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 126.7,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.86,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 244.67,
+        "overall_act": 115.07,
+        "overall_eff_actual": 51.68,
+        "overall_completion": 21.120529693055953,
+        "overall_efficiency": 44.9079690623099,
+        "unit_days_worked": 10,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-06",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19818",
+        "jobname": "UAPB Watson Library MP",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 27.83,
+            "act": 49.97,
+            "completion": 100.0,
+            "efficiency": 56.0
+          },
+          {
+            "name": "Welding",
+            "std": 15.9,
+            "act": 24.98,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.19,
+            "act": 8.73,
+            "completion": 100.0,
+            "efficiency": 37.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.21,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 107.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 22.04,
+            "act": 55.14,
+            "completion": 100.0,
+            "efficiency": 40.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 9.24,
+            "act": 8.5,
+            "completion": 100.0,
+            "efficiency": 109.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.37,
+            "act": 2.0,
+            "completion": 100.0,
+            "efficiency": 19.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 5.67,
+            "act": 11.44,
+            "completion": 100.0,
+            "efficiency": 50.0
+          },
+          {
+            "name": "Assembly",
+            "std": 51.53,
+            "act": 77.18,
+            "completion": 100.0,
+            "efficiency": 67.0
+          },
+          {
+            "name": "Crating",
+            "std": 6.08,
+            "act": 3.45,
+            "completion": 100.0,
+            "efficiency": 176.0
+          }
+        ],
+        "overall_std": 145.06,
+        "overall_act": 244.39,
+        "overall_eff_actual": 145.06,
+        "overall_completion": 100.0,
+        "overall_efficiency": 59.355947461025416,
+        "unit_days_worked": 12,
+        "unit_span": 19,
+        "unit_span_status": "Complete",
+        "first_day": "2025-10-06",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19819",
+        "jobname": "NYC Health - Cath Lab - MP",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 22.11,
+            "act": 57.97,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "Welding",
+            "std": 13.77,
+            "act": 22.39,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.34,
+            "act": 3.5,
+            "completion": 100.0,
+            "efficiency": 95.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.95,
+            "act": 0.0,
+            "completion": 100.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 20.94,
+            "act": 41.31,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 11.55,
+            "act": 11.45,
+            "completion": 65.0,
+            "efficiency": 66.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.29,
+            "act": 4.0,
+            "completion": 30.0,
+            "efficiency": 10.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 23.42,
+            "act": 63.91,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 39.74,
+            "act": 109.91,
+            "completion": 50.0,
+            "efficiency": 18.0
+          },
+          {
+            "name": "Crating",
+            "std": 1.31,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 140.42,
+        "overall_act": 316.44,
+        "overall_eff_actual": 90.87,
+        "overall_completion": 64.71620851730523,
+        "overall_efficiency": 28.717766401213503,
+        "unit_days_worked": 13,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-06",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19878",
+        "jobname": "SSR - HMH West Phase 3A Podium",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 25.58,
+            "act": 39.22,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Welding",
+            "std": 18.47,
+            "act": 24.22,
+            "completion": 100.0,
+            "efficiency": 76.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.69,
+            "act": 8.5,
+            "completion": 100.0,
+            "efficiency": 55.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.52,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 18.69,
+            "act": 49.09,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 9.24,
+            "act": 17.0,
+            "completion": 25.0,
+            "efficiency": 14.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.52,
+            "act": 0.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 17.0,
+            "act": 4.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 62.47,
+            "act": 48.95,
+            "completion": 5.0,
+            "efficiency": 6.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.99,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 164.17,
+        "overall_act": 194.73,
+        "overall_eff_actual": 74.38,
+        "overall_completion": 45.30882621672656,
+        "overall_efficiency": 38.19827453397011,
+        "unit_days_worked": 13,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-06",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19683",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 46.37,
+            "act": 74.15,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "Welding",
+            "std": 47.27,
+            "act": 73.11,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 10.15,
+            "act": 6.0,
+            "completion": 75.0,
+            "efficiency": 127.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.52,
+            "act": 0.07,
+            "completion": 100.0,
+            "efficiency": 2171.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 86.08,
+            "act": 90.38,
+            "completion": 100.0,
+            "efficiency": 95.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 17.03,
+            "act": 6.0,
+            "completion": 15.0,
+            "efficiency": 43.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.68,
+            "act": 0.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 46.5,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 204.46,
+            "act": 2.75,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.78,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 471.84,
+        "overall_act": 254.71,
+        "overall_eff_actual": 191.41,
+        "overall_completion": 40.56608172261783,
+        "overall_efficiency": 75.14702995563583,
+        "unit_days_worked": 17,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-07",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19787",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 20.94,
+            "act": 47.41,
+            "completion": 100.0,
+            "efficiency": 45.0
+          },
+          {
+            "name": "Welding",
+            "std": 24.49,
+            "act": 23.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.15,
+            "act": 11.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.99,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 100.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 32.98,
+            "act": 65.71,
+            "completion": 95.0,
+            "efficiency": 48.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 1.0,
+            "completion": 6.0,
+            "efficiency": 53.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 128.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 5.11,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 253.09,
+        "overall_act": 151.37,
+        "overall_eff_actual": 55.79,
+        "overall_completion": 22.042198427436873,
+        "overall_efficiency": 36.85446257514698,
+        "unit_days_worked": 12,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-07",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19686",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 43.2,
+            "act": 69.25,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Welding",
+            "std": 71.8,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 12.46,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 4.56,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 104.46,
+            "act": 11.25,
+            "completion": 5.0,
+            "efficiency": 46.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 20.24,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 4.04,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 112.67,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 301.48,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 17.31,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 692.22,
+        "overall_act": 80.5,
+        "overall_eff_actual": 48.42,
+        "overall_completion": 6.995319407124903,
+        "overall_efficiency": 60.1527950310559,
+        "unit_days_worked": 8,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-08",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19790",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 19.68,
+            "act": 31.91,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Welding",
+            "std": 22.15,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.44,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.28,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 36.43,
+            "act": 62.54,
+            "completion": 100.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 1.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 150.18,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.79,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 279.38,
+        "overall_act": 98.95,
+        "overall_eff_actual": 56.11,
+        "overall_completion": 20.083756890256993,
+        "overall_efficiency": 56.70540677109652,
+        "unit_days_worked": 8,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-08",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19791",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 27.79,
+            "act": 55.14,
+            "completion": 100.0,
+            "efficiency": 51.0
+          },
+          {
+            "name": "Welding",
+            "std": 22.28,
+            "act": 26.14,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.48,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.28,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 26.75,
+            "act": 42.04,
+            "completion": 100.0,
+            "efficiency": 64.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 5.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 151.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.83,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 279.01,
+        "overall_act": 131.32,
+        "overall_eff_actual": 54.54,
+        "overall_completion": 19.547686462850795,
+        "overall_efficiency": 41.53213524215656,
+        "unit_days_worked": 9,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-08",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19682",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 57.25,
+            "act": 93.51,
+            "completion": 100.0,
+            "efficiency": 61.0
+          },
+          {
+            "name": "Welding",
+            "std": 67.32,
+            "act": 88.52,
+            "completion": 85.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 14.07,
+            "act": 5.0,
+            "completion": 100.0,
+            "efficiency": 281.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.04,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 101.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 45.14,
+            "act": 77.94,
+            "completion": 100.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 17.71,
+            "act": 8.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 6.77,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 85.67,
+            "act": 4.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 254.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 19.75,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 571.65,
+        "overall_act": 280.47,
+        "overall_eff_actual": 176.72,
+        "overall_completion": 30.914370681360964,
+        "overall_efficiency": 63.009234499233415,
+        "unit_days_worked": 14,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-09",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19875",
+        "jobname": "WCPSS Parkside",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 31.36,
+            "act": 60.91,
+            "completion": 100.0,
+            "efficiency": 52.0
+          },
+          {
+            "name": "Welding",
+            "std": 17.22,
+            "act": 29.53,
+            "completion": 100.0,
+            "efficiency": 58.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.32,
+            "act": 2.0,
+            "completion": 30.0,
+            "efficiency": 80.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 5.1,
+            "act": 4.0,
+            "completion": 100.0,
+            "efficiency": 128.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 67.25,
+            "act": 65.25,
+            "completion": 100.0,
+            "efficiency": 103.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 27.81,
+            "act": 10.96,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.76,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 14.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 127.92,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 5.64,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 302.38,
+        "overall_act": 175.15,
+        "overall_eff_actual": 122.53,
+        "overall_completion": 40.52053707255771,
+        "overall_efficiency": 69.95489580359691,
+        "unit_days_worked": 11,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-10",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19880",
+        "jobname": "SSR - HMH West Phase 3A Podium",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.34,
+            "act": 35.93,
+            "completion": 100.0,
+            "efficiency": 82.0
+          },
+          {
+            "name": "Welding",
+            "std": 25.66,
+            "act": 40.71,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 7.19,
+            "act": 8.5,
+            "completion": 100.0,
+            "efficiency": 85.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.69,
+            "act": 3.0,
+            "completion": 100.0,
+            "efficiency": 56.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 20.9,
+            "act": 53.86,
+            "completion": 100.0,
+            "efficiency": 38.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 11.55,
+            "act": 18.58,
+            "completion": 40.0,
+            "efficiency": 25.0
+          },
+          {
+            "name": "Pipe",
+            "std": 3.44,
+            "act": 7.07,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 26.5,
+            "act": 8.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 87.64,
+            "act": 61.99,
+            "completion": 5.0,
+            "efficiency": 7.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.25,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 222.16,
+        "overall_act": 239.89,
+        "overall_eff_actual": 93.78,
+        "overall_completion": 42.213719841555644,
+        "overall_efficiency": 39.0937513026804,
+        "unit_days_worked": 14,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-10",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19685",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 42.78,
+            "act": 68.73,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Welding",
+            "std": 66.98,
+            "act": 55.75,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 12.25,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.04,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 87.67,
+            "act": 117.24,
+            "completion": 18.0,
+            "efficiency": 13.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 25.3,
+            "act": 7.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 3.96,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 95.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 202.41,
+            "act": 1.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 16.28,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 555.67,
+        "overall_act": 250.22,
+        "overall_eff_actual": 58.56,
+        "overall_completion": 10.538737020173846,
+        "overall_efficiency": 23.40364479258253,
+        "unit_days_worked": 11,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-13",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19688",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.45,
+            "act": 48.88,
+            "completion": 90.0,
+            "efficiency": 54.0
+          },
+          {
+            "name": "Welding",
+            "std": 37.07,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.68,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.28,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 29.59,
+            "act": 1.75,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 10.12,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.02,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 41.83,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 128.37,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.73,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 297.14,
+        "overall_act": 50.63,
+        "overall_eff_actual": 26.5,
+        "overall_completion": 8.920037692670121,
+        "overall_efficiency": 52.350385147145964,
+        "unit_days_worked": 7,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-13",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19883",
+        "jobname": "PITTSBURGH ZOO & AQUARIUM",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 46.08,
+            "act": 97.37,
+            "completion": 100.0,
+            "efficiency": 47.0
+          },
+          {
+            "name": "Welding",
+            "std": 22.99,
+            "act": 20.84,
+            "completion": 100.0,
+            "efficiency": 110.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.41,
+            "act": 8.0,
+            "completion": 100.0,
+            "efficiency": 80.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.0,
+            "act": 3.08,
+            "completion": 100.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 98.07,
+            "act": 131.33,
+            "completion": 100.0,
+            "efficiency": 75.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 24.73,
+            "act": 35.2,
+            "completion": 100.0,
+            "efficiency": 70.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.98,
+            "act": 9.79,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 134.67,
+            "act": 99.56,
+            "completion": 5.0,
+            "efficiency": 7.0
+          },
+          {
+            "name": "Assembly",
+            "std": 248.11,
+            "act": 201.35,
+            "completion": 40.0,
+            "efficiency": 49.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.35,
+            "act": 0.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 589.39,
+        "overall_act": 607.02,
+        "overall_eff_actual": 306.26,
+        "overall_completion": 51.961774037564254,
+        "overall_efficiency": 50.45262100095549,
+        "unit_days_worked": 13,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-13",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19876",
+        "jobname": "Caddell 33037067 Booking",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 16.73,
+            "act": 20.98,
+            "completion": 100.0,
+            "efficiency": 80.0
+          },
+          {
+            "name": "Welding",
+            "std": 16.06,
+            "act": 28.34,
+            "completion": 70.0,
+            "efficiency": 40.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.32,
+            "act": 13.75,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.54,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 32.22,
+            "act": 59.34,
+            "completion": 100.0,
+            "efficiency": 54.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 129.77,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 7.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 242.0,
+        "overall_act": 129.41,
+        "overall_eff_actual": 60.19,
+        "overall_completion": 24.872727272727268,
+        "overall_efficiency": 46.5126342631945,
+        "unit_days_worked": 9,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-15",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19877",
+        "jobname": "Caddell 33037067 Booking",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 17.36,
+            "act": 27.75,
+            "completion": 100.0,
+            "efficiency": 63.0
+          },
+          {
+            "name": "Welding",
+            "std": 16.06,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.32,
+            "act": 5.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.54,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 19.66,
+            "act": 56.42,
+            "completion": 100.0,
+            "efficiency": 34.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 129.77,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 7.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 230.07,
+        "overall_act": 94.17,
+        "overall_eff_actual": 37.02,
+        "overall_completion": 16.090754987612463,
+        "overall_efficiency": 39.31188276521185,
+        "unit_days_worked": 6,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-15",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19684",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.57,
+            "act": 53.19,
+            "completion": 100.0,
+            "efficiency": 56.0
+          },
+          {
+            "name": "Welding",
+            "std": 38.02,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.1,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.51,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 20.03,
+            "act": 64.19,
+            "completion": 100.0,
+            "efficiency": 31.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.65,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.48,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 24.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 101.15,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.76,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 242.77,
+        "overall_act": 120.38,
+        "overall_eff_actual": 49.6,
+        "overall_completion": 20.430860485232934,
+        "overall_efficiency": 41.202857617544446,
+        "unit_days_worked": 7,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-16",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19792",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 25.55,
+            "act": 27.88,
+            "completion": 100.0,
+            "efficiency": 92.0
+          },
+          {
+            "name": "Welding",
+            "std": 21.12,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.92,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 26.13,
+            "act": 44.9,
+            "completion": 35.0,
+            "efficiency": 20.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 139.55,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.43,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 262.18,
+        "overall_act": 75.78,
+        "overall_eff_actual": 34.7,
+        "overall_completion": 13.233465558013577,
+        "overall_efficiency": 45.784507785695425,
+        "unit_days_worked": 6,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-16",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19793",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.95,
+            "act": 23.93,
+            "completion": 100.0,
+            "efficiency": 126.0
+          },
+          {
+            "name": "Welding",
+            "std": 23.13,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.31,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 29.71,
+            "act": 59.55,
+            "completion": 45.0,
+            "efficiency": 22.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 10.95,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 20.83,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 145.89,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 10.27,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 284.59,
+        "overall_act": 83.48,
+        "overall_eff_actual": 43.32,
+        "overall_completion": 15.221722477950737,
+        "overall_efficiency": 51.8920699568759,
+        "unit_days_worked": 6,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-16",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19687",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 30.09,
+            "act": 64.77,
+            "completion": 100.0,
+            "efficiency": 46.0
+          },
+          {
+            "name": "Welding",
+            "std": 37.07,
+            "act": 1.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.68,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.28,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 40.7,
+            "act": 67.58,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 10.12,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.02,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 41.83,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 128.63,
+            "act": 2.25,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.73,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 309.15,
+        "overall_act": 139.1,
+        "overall_eff_actual": 30.09,
+        "overall_completion": 9.733139252789906,
+        "overall_efficiency": 21.63191948238677,
+        "unit_days_worked": 7,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-17",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19689",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.91,
+            "act": 47.9,
+            "completion": 100.0,
+            "efficiency": 62.0
+          },
+          {
+            "name": "Welding",
+            "std": 37.77,
+            "act": 46.12,
+            "completion": 15.0,
+            "efficiency": 12.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.23,
+            "act": 7.19,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.52,
+            "act": 4.1,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 22.08,
+            "act": 5.75,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.65,
+            "act": 2.74,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.96,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 38.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 103.61,
+            "act": 3.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.71,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 262.44,
+        "overall_act": 117.3,
+        "overall_eff_actual": 35.58,
+        "overall_completion": 13.555669867398262,
+        "overall_efficiency": 30.328644501278774,
+        "unit_days_worked": 9,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-17",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19885",
+        "jobname": "Piedmont Athens Regional OR Renovations",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 51.92,
+            "act": 76.07,
+            "completion": 95.0,
+            "efficiency": 65.0
+          },
+          {
+            "name": "Welding",
+            "std": 27.72,
+            "act": 1.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 13.14,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.72,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 46.53,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 20.79,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 3.32,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 29.81,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 82.04,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 154.53,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 7.87,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 441.39,
+        "overall_act": 77.57,
+        "overall_eff_actual": 49.32,
+        "overall_completion": 11.174698112780082,
+        "overall_efficiency": 63.586438055949465,
+        "unit_days_worked": 7,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-18",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19898",
+        "jobname": "HHS Central Fill Pharmacy",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 25.5,
+            "act": 35.37,
+            "completion": 50.0,
+            "efficiency": 36.0
+          },
+          {
+            "name": "Welding",
+            "std": 21.81,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.63,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.69,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 19.4,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 6.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.2,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 15.67,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 77.48,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 7.55,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 181.86,
+        "overall_act": 37.37,
+        "overall_eff_actual": 12.75,
+        "overall_completion": 7.010887495875948,
+        "overall_efficiency": 34.118276692534124,
+        "unit_days_worked": 6,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-20",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19897",
+        "jobname": "HHS Central Fill Pharmacy",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 38.58,
+            "act": 32.67,
+            "completion": 50.0,
+            "efficiency": 59.0
+          },
+          {
+            "name": "Welding",
+            "std": 18.08,
+            "act": 0.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 3.73,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.69,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 15.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 6.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.2,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 15.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 71.44,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 5.41,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 178.16,
+        "overall_act": 33.17,
+        "overall_eff_actual": 19.29,
+        "overall_completion": 10.827346205657836,
+        "overall_efficiency": 58.154959300572806,
+        "unit_days_worked": 4,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-21",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19901",
+        "jobname": "HHS Central Fill Pharmacy",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 31.87,
+            "act": 43.71,
+            "completion": 50.0,
+            "efficiency": 36.0
+          },
+          {
+            "name": "Welding",
+            "std": 28.26,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.11,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.89,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 24.67,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 16.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 2.34,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 28.25,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 111.55,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 9.62,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 260.73,
+        "overall_act": 46.21,
+        "overall_eff_actual": 15.94,
+        "overall_completion": 6.111686418900778,
+        "overall_efficiency": 34.483877948495994,
+        "unit_days_worked": 6,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-21",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19794",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 19.11,
+            "act": 18.0,
+            "completion": 80.0,
+            "efficiency": 85.0
+          },
+          {
+            "name": "Welding",
+            "std": 19.28,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.44,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 3.05,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 35.4,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 139.54,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.43,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 262.68,
+        "overall_act": 18.0,
+        "overall_eff_actual": 15.29,
+        "overall_completion": 5.820009136592051,
+        "overall_efficiency": 84.93333333333334,
+        "unit_days_worked": 2,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-22",
+        "last_day": "2025-10-23"
+      },
+      {
+        "com": "19795",
+        "jobname": "Caddell 2037 Booking 093024",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 24.57,
+            "act": 28.54,
+            "completion": 100.0,
+            "efficiency": 86.0
+          },
+          {
+            "name": "Welding",
+            "std": 19.02,
+            "act": 22.04,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.36,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.83,
+            "act": 3.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 25.31,
+            "act": 22.92,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.76,
+            "act": 1.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 5.5,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 19.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 121.6,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 4.87,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 235.99,
+        "overall_act": 80.5,
+        "overall_eff_actual": 24.57,
+        "overall_completion": 10.411458112631891,
+        "overall_efficiency": 30.52173913043478,
+        "unit_days_worked": 5,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-22",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19887",
+        "jobname": "UTSW RADIATION ONCOLOGY FACILITY",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 133.49,
+            "act": 148.27,
+            "completion": 25.0,
+            "efficiency": 23.0
+          },
+          {
+            "name": "Welding",
+            "std": 102.95,
+            "act": 7.19,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 44.78,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 6.51,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 266.53,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 34.31,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 7.41,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 8.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 151.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 539.53,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 30.13,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 1324.64,
+        "overall_act": 155.46,
+        "overall_eff_actual": 33.37,
+        "overall_completion": 2.519363751660829,
+        "overall_efficiency": 21.466936832625755,
+        "unit_days_worked": 5,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-22",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19690",
+        "jobname": "LBJ HOSPITAL EXPANSION",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 30.09,
+            "act": 3.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 37.77,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 6.23,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 1.52,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 22.08,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 12.65,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.96,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 38.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 103.61,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.71,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 262.62,
+        "overall_act": 3.5,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-24",
+        "last_day": "2025-10-24"
+      },
+      {
+        "com": "19838",
+        "jobname": "Amazon Nova Booking 6-13-25",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 16.38,
+            "act": 3.17,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 14.84,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.36,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.81,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 18.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 6.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 63.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 89.05,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 2.81,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 219.4,
+        "overall_act": 3.17,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-27",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19911",
+        "jobname": "HHS Central Fill Pharmacy",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 29.96,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 24.49,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.08,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.84,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 25.2,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 9.24,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 1.64,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 25.83,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 99.76,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 8.51,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 232.55,
+        "overall_act": 2.5,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-27",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19915",
+        "jobname": "ABB Thermal lab DLN",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 13.71,
+            "act": 2.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 6.55,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 1.87,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 13.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.27,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 1.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 22.02,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 2.09,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 69.12,
+        "overall_act": 2.5,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-27",
+        "last_day": "2025-10-27"
+      },
+      {
+        "com": "19916",
+        "jobname": "ABB Thermal lab DLN",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 13.48,
+            "act": 4.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 5.6,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 1.36,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 12.65,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.26,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 18.09,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 1.84,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 61.5,
+        "overall_act": 4.5,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 2,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-27",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19891",
+        "jobname": "SSR - HMH West Phase 3A Pckg 3 Renovations",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 35.1,
+            "act": 3.2,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 20.12,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 4.99,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.03,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 25.73,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 11.55,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.6,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 5.69,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 23.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 65.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 6.35,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 200.33,
+        "overall_act": 3.2,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-28",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19917",
+        "jobname": "ABB Thermal lab DLN",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 8.09,
+            "act": 2.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 5.6,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 1.36,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 17.3,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 8.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.26,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 1.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 18.17,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 1.84,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 62.01,
+        "overall_act": 2.0,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 1,
+        "unit_span": null,
+        "unit_span_status": "In Progress",
+        "first_day": "2025-10-28",
+        "last_day": "2025-10-28"
+      },
+      {
+        "com": "19837",
+        "jobname": "Amazon Nova Booking 6-13-25",
+        "departments": [
+          {
+            "name": "Fab",
+            "std": 16.38,
+            "act": 1.5,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Welding",
+            "std": 14.84,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "BaseFormPaint",
+            "std": 5.36,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "FanAssyTest",
+            "std": 2.81,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "InsulWallFab",
+            "std": 18.22,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "DoorFab",
+            "std": 6.93,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Pipe",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Paint",
+            "std": 0.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Electrical",
+            "std": 63.0,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Assembly",
+            "std": 89.05,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          },
+          {
+            "name": "Crating",
+            "std": 2.81,
+            "act": 0.0,
+            "completion": 0.0,
+            "efficiency": 0.0
+          }
+        ],
+        "overall_std": 219.4,
+        "overall_act": 1.5,
+        "overall_eff_actual": 0.0,
+        "overall_completion": 0.0,
+        "overall_efficiency": 0.0,
+        "unit_days_worked": 0,
+        "unit_span": null,
+        "unit_span_status": "No Data",
+        "first_day": null,
+        "last_day": null
+      }
+    ],
+    "in_progress_count": 47
+  }
+}

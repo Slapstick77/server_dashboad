@@ -2814,7 +2814,770 @@ def com_lookup():
     return render_template_string(page)
 
 
+
+
+def render_dr_milestone_dashboard(tv_mode=False):
+    """Render split-screen DR dashboard with milestone tracking"""
+    from flask import render_template_string
+    
+    page = """<!doctype html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>DR Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            * {
+                -webkit-font-smoothing: subpixel-antialiased;
+            }
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow: hidden;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        
+        .fullscreen-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            white-space: nowrap;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+        
+        .main-container {
+            display: flex;
+            gap: 1rem;
+            height: calc(100vh - 150px);
+        }
+        
+        /* LEFT SIDE - Table of all DRs */
+        .dr-table-container {
+            flex: 0 0 58%;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1rem;
+            overflow-y: auto;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .table-header {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #60a5fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dr-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.4rem;
+        }
+        
+        .dr-table thead th {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.8rem 0.6rem;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .dr-table tbody tr {
+            background: rgba(30, 41, 59, 0.4);
+            transition: all 0.2s;
+        }
+        
+        .dr-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.15);
+            transform: translateX(4px);
+        }
+        
+        .dr-table tbody tr.has-milestones {
+            background: rgba(34, 197, 94, 0.08);
+        }
+        
+        .dr-table tbody td {
+            padding: 0.7rem 0.6rem;
+            font-size: 1.1rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .dr-num {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #60a5fa;
+            font-size: 1.2rem;
+        }
+        
+        .milestone-badges {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        
+        .milestone-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .milestone-badge.parts-made {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        
+        .milestone-badge.sent-to-shop {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+        
+        .milestone-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .milestone-dot.parts { background: #60a5fa; }
+        .milestone-dot.complete { background: #22c55e; }
+        
+        .routing-badge {
+            background: rgba(100, 116, 139, 0.3);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        .time-elapsed {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+        
+        /* RIGHT: Recent Activity Cards */
+        .recent-activity {
+            flex: 0 0 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+        
+        .activity-header {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            flex-shrink: 0;
+        }
+        
+        .activity-header h2 {
+            font-size: 1.6rem;
+            color: #a78bfa;
+            font-weight: 600;
+        }
+        
+        .activity-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .activity-card.has-completion::before {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .card-dr-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #60a5fa;
+        }
+        
+        .card-milestones {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .card-milestone-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .card-milestone-icon.parts {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid #60a5fa;
+            color: #60a5fa;
+        }
+        
+        .card-milestone-icon.complete {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            color: #22c55e;
+        }
+        
+        .card-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.4rem 1rem;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .card-label {
+            opacity: 0.7;
+            font-weight: 500;
+        }
+        
+        .card-value {
+            font-weight: 600;
+        }
+        
+        .card-comment {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 6px;
+            padding: 0.8rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-left: 3px solid #3b82f6;
+            margin-top: 0.5rem;
+            max-height: 5.5rem;
+            overflow: hidden;
+        }
+        
+        .card-comment.complete-comment {
+            border-left-color: #22c55e;
+            background: rgba(5, 46, 22, 0.3);
+        }
+        
+        .card-timers {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .card-timer {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .card-timer-label {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .card-timer-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #60a5fa;
+            margin-top: 0.2rem;
+        }
+        
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.6);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.8);
+        }
+        
+        /* Fullscreen mode adjustments */
+        :fullscreen {
+            padding: 1.5rem;
+        }
+        
+        :fullscreen .header {
+            margin-bottom: 1.5rem;
+        }
+        
+        :fullscreen .main-container {
+            height: calc(100vh - 160px);
+        }
+        
+        """ + ("""
+        /* TV Mode Enhancements */
+        body.tv-mode {
+            padding: 1.5rem;
+        }
+        body.tv-mode .header {
+            padding: 1.5rem 2rem;
+        }
+        body.tv-mode h1 {
+            font-size: 3rem;
+        }
+        body.tv-mode .header-controls {
+            font-size: 1.2rem;
+        }
+        body.tv-mode .table-header {
+            font-size: 1.8rem;
+        }
+        body.tv-mode .dr-table thead th {
+            font-size: 1rem;
+            padding: 0.9rem 0.75rem;
+        }
+        body.tv-mode .dr-table tbody td {
+            font-size: 1.1rem;
+            padding: 0.75rem;
+        }
+        body.tv-mode .dr-num {
+            font-size: 1.2rem;
+        }
+        body.tv-mode .milestone-badge {
+            font-size: 0.9rem;
+            padding: 0.3rem 0.6rem;
+        }
+        body.tv-mode .milestone-dot {
+            width: 10px;
+            height: 10px;
+        }
+        body.tv-mode .routing-badge {
+            font-size: 1rem;
+            max-width: 180px;
+        }
+        body.tv-mode .time-elapsed {
+            font-size: 1rem;
+        }
+        body.tv-mode .activity-header h2 {
+            font-size: 1.8rem;
+        }
+        body.tv-mode .card-dr-num {
+            font-size: 2rem;
+        }
+        body.tv-mode .card-milestone-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1.4rem;
+        }
+        body.tv-mode .card-info {
+            font-size: 1.1rem;
+            gap: 0.5rem 1rem;
+        }
+        body.tv-mode .card-comment {
+            font-size: 1rem;
+            padding: 0.9rem;
+        }
+        body.tv-mode .card-timer-label {
+            font-size: 0.85rem;
+        }
+        body.tv-mode .card-timer-value {
+            font-size: 1.4rem;
+        }
+        """ if tv_mode else "") + """
+    </style>
+</head>
+<body""" + (' class="tv-mode"' if tv_mode else '') + """>
+    <div class="header">
+        <h1>🎯 DR Dashboard</h1>
+        <div class="header-controls">
+            <div style="display: flex; gap: 1.5rem; align-items: center;">
+                <div>
+                    <div class="pulse">●</div>
+                    <span>Auto-refresh: 30s</span>
+                </div>
+                <div id="last-refresh" style="opacity: 0.8;">Page: --</div>
+                <div id="last-mom-pull" style="opacity: 0.8;">DR MOM: --</div>
+                <div id="last-parts-pull" style="opacity: 0.8;">Parts: --</div>
+                <div id="dr-count">Loading...</div>
+            </div>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- LEFT: Table of all DRs -->
+        <div class="dr-table-container">
+            <div class="table-header">
+                <span>All Active DRs</span>
+                <span id="table-count" style="font-size: 0.9rem; opacity: 0.7;"></span>
+            </div>
+            <table class="dr-table">
+                <thead>
+                    <tr>
+                        <th>DR#</th>
+                        <th>Status</th>
+                        <th>Routing</th>
+                        <th>COM#</th>
+                        <th>Age</th>
+                        <th>Latest Activity</th>
+                    </tr>
+                </thead>
+                <tbody id="dr-table-body">
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- RIGHT: Recent Activity Cards -->
+        <div class="recent-activity">
+            <div class="activity-header">
+                <h2>📌 Recent Activity</h2>
+            </div>
+            <div id="recent-cards"></div>
+        </div>
+    </div>
+    
+    <script>
+        let allDRs = [];
+        let lastPageRefresh = new Date();
+        
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m`;
+            return `${seconds}s`;
+        }
+        
+        function formatTimestamp(date) {
+            if (!date) return '--';
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            
+            const hours = new Date(date).getHours();
+            const mins = new Date(date).getMinutes();
+            return `${hours}:${mins.toString().padStart(2, '0')}`;
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function isCompletedDR(comment) {
+            if (!comment) return false;
+            const completionPatterns = [
+                /complete\\s+and\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
+                /complete\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
+                /completed\\s+and\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
+                /completed\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
+            ];
+            return completionPatterns.some(pattern => pattern.test(comment));
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('dr-table-body');
+            const now = Date.now();
+            
+            // Get top 4 most recently touched for the right side
+            const recentDRs = [...allDRs]
+                .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
+                .slice(0, 4);
+            
+            const recentDRNumbers = new Set(recentDRs.map(dr => dr.deviation_number));
+            
+            // Get next 20 DRs after the top 4 for the table
+            const tableDRs = allDRs
+                .filter(dr => !recentDRNumbers.has(dr.deviation_number))
+                .slice(0, 20);
+            
+            tbody.innerHTML = tableDRs.map(dr => {
+                const hasParts = dr.parts_info && dr.parts_info.unique_parts > 0;
+                const isComplete = isCompletedDR(dr.latest_comment);
+                const hasMilestones = hasParts || isComplete;
+                
+                const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
+                const lastTouch = dr.touched_ms ? formatDuration(now - dr.touched_ms) + ' ago' : '--';
+                
+                let milestones = '';
+                if (isComplete) {
+                    milestones += `<span class="milestone-badge sent-to-shop">
+                        <span class="milestone-dot complete"></span>
+                        Sent to sheet shop
+                    </span>`;
+                }
+                if (hasParts) {
+                    milestones += `<span class="milestone-badge parts-made">
+                        <span class="milestone-dot parts"></span>
+                        ${dr.parts_info.unique_parts} part${dr.parts_info.unique_parts > 1 ? 's' : ''} made
+                    </span>`;
+                }
+                
+                return `
+                    <tr class="${hasMilestones ? 'has-milestones' : ''}">
+                        <td><span class="dr-num">#${dr.deviation_number}</span></td>
+                        <td><div class="milestone-badges">${milestones || '<span style="opacity:0.3">—</span>'}</div></td>
+                        <td><span class="routing-badge" title="${dr.current_routing || 'Unknown'}">${dr.current_routing || 'Unknown'}</span></td>
+                        <td>${dr.com || '—'}</td>
+                        <td><span class="time-elapsed">${age}</span></td>
+                        <td><span class="time-elapsed">${lastTouch}</span></td>
+                    </tr>
+                `;
+            }).join('');
+            
+            document.getElementById('table-count').textContent = `${tableDRs.length} shown`;
+        }
+        
+        function renderRecentCards() {
+            const container = document.getElementById('recent-cards');
+            const now = Date.now();
+            
+            // Get the 4 most recently touched DRs
+            const recent = [...allDRs]
+                .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
+                .slice(0, 4);
+            
+            container.innerHTML = recent.map(dr => {
+                const hasParts = dr.parts_info && dr.parts_info.unique_parts > 0;
+                const isComplete = isCompletedDR(dr.latest_comment);
+                
+                let milestoneIcons = '';
+                if (isComplete) {
+                    milestoneIcons += `<div class="card-milestone-icon complete" title="Sent to sheet shop">✓</div>`;
+                }
+                if (hasParts) {
+                    milestoneIcons += `<div class="card-milestone-icon parts" title="${dr.parts_info.unique_parts} part${dr.parts_info.unique_parts > 1 ? 's' : ''} made on ${dr.parts_info.racks}">📦</div>`;
+                }
+                
+                const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
+                const inRoute = dr.touched_ms ? formatDuration(now - dr.touched_ms) : '--';
+                
+                return `
+                    <div class="activity-card ${isComplete ? 'has-completion' : ''}">
+                        <div class="card-header">
+                            <div class="card-dr-num">DR #${dr.deviation_number}</div>
+                            <div class="card-milestones">${milestoneIcons}</div>
+                        </div>
+                        <div class="card-info">
+                            ${dr.com ? `<span class="card-label">COM:</span><span class="card-value">${dr.com}</span>` : ''}
+                            ${dr.urgency ? `<span class="card-label">Urgency:</span><span class="card-value">${dr.urgency}</span>` : ''}
+                            <span class="card-label">Routing:</span><span class="card-value">${dr.current_routing || 'Unknown'}</span>
+                            ${hasParts ? `<span class="card-label">Parts Made:</span><span class="card-value">${dr.parts_info.unique_parts} on ${dr.parts_info.racks}</span>` : ''}
+                        </div>
+                        ${dr.creator_comment ? `
+                            <div class="card-comment">
+                                ${dr.creator_user ? `<strong>${dr.creator_user}:</strong> ` : ''}
+                                ${dr.creator_comment}
+                            </div>
+                        ` : ''}
+                        ${(dr.latest_comment && dr.latest_comment !== dr.creator_comment) ? `
+                            <div class="card-comment ${isComplete ? 'complete-comment' : ''}" style="margin-top: 0.4rem;">
+                                ${dr.latest_user ? `<strong>${dr.latest_user}:</strong> ` : ''}
+                                ${dr.latest_comment}
+                            </div>
+                        ` : ''}
+                        <div class="card-timers">
+                            <div class="card-timer">
+                                <div class="card-timer-label">Age</div>
+                                <div class="card-timer-value">${age}</div>
+                            </div>
+                            <div class="card-timer">
+                                <div class="card-timer-label">In Route</div>
+                                <div class="card-timer-value">${inRoute}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function loadData() {
+            try {
+                const resp = await fetch('/api/dr-live?days=7');
+                const data = await resp.json();
+                allDRs = data.drs || [];
+                
+                // Sort by touched_ms DESC for table display
+                allDRs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));
+                
+                document.getElementById('dr-count').textContent = `${allDRs.length} DRs`;
+                
+                // Update last MOM pull time
+                if (data.last_poll_ms) {
+                    const momDate = new Date(data.last_poll_ms);
+                    document.getElementById('last-mom-pull').textContent = `DR MOM: ${formatTimestamp(momDate)}`;
+                } else {
+                    document.getElementById('last-mom-pull').textContent = 'DR MOM: Never';
+                }
+                
+                // Update page refresh time
+                lastPageRefresh = new Date();
+                document.getElementById('last-refresh').textContent = `Page: ${formatTimestamp(lastPageRefresh)}`;
+                
+                // Update PartsTracker pull time
+                if (data.last_parts_pull_ms) {
+                    const partsDate = new Date(data.last_parts_pull_ms);
+                    document.getElementById('last-parts-pull').textContent = `Parts: ${formatTimestamp(partsDate)}`;
+                } else {
+                    document.getElementById('last-parts-pull').textContent = 'Parts: Unknown';
+                }
+                
+                renderTable();
+                renderRecentCards();
+            } catch (e) {
+                console.error('Failed to load DR data:', e);
+            }
+        }
+        
+        // Initial load
+        loadData();
+        
+        // Reload data every 30 seconds
+        setInterval(loadData, 30000);
+        
+        // Update timers every 30 seconds (aligned with data refresh)
+        setInterval(() => {
+            renderTable();
+            renderRecentCards();
+        }, 30000);
+    </script>
+</body>
+</html>
+    """
+    return render_template_string(page)
+
+
 @dashboard.route('/dr-dashboard')
+@dashboard.route('/dr')
+@dashboard.route('/tv')
 def dr_dashboard():
     """Live DR Dashboard - Last 3 days with real-time timers"""
     from datetime import datetime, timedelta
@@ -2822,6 +3585,16 @@ def dr_dashboard():
     
     # Check for TV display mode
     tv_mode = request.args.get('tv', '0') == '1'
+    # Check for split-screen milestone mode
+    milestone_mode = request.args.get('milestone', '0') == '1'
+    
+    # Auto-enable milestone mode for /tv route
+    if request.path == '/tv':
+        milestone_mode = True
+    
+    # If milestone mode is requested, render the milestone dashboard
+    if milestone_mode:
+        return render_dr_milestone_dashboard(tv_mode)
     
     page = """<!doctype html>
 <html>
@@ -3210,18 +3983,8 @@ def dr_dashboard():
         let updateInterval;
         
         function getUrgencyColor(urgency) {
-            if (!urgency) return { color: '#6366f1', light: '#818cf8' }; // blue
-            const u = urgency.toLowerCase();
-            if (u.includes('critical') || u.includes('asap')) {
-                return { color: '#dc2626', light: '#ef4444' }; // red
-            }
-            if (u.includes('end of shift')) {
-                return { color: '#ea580c', light: '#f97316' }; // orange
-            }
-            if (u.includes('next day') || u.includes('24')) {
-                return { color: '#ca8a04', light: '#eab308' }; // yellow
-            }
-            return { color: '#16a34a', light: '#22c55e' }; // green
+            // Use consistent blue color for all DRs (no urgency color coding)
+            return { color: '#3b82f6', light: '#60a5fa' }; // blue
         }
         
         function formatDuration(ms) {
@@ -3362,6 +4125,7 @@ def dr_dashboard():
                     ${dr.com ? `<div class="info-row"><span class="info-label">COM#:</span><span class="info-value">${dr.com}</span></div>` : ''}
                     ${dr.urgency ? `<div class="info-row"><span class="info-label">Urgency:</span><span class="info-value">${dr.urgency}</span></div>` : ''}
                     ${dr.state ? `<div class="info-row"><span class="info-label">State:</span><span class="info-value">${dr.state}</span></div>` : ''}
+                    ${dr.parts_info ? `<div class="info-row"><span class="info-label">Parts:</span><span class="info-value">${dr.parts_info.unique_parts} part${dr.parts_info.unique_parts > 1 ? 's' : ''} on ${dr.parts_info.racks}</span></div>` : ''}
                 </div>
                 ${dr.creator_comment ? `
                     <div class="comment-box">
