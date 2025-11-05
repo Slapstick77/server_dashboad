@@ -3649,8 +3649,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
                     allDRs.slice(0, 5).forEach(dr => {
                         console.log(`DR ${dr.deviation_number}:`);
                         console.log(`  created_ms: ${dr.created_ms}`);
-                        console.log(`  touched_ms: ${dr.touched_ms}`);
-                        console.log(`  Same? ${dr.created_ms === dr.touched_ms ? 'YES - PROBLEM!' : 'No - different'}`);
+                        console.log(`  latest_comment_ms: ${dr.latest_comment_ms}`);
+                        console.log(`  Same? ${dr.created_ms === dr.latest_comment_ms ? 'YES - no routing updates since creation' : 'No - different'}`);
                     });
                     console.log('Date.now():', Date.now());
                 }
