@@ -2940,9 +2940,9 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         .dr-table thead th {
             background: rgba(15, 23, 42, 0.8);
-            padding: 0.8rem 0.6rem;
+            padding: 0.9rem 0.7rem;
             text-align: left;
-            font-size: 1rem;
+            font-size: 1.15rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -2967,8 +2967,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .dr-table tbody td {
-            padding: 0.75rem 0.65rem;
-            font-size: 1.25rem;
+            padding: 0.8rem 0.7rem;
+            font-size: 1.35rem;
             border-top: 1px solid rgba(148, 163, 184, 0.1);
         }
         
@@ -2976,7 +2976,18 @@ def render_dr_milestone_dashboard(tv_mode=False):
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
-            font-size: 1.35rem;
+            font-size: 1.45rem;
+        }
+        
+        .comment-text {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            font-style: italic;
+            opacity: 0.9;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .milestone-badges {
@@ -3399,8 +3410,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 <thead>
                     <tr>
                         <th>DR#</th>
-                        <th>Status</th>
                         <th>Routing</th>
+                        <th>Comment</th>
                         <th>COM#</th>
                         <th>Age</th>
                         <th>Latest Activity</th>
@@ -3479,7 +3490,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
             
             // Get top 3 most recently touched for the right side
             const recentDRs = [...allDRs]
-                .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
+                .sort((a, b) => (b.latest_comment_ms || 0) - (a.latest_comment_ms || 0))
                 .slice(0, 3);
             
             const recentDRNumbers = new Set(recentDRs.map(dr => dr.deviation_number));
@@ -3495,7 +3506,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 const hasMilestones = hasParts || isComplete;
                 
                 const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
-                const lastTouch = dr.touched_ms ? formatDuration(now - dr.touched_ms) + ' ago' : '--';
+                const lastTouch = dr.latest_comment_ms ? formatDuration(now - dr.latest_comment_ms) + ' ago' : '--';
                 
                 // DEBUG for DR 49323 and 49318
                 if (dr.deviation_number === 49323 || dr.deviation_number === 49318) {
@@ -3521,11 +3532,27 @@ def render_dr_milestone_dashboard(tv_mode=False):
                     </span>`;
                 }
                 
+                // Truncate comment if too long
+                const comment = dr.creator_comment || '';
+                const truncatedComment = comment.length > 60 ? comment.substring(0, 60) + '...' : comment;
+                
+                // Combine milestones and comment in one cell
+                let commentCell = '';
+                if (milestones) {
+                    commentCell = `<div class="milestone-badges" style="margin-bottom: 0.3rem;">${milestones}</div>`;
+                }
+                if (truncatedComment) {
+                    commentCell += `<span class="comment-text" title="${comment}">${truncatedComment}</span>`;
+                }
+                if (!commentCell) {
+                    commentCell = '<span style="opacity:0.3">—</span>';
+                }
+                
                 return `
                     <tr class="${hasMilestones ? 'has-milestones' : ''}">
                         <td><span class="dr-num">#${dr.deviation_number}</span></td>
-                        <td><div class="milestone-badges">${milestones || '<span style="opacity:0.3">—</span>'}</div></td>
                         <td><span class="routing-badge" title="${dr.current_routing || 'Unknown'}">${dr.current_routing || 'Unknown'}</span></td>
+                        <td>${commentCell}</td>
                         <td>${dr.com || '—'}</td>
                         <td><span class="time-elapsed">${age}</span></td>
                         <td><span class="time-elapsed">${lastTouch}</span></td>
@@ -3542,7 +3569,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
             
             // Get the 3 most recently touched DRs
             const recent = [...allDRs]
-                .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
+                .sort((a, b) => (b.latest_comment_ms || 0) - (a.latest_comment_ms || 0))
                 .slice(0, 3);
             
             container.innerHTML = recent.map(dr => {
@@ -3558,7 +3585,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 }
                 
                 const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
-                const inRoute = dr.touched_ms ? formatDuration(now - dr.touched_ms) : '--';
+                const inRoute = dr.latest_comment_ms ? formatDuration(now - dr.latest_comment_ms) : '--';
                 
                 // DEBUG for DR 49323 and 49318
                 if (dr.deviation_number === 49323 || dr.deviation_number === 49318) {
@@ -3617,16 +3644,19 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 
                 // DEBUG: Log first DR timestamps
                 if (allDRs.length > 0) {
-                    console.log('First DR:', allDRs[0].deviation_number);
-                    console.log('  created_ms:', allDRs[0].created_ms);
-                    console.log('  touched_ms:', allDRs[0].touched_ms);
-                    console.log('  Date.now():', Date.now());
-                    console.log('  Age calc:', Date.now() - allDRs[0].created_ms, 'ms');
-                    console.log('  InRoute calc:', Date.now() - allDRs[0].touched_ms, 'ms');
+                    console.log('=== API Data Check ===');
+                    console.log('First 5 DRs:');
+                    allDRs.slice(0, 5).forEach(dr => {
+                        console.log(`DR ${dr.deviation_number}:`);
+                        console.log(`  created_ms: ${dr.created_ms}`);
+                        console.log(`  touched_ms: ${dr.touched_ms}`);
+                        console.log(`  Same? ${dr.created_ms === dr.touched_ms ? 'YES - PROBLEM!' : 'No - different'}`);
+                    });
+                    console.log('Date.now():', Date.now());
                 }
                 
-                // Sort by touched_ms DESC for table display
-                allDRs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));
+                // Sort by latest_comment_ms DESC for table display
+                allDRs.sort((a, b) => (b.latest_comment_ms || 0) - (a.latest_comment_ms || 0));
                 
                 document.getElementById('dr-count').textContent = `${allDRs.length} DRs`;
                 

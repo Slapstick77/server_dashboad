@@ -1859,15 +1859,15 @@ def api_dr_live():
             touched_ms = None
             if r['latest_routing_touched']:
                 try:
-                    # Parse as naive datetime (database has mixed UTC/local timestamps)
-                    # Assume UTC and convert to local time to fix inconsistent data
+                    # Database stores latest_routing_touched in UTC (6 hours ahead of local)
+                    # Parse and treat as local time, then subtract 6 hours to correct
                     dt = datetime.fromisoformat(r['latest_routing_touched'].split('.')[0])
-                    dt_utc = dt.replace(tzinfo=timezone.utc)
-                    dt_local = dt_utc.astimezone()
-                    touched_ms = int(dt_local.timestamp() * 1000)
+                    touched_ms = int(dt.timestamp() * 1000)
+                    # Subtract 6 hours (21600000 ms) to convert from UTC to local
+                    touched_ms = touched_ms - 21600000
                     # DEBUG
                     if r['deviation_number'] in (49323, 49318):
-                        print(f"DEBUG DR {r['deviation_number']}: touched_ms raw={r['latest_routing_touched']}, utc={dt_utc}, local={dt_local}, epoch_ms={touched_ms}")
+                        print(f"DEBUG DR {r['deviation_number']}: touched_ms raw={r['latest_routing_touched']}, epoch_ms={touched_ms}")
                 except:
                     pass
             
@@ -1875,10 +1875,12 @@ def api_dr_live():
             latest_comment_ms = None
             if r['routing_latest_comment_date']:
                 try:
-                    # Parse as naive datetime and convert to epoch ms
-                    # timestamp() treats naive datetime as local time and handles DST
+                    # Database stores routing_latest_comment_date in UTC (6 hours ahead of local)
+                    # Parse and treat as local time, then subtract 6 hours to correct
                     dt = datetime.fromisoformat(r['routing_latest_comment_date'].split('.')[0])
                     latest_comment_ms = int(dt.timestamp() * 1000)
+                    # Subtract 6 hours (21600000 ms) to convert from UTC to local
+                    latest_comment_ms = latest_comment_ms - 21600000
                 except:
                     pass
             

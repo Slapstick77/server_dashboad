@@ -5,6 +5,36 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2025-11-05
+
+### Fixed
+- **"Latest Activity" Timer**: Fixed to use actual routing step timestamps instead of incorrect snapshot data
+  - Changed from using `latest_routing_touched` (which was identical to creation time) to `routing_latest_comment_date`
+  - Now correctly shows time since last routing activity/comment, not just creation time
+  - Applied UTC-to-local timezone conversion (subtract 6 hours) to fix negative time values
+  - "Age" and "Latest Activity" now show different, accurate values
+
+### Changed
+- **Milestone Dashboard Layout**: Optimized for better visibility on 60" TV
+  - Table width increased from 58% to 70%
+  - Card panel reduced from 40% to 28%
+  - Reduced cards from 4 to 3 for larger display
+  - Reduced table rows from 20 to 15
+  - Increased font sizes across board:
+    - Table DR numbers: 1.35rem → 1.45rem
+    - Table headers: 1.0rem → 1.15rem
+    - Table body text: 1.25rem → 1.35rem
+    - Card DR numbers: 2.2rem (kept larger)
+    - Card info text: 1.3rem (kept larger)
+  - Total visible DRs: 18 (3 cards + 15 table rows)
+
+- **Table Columns**: Reorganized for better information display
+  - Removed "Status" column (was mostly empty dashes)
+  - Added "Comment" column showing creator's initial DR comment
+  - Comment truncated to 60 characters with ellipsis if longer
+  - Milestone badges (sent to sheet shop, parts made) now shown above comments
+  - Column order: DR# | Routing | Comment | COM# | Age | Latest Activity
+
 ## [1.4.1] - 2025-11-05
 
 ### Fixed
