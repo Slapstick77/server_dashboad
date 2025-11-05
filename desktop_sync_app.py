@@ -492,9 +492,9 @@ class AutoScheduler:
                 
                 # Safety limits
                 if days <= 2:
-                    max_drs, throttle = 50, 0.1
+                    max_drs, throttle = 100, 0.1
                 elif days <= 7:
-                    max_drs, throttle = 150, 0.2
+                    max_drs, throttle = 200, 0.2
                 else:
                     max_drs, throttle = 500, 0.5
                 
