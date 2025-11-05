@@ -233,17 +233,21 @@ def ingest_last_poll(db_path: str, archive_dir: str, urgency_map: Dict[str, str]
             # Optional routing history list
             rh = row.get('RoutingHistory')
             if isinstance(rh, list) and rh:
-                # Only insert new steps beyond what we already have (append-only comment model)
+                # Only insert new steps that don't already exist (append-only comment model)
+                # Check by DateTouched + UserName to avoid duplicates when MOM re-indexes steps
                 dn = int(row.get('DeviationNumber'))
+                
+                # Get existing routing steps for this DR to check for duplicates
                 cur.execute(
-                    "SELECT COALESCE(MAX(step_index), -1) FROM DRRoutingStep WHERE deviation_number=?",
+                    "SELECT DateTouched, UserName FROM DRRoutingStep WHERE deviation_number=?",
                     (dn,)
                 )
-                last_step_idx = cur.fetchone()[0]
+                existing_steps = set((r[0], r[1]) for r in cur.fetchall())
                 
-                # Insert steps beyond last known index
+                # Insert only new steps (not already in database)
                 for idx, step in enumerate(rh):
-                    if idx > last_step_idx:
+                    step_key = (step.get('DateTouched'), step.get('UserName'))
+                    if step_key not in existing_steps:
                         cur.execute(
                             """
                             INSERT INTO DRRoutingStep(
