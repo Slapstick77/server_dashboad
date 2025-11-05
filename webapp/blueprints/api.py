@@ -8,6 +8,7 @@ import sqlite3
 from datetime import datetime, timedelta, timezone, date
 import re
 from collections import defaultdict
+import time
 from .utils import (
     get_conn, fnum, normalize_com, build_unit,
     _filter_days_by_gap, _resolve_department_days, _get_all_department_days,
@@ -1843,15 +1844,13 @@ def api_dr_live():
         results = []
         for r in rows:
             # Parse dates for client-side timer calculation
-            # Timestamps in DB are stored as UTC but without timezone indicator
+            # DB stores local time; convert to UTC epoch for JavaScript Date.now() compatibility
             created_ms = None
             if r['date_created']:
                 try:
-                    # Parse as naive datetime then treat as UTC
-                    dt = datetime.fromisoformat(r['date_created'].split('.')[0])  # Remove microseconds
-                    # Add UTC timezone
-                    dt = dt.replace(tzinfo=timezone.utc)
-                    # Convert to epoch milliseconds
+                    # Parse as naive datetime and convert to epoch ms
+                    # timestamp() treats naive datetime as local time and handles DST
+                    dt = datetime.fromisoformat(r['date_created'].split('.')[0])
                     created_ms = int(dt.timestamp() * 1000)
                 except:
                     pass
@@ -1860,12 +1859,15 @@ def api_dr_live():
             touched_ms = None
             if r['latest_routing_touched']:
                 try:
-                    # Parse as naive datetime then treat as UTC
-                    dt = datetime.fromisoformat(r['latest_routing_touched'].split('.')[0])  # Remove microseconds
-                    # Add UTC timezone
-                    dt = dt.replace(tzinfo=timezone.utc)
-                    # Convert to epoch milliseconds
-                    touched_ms = int(dt.timestamp() * 1000)
+                    # Parse as naive datetime (database has mixed UTC/local timestamps)
+                    # Assume UTC and convert to local time to fix inconsistent data
+                    dt = datetime.fromisoformat(r['latest_routing_touched'].split('.')[0])
+                    dt_utc = dt.replace(tzinfo=timezone.utc)
+                    dt_local = dt_utc.astimezone()
+                    touched_ms = int(dt_local.timestamp() * 1000)
+                    # DEBUG
+                    if r['deviation_number'] in (49323, 49318):
+                        print(f"DEBUG DR {r['deviation_number']}: touched_ms raw={r['latest_routing_touched']}, utc={dt_utc}, local={dt_local}, epoch_ms={touched_ms}")
                 except:
                     pass
             
@@ -1873,11 +1875,9 @@ def api_dr_live():
             latest_comment_ms = None
             if r['routing_latest_comment_date']:
                 try:
-                    # Parse as naive datetime then treat as UTC
-                    dt = datetime.fromisoformat(r['routing_latest_comment_date'].split('.')[0])  # Remove microseconds
-                    # Add UTC timezone
-                    dt = dt.replace(tzinfo=timezone.utc)
-                    # Convert to epoch milliseconds
+                    # Parse as naive datetime and convert to epoch ms
+                    # timestamp() treats naive datetime as local time and handles DST
+                    dt = datetime.fromisoformat(r['routing_latest_comment_date'].split('.')[0])
                     latest_comment_ms = int(dt.timestamp() * 1000)
                 except:
                     pass

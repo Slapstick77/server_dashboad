@@ -5,6 +5,17 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-11-05
+
+### Fixed
+- **DR Age and "In Route" Timer Calculation**: Fixed incorrect timestamp handling for routing activity
+  - Database stores `latest_routing_touched` timestamps inconsistently (mix of UTC and local time)
+  - API now treats all routing timestamps as UTC and converts to local time
+  - Resolves negative "In Route" times that appeared 6 hours in the future
+  - Fixes DR age calculations that were showing 6+ hours older than actual
+  - Affects DRs with UTC-stored timestamps (e.g., DR #49323, #49322, #49321, #49319)
+  - Minimal impact on DRs already stored in local time (e.g., DR #49318, #49320)
+
 ## [1.4.0] - 2025-10-30
 
 ### Added

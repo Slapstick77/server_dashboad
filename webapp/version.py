@@ -2,6 +2,6 @@
 Application version information
 """
 
-VERSION = "1.3.1"
-VERSION_DATE = "2025-10-30"
-VERSION_NAME = "Metrics & TV Display Update"
+VERSION = "1.4.1"
+VERSION_DATE = "2025-11-05"
+VERSION_NAME = "DR Timestamp Fix"

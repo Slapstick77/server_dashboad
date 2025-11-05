@@ -3233,6 +3233,64 @@ def render_dr_milestone_dashboard(tv_mode=False):
             height: calc(100vh - 160px);
         }
         
+        :fullscreen .recent-activity {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+        
+        :fullscreen #recent-cards {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 0.5rem;
+            overflow-y: hidden;
+        }
+        
+        :fullscreen .activity-card {
+            min-height: 0;
+            overflow: hidden;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        :fullscreen .card-header {
+            margin-bottom: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        :fullscreen .card-dr-num {
+            font-size: 1.4rem;
+        }
+        
+        :fullscreen .card-info {
+            gap: 0.2rem 0.75rem;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        :fullscreen .card-comment {
+            font-size: 0.9rem;
+            line-height: 1.3;
+            margin-top: 0.3rem !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        :fullscreen .card-timers {
+            margin-top: auto;
+            flex-shrink: 0;
+            gap: 0.75rem;
+        }
+        
+        :fullscreen .card-timer {
+            gap: 0.2rem;
+        }
+        
         """ + ("""
         /* TV Mode Enhancements */
         body.tv-mode {
@@ -3323,7 +3381,15 @@ def render_dr_milestone_dashboard(tv_mode=False):
     </div>
     
     <div class="main-container">
-        <!-- LEFT: Table of all DRs -->
+        <!-- LEFT: Recent Activity Cards -->
+        <div class="recent-activity">
+            <div class="activity-header">
+                <h2>📌 Recent Activity</h2>
+            </div>
+            <div id="recent-cards"></div>
+        </div>
+        
+        <!-- RIGHT: Table of all DRs -->
         <div class="dr-table-container">
             <div class="table-header">
                 <span>All Active DRs</span>
@@ -3343,14 +3409,6 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 <tbody id="dr-table-body">
                 </tbody>
             </table>
-        </div>
-        
-        <!-- RIGHT: Recent Activity Cards -->
-        <div class="recent-activity">
-            <div class="activity-header">
-                <h2>📌 Recent Activity</h2>
-            </div>
-            <div id="recent-cards"></div>
         </div>
     </div>
     
@@ -3395,10 +3453,22 @@ def render_dr_milestone_dashboard(tv_mode=False):
         function isCompletedDR(comment) {
             if (!comment) return false;
             const completionPatterns = [
-                /complete\\s+and\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
-                /complete\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
-                /completed\\s+and\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
-                /completed\\s+sent\\s+to\\s+sheet\\s+(metal|shop)/i,
+                /complete\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                /completed,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
+                // Unit destination
+                /complete\s+(and\s+)?sent\s+to\s+unit/i,
+                /completed\s+(and\s+)?sent\s+to\s+unit/i,
+                /complete\s+(and\s+)?taken\s+to\s+unit/i,
+                /completed\s+(and\s+)?taken\s+to\s+unit/i,
+                // Common misspellings
+                /compelte\s+(and\s+)?sent\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+(and\s+)?send\s+to\s+sheet\s+(metal|shop)/i,
+                /complete\s+(and\s+)?sent\s+to\s+sheetshop/i,
+                /complete\s+(and\s+)?sent\s+to\s+sheetmetal/i
             ];
             return completionPatterns.some(pattern => pattern.test(comment));
         }
@@ -3426,6 +3496,16 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 
                 const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
                 const lastTouch = dr.touched_ms ? formatDuration(now - dr.touched_ms) + ' ago' : '--';
+                
+                // DEBUG for DR 49323 and 49318
+                if (dr.deviation_number === 49323 || dr.deviation_number === 49318) {
+                    console.log(`TABLE RENDER DR ${dr.deviation_number}:`, {
+                        now: now,
+                        touched_ms: dr.touched_ms,
+                        diff: now - dr.touched_ms,
+                        lastTouch: lastTouch
+                    });
+                }
                 
                 let milestones = '';
                 if (isComplete) {
@@ -3480,6 +3560,16 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 const age = dr.created_ms ? formatDuration(now - dr.created_ms) : '--';
                 const inRoute = dr.touched_ms ? formatDuration(now - dr.touched_ms) : '--';
                 
+                // DEBUG for DR 49323 and 49318
+                if (dr.deviation_number === 49323 || dr.deviation_number === 49318) {
+                    console.log(`CARD RENDER DR ${dr.deviation_number}:`, {
+                        now: now,
+                        touched_ms: dr.touched_ms,
+                        diff: now - dr.touched_ms,
+                        inRoute: inRoute
+                    });
+                }
+                
                 return `
                     <div class="activity-card ${isComplete ? 'has-completion' : ''}">
                         <div class="card-header">
@@ -3524,6 +3614,16 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 const resp = await fetch('/api/dr-live?days=7');
                 const data = await resp.json();
                 allDRs = data.drs || [];
+                
+                // DEBUG: Log first DR timestamps
+                if (allDRs.length > 0) {
+                    console.log('First DR:', allDRs[0].deviation_number);
+                    console.log('  created_ms:', allDRs[0].created_ms);
+                    console.log('  touched_ms:', allDRs[0].touched_ms);
+                    console.log('  Date.now():', Date.now());
+                    console.log('  Age calc:', Date.now() - allDRs[0].created_ms, 'ms');
+                    console.log('  InRoute calc:', Date.now() - allDRs[0].touched_ms, 'ms');
+                }
                 
                 // Sort by touched_ms DESC for table display
                 allDRs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));
@@ -3579,673 +3679,11 @@ def render_dr_milestone_dashboard(tv_mode=False):
 @dashboard.route('/dr')
 @dashboard.route('/tv')
 def dr_dashboard():
-    """Live DR Dashboard - Last 3 days with real-time timers"""
-    from datetime import datetime, timedelta
+    """Live DR Dashboard with milestone tracking"""
     from flask import request
     
     # Check for TV display mode
     tv_mode = request.args.get('tv', '0') == '1'
-    # Check for split-screen milestone mode
-    milestone_mode = request.args.get('milestone', '0') == '1'
     
-    # Auto-enable milestone mode for /tv route
-    if request.path == '/tv':
-        milestone_mode = True
-    
-    # If milestone mode is requested, render the milestone dashboard
-    if milestone_mode:
-        return render_dr_milestone_dashboard(tv_mode)
-    
-    page = """<!doctype html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <title>DR Live Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { box-sizing: border-box; }
-        body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #e2e8f0;
-            min-height: 100vh;
-            padding: 1rem;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 2rem;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-        }
-        h1 {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .header-controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        .fullscreen-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            border: none;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        .fullscreen-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
-        }
-        .refresh-indicator {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .pulse { animation: pulse 2s ease-in-out infinite; }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1rem;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        .dr-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 1rem;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            min-height: 280px;
-            display: flex;
-            flex-direction: column;
-        }
-        .dr-card.completed {
-            background: linear-gradient(135deg, rgba(5, 46, 22, 0.8) 0%, rgba(6, 78, 59, 0.6) 100%);
-            border-color: rgba(34, 197, 94, 0.4);
-            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
-        }
-        .dr-card.completed::before {
-            background: linear-gradient(90deg, #22c55e, #10b981) !important;
-        }
-        .dr-card.completed .routing-dept {
-            color: #86efac;
-        }
-        .dr-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-            border-color: rgba(148, 163, 184, 0.4);
-        }
-        .dr-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--urgency-color), var(--urgency-color-light));
-        }
-        .dr-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-        .dr-number {
-            font-size: 1.1rem;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.5px;
-        }
-        .urgency-badge {
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-            box-shadow: 0 0 10px var(--urgency-color);
-            animation: glow 2s ease-in-out infinite;
-        }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 6px var(--urgency-color); }
-            50% { box-shadow: 0 0 16px var(--urgency-color); }
-        }
-        .dr-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            margin-bottom: 0.75rem;
-            flex: 1;
-        }
-        .info-row {
-            display: flex;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-        }
-        .info-label {
-            opacity: 0.6;
-            min-width: 65px;
-        }
-        .info-value {
-            font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .comment-box {
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 8px;
-            padding: 0.6rem;
-            margin: 0.5rem 0;
-            border-left: 2px solid #3b82f6;
-            font-size: 0.7rem;
-            line-height: 1.4;
-            max-height: 60px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .comment-box.complete {
-            border-left-color: #22c55e;
-            background: rgba(5, 46, 22, 0.4);
-        }
-        .completion-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #22c55e, #10b981);
-            color: white;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-        }
-        .completion-time {
-            font-size: 0.65rem;
-            opacity: 0.8;
-            margin-top: 0.3rem;
-            font-style: italic;
-        }
-        .comment-label {
-            font-size: 0.65rem;
-            opacity: 0.6;
-            margin-bottom: 0.3rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .routing-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.4);
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-        }
-        .routing-dept {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #60a5fa;
-        }
-        .timers {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: auto;
-            padding-top: 0.75rem;
-            border-top: 1px solid rgba(148, 163, 184, 0.2);
-        }
-        .timer {
-            flex: 1;
-            text-align: center;
-        }
-        .timer-label {
-            font-size: 0.6rem;
-            opacity: 0.6;
-            margin-bottom: 0.2rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .timer-value {
-            font-size: 0.95rem;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-            color: #60a5fa;
-        }
-        .no-data {
-            text-align: center;
-            padding: 4rem 2rem;
-            opacity: 0.5;
-            font-size: 1.2rem;
-        }
-        :fullscreen {
-            padding: 1.5rem;
-        }
-        :fullscreen .header {
-            margin-bottom: 2rem;
-        }
-        :fullscreen .cards-container {
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1.2rem;
-        }
-        :fullscreen .dr-card {
-            min-height: 320px;
-        }
-        
-        /* Responsive breakpoints */
-        @media (max-width: 1920px) {
-            .cards-container {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-        @media (max-width: 1600px) {
-            .cards-container {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        @media (max-width: 1200px) {
-            .cards-container {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        @media (max-width: 900px) {
-            .cards-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 600px) {
-            .cards-container {
-                grid-template-columns: 1fr);
-            }
-        }
-        
-        /* TV Display Mode - Optimized for 4K displays viewed from distance */
-        """ + ("""
-        body.tv-mode {
-            font-size: 24px;
-            padding: 2rem;
-        }
-        body.tv-mode .header {
-            padding: 2.5rem 3rem;
-            margin-bottom: 3rem;
-        }
-        body.tv-mode h1 {
-            font-size: 4rem;
-        }
-        body.tv-mode .header-controls {
-            gap: 2rem;
-        }
-        body.tv-mode .refresh-indicator,
-        body.tv-mode #last-poll-time {
-            font-size: 1.5rem;
-        }
-        body.tv-mode .fullscreen-btn {
-            padding: 1.25rem 2.5rem;
-            font-size: 1.5rem;
-            border-radius: 16px;
-        }
-        body.tv-mode #avg-completion {
-            font-size: 2.5rem !important;
-            margin-top: 1.5rem !important;
-        }
-        body.tv-mode .cards-container {
-            gap: 2rem;
-            grid-template-columns: repeat(4, 1fr);
-        }
-        body.tv-mode .dr-card {
-            padding: 2rem;
-            border-radius: 20px;
-            min-height: 450px;
-            border-width: 2px;
-        }
-        body.tv-mode .dr-number {
-            font-size: 2rem !important;
-            padding: 0.75rem 1.5rem !important;
-        }
-        body.tv-mode .dr-urgency {
-            font-size: 1.3rem !important;
-            padding: 0.5rem 1rem !important;
-        }
-        body.tv-mode .dr-routing {
-            font-size: 1.8rem !important;
-            margin: 1.5rem 0 !important;
-        }
-        body.tv-mode .dr-info-label {
-            font-size: 1.1rem !important;
-        }
-        body.tv-mode .dr-info-value {
-            font-size: 1.5rem !important;
-        }
-        body.tv-mode .dr-timer {
-            font-size: 1.3rem !important;
-            padding: 0.75rem !important;
-        }
-        body.tv-mode .dr-com {
-            font-size: 1.4rem !important;
-        }
-        body.tv-mode .dr-creator {
-            font-size: 1.2rem !important;
-        }
-        """ if tv_mode else "") + """
-    </style>
-</head>
-<body""" + (' class="tv-mode"' if tv_mode else '') + """>
-    <div class="header">
-        <div style="flex: 1;">
-            <h1>🔴 Live DR Dashboard</h1>
-            <div id="avg-completion" style="font-size: 1.3rem; margin-top: 0.75rem; font-weight: 600;">
-                Loading metrics...
-            </div>
-        </div>
-        <div class="header-controls">
-            <div id="last-poll-time" style="font-size: 0.85rem; opacity: 0.7; margin-right: 1rem;">
-                Last MOM Pull: --
-            </div>
-            <div class="refresh-indicator">
-                <span class="pulse">●</span>
-                <span>Auto-refresh: 30s</span>
-            </div>
-            <button class="fullscreen-btn" onclick="toggleFullscreen()">
-                ⛶ Fullscreen
-            </button>
-        </div>
-    </div>
-    <div class="cards-container" id="cards"></div>
-    <div class="no-data" id="no-data" style="display:none">
-        No DRs created in the last 7 days
-    </div>
-    
-    <script>
-        let drs = [];
-        let updateInterval;
-        
-        function getUrgencyColor(urgency) {
-            // Use consistent blue color for all DRs (no urgency color coding)
-            return { color: '#3b82f6', light: '#60a5fa' }; // blue
-        }
-        
-        function formatDuration(ms) {
-            const seconds = Math.floor(ms / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-            
-            if (days > 0) return `${days}d ${hours % 24}h`;
-            if (hours > 0) return `${hours}h ${minutes % 60}m`;
-            if (minutes > 0) return `${minutes}m`;
-            return `${seconds}s`;
-        }
-        
-        function updateTimers() {
-            const now = Date.now();
-            drs.forEach((dr, idx) => {
-                const card = document.querySelector(`[data-dr-idx="${idx}"]`);
-                if (!card) return;
-                
-                // Skip timer updates for completed DRs (they show static completion time)
-                if (card.dataset.completed === 'true') return;
-                
-                // Time since creation
-                if (dr.created_ms) {
-                    const elapsed = Math.abs(now - dr.created_ms);
-                    const el = card.querySelector('.timer-created');
-                    if (el) el.textContent = formatDuration(elapsed);
-                }
-                
-                // Time in current route
-                if (dr.touched_ms) {
-                    const elapsed = Math.abs(now - dr.touched_ms);
-                    const el = card.querySelector('.timer-routing');
-                    if (el) el.textContent = formatDuration(elapsed);
-                }
-                
-                // Time since last action (same as touched_ms, but labeled differently for clarity)
-                if (dr.touched_ms) {
-                    const elapsed = Math.abs(now - dr.touched_ms);
-                    const el = card.querySelector('.timer-lastaction');
-                    if (el) el.textContent = formatDuration(elapsed) + ' ago';
-                }
-            });
-        }
-        
-        function isCompletedDR(comment) {
-            if (!comment) return false;
-            
-            const lower = comment.toLowerCase();
-            
-            // Only match variations of "complete [and] sent to sheet [shop/metal]"
-            const completionPatterns = [
-                /complete\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                /complete\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                /completed\s+and\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                /completed\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                /complete,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                /completed,?\s+sent\s+to\s+sheet\s+(metal|shop)/i,
-                // Common misspellings
-                /compelte\s+(and\s+)?sent\s+to\s+sheet\s+(metal|shop)/i,
-                /complete\s+(and\s+)?send\s+to\s+sheet\s+(metal|shop)/i,
-                /complete\s+(and\s+)?sent\s+to\s+sheetshop/i,
-                /complete\s+(and\s+)?sent\s+to\s+sheetmetal/i
-            ];
-            
-            // Check if any pattern matches
-            for (const pattern of completionPatterns) {
-                if (pattern.test(comment)) {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        function renderCard(dr, idx) {
-            const colors = getUrgencyColor(dr.urgency);
-            
-            // Check if latest comment indicates completion
-            const isComplete = isCompletedDR(dr.latest_comment);
-            
-            // Calculate completion time (from creation to latest comment with "complete")
-            // Use latest_comment_ms (timestamp of the comment) not touched_ms
-            let completionDuration = 0;
-            if (isComplete && dr.created_ms && dr.latest_comment_ms) {
-                completionDuration = Math.abs(dr.latest_comment_ms - dr.created_ms);
-            }
-            
-            const card = document.createElement('div');
-            card.className = 'dr-card' + (isComplete ? ' completed' : '');
-            card.dataset.drIdx = idx;
-            card.dataset.completed = isComplete ? 'true' : 'false';
-            card.dataset.completionMs = completionDuration;
-            card.style.setProperty('--urgency-color', isComplete ? '#22c55e' : colors.color);
-            card.style.setProperty('--urgency-color-light', isComplete ? '#4ade80' : colors.light);
-            
-            // Different timer sections for completed vs in-progress DRs
-            let timersHtml;
-            if (isComplete) {
-                // Show only completion time for completed DRs
-                timersHtml = `
-                    <div class="timers">
-                        <div class="timer" style="flex: 1; text-align: center;">
-                            <div class="timer-label">✓ DR Completed In</div>
-                            <div class="timer-value" style="color: #22c55e; font-size: 1.2rem;">
-                                ${formatDuration(completionDuration)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Show all three timers for in-progress DRs
-                timersHtml = `
-                    <div class="timers">
-                        <div class="timer">
-                            <div class="timer-label">Since Created</div>
-                            <div class="timer-value timer-created">--</div>
-                        </div>
-                        <div class="timer">
-                            <div class="timer-label">In Current Route</div>
-                            <div class="timer-value timer-routing">--</div>
-                        </div>
-                        <div class="timer">
-                            <div class="timer-label">Last Action</div>
-                            <div class="timer-value timer-lastaction">--</div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            card.innerHTML = `
-                <div class="dr-header">
-                    <div class="dr-number">DR #${dr.deviation_number}</div>
-                    <div class="urgency-badge" style="background:${isComplete ? '#22c55e' : colors.color}"></div>
-                </div>
-                <div class="dr-info">
-                    ${dr.com ? `<div class="info-row"><span class="info-label">COM#:</span><span class="info-value">${dr.com}</span></div>` : ''}
-                    ${dr.urgency ? `<div class="info-row"><span class="info-label">Urgency:</span><span class="info-value">${dr.urgency}</span></div>` : ''}
-                    ${dr.state ? `<div class="info-row"><span class="info-label">State:</span><span class="info-value">${dr.state}</span></div>` : ''}
-                    ${dr.parts_info ? `<div class="info-row"><span class="info-label">Parts:</span><span class="info-value">${dr.parts_info.unique_parts} part${dr.parts_info.unique_parts > 1 ? 's' : ''} on ${dr.parts_info.racks}</span></div>` : ''}
-                </div>
-                ${dr.creator_comment ? `
-                    <div class="comment-box">
-                        <div class="comment-label">Original Issue${dr.creator_user ? ` • ${dr.creator_user}` : ''}</div>
-                        ${dr.creator_comment}
-                    </div>
-                ` : ''}
-                ${(dr.latest_comment && dr.latest_comment !== dr.creator_comment) ? `
-                    <div class="comment-box${isComplete ? ' complete' : ''}">
-                        <div class="comment-label">Latest Comment${dr.latest_user ? ` • ${dr.latest_user}` : ''}</div>
-                        ${dr.latest_comment}
-                    </div>
-                ` : (!dr.latest_comment && dr.creator_comment && dr.latest_user && dr.latest_user !== dr.creator_user) ? `
-                    <div class="comment-box">
-                        <div class="comment-label">Latest Comment • ${dr.latest_user}</div>
-                        ${dr.creator_comment}
-                    </div>
-                ` : ''}
-                <div class="routing-info">
-                    <div class="routing-dept">${dr.current_routing || 'Unknown Dept'}</div>
-                </div>
-                ${timersHtml}
-            `;
-            return card;
-        }
-        
-        async function loadData() {
-            try {
-                const resp = await fetch('/api/dr-live?days=7');
-                const data = await resp.json();
-                drs = data.drs || [];
-                const lastPollMs = data.last_poll_ms;
-                
-                // Update last poll time display
-                const lastPollEl = document.getElementById('last-poll-time');
-                if (lastPollMs) {
-                    const lastPollDate = new Date(lastPollMs);
-                    const formatted = lastPollDate.toLocaleString();
-                    lastPollEl.textContent = `Last MOM Pull: ${formatted}`;
-                } else {
-                    lastPollEl.textContent = 'Last MOM Pull: Never';
-                }
-                
-                // Sort by touched_ms DESC (most recent first)
-                drs.sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0));
-                
-                const container = document.getElementById('cards');
-                const noData = document.getElementById('no-data');
-                const avgDiv = document.getElementById('avg-completion');
-                
-                if (drs.length === 0) {
-                    container.innerHTML = '';
-                    noData.style.display = 'block';
-                    avgDiv.textContent = 'No data available';
-                    return;
-                }
-                
-                // Calculate average completion time for completed DRs
-                const completedDRs = drs.filter(dr => 
-                    isCompletedDR(dr.latest_comment) &&
-                    dr.created_ms && 
-                    dr.latest_comment_ms  // Use latest_comment_ms, not touched_ms
-                );
-                
-                if (completedDRs.length > 0) {
-                    const totalCompletionTime = completedDRs.reduce((sum, dr) => {
-                        return sum + Math.abs(dr.latest_comment_ms - dr.created_ms);
-                    }, 0);
-                    const avgCompletionTime = totalCompletionTime / completedDRs.length;
-                    
-                    avgDiv.innerHTML = `
-                        <div style="color: #22c55e;">
-                            ⏱ Average Manufactured Part DR Completion Time: ${formatDuration(avgCompletionTime)}
-                            <span style="opacity: 0.7; margin-left: 1rem; font-size: 0.95rem;">
-                                (${completedDRs.length} completed / ${drs.length} total)
-                            </span>
-                        </div>
-                        <div style="font-size: 1rem; opacity: 0.85; margin-top: 0.5rem; color: #fbbf24; font-weight: 500;">
-                            ⚠ Note: This is DR handling completion and not full DR completion. Will implement full DR completion soon.
-                        </div>
-                    `;
-                } else {
-                    avgDiv.innerHTML = `
-                        <span style="opacity: 0.7;">
-                            ${drs.length} active DRs • No completed DRs in this period
-                        </span>
-                    `;
-                }
-                
-                noData.style.display = 'none';
-                container.innerHTML = '';
-                drs.forEach((dr, idx) => {
-                    container.appendChild(renderCard(dr, idx));
-                });
-                
-                updateTimers();
-            } catch (e) {
-                console.error('Failed to load DR data:', e);
-            }
-        }
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        // Initial load
-        loadData();
-        
-        // Update timers every second
-        setInterval(updateTimers, 1000);
-        
-        // Reload data every 30 seconds
-        setInterval(loadData, 30000);
-    </script>
-</body>
-</html>
-    """
-    return render_template_string(page)
-
+    # Always use milestone dashboard
+    return render_dr_milestone_dashboard(tv_mode)
