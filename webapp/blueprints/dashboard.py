@@ -2911,7 +2911,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         /* LEFT SIDE - Table of all DRs */
         .dr-table-container {
-            flex: 0 0 58%;
+            flex: 0 0 70%;
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(10px);
             border-radius: 12px;
@@ -2967,8 +2967,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .dr-table tbody td {
-            padding: 0.7rem 0.6rem;
-            font-size: 1.1rem;
+            padding: 0.75rem 0.65rem;
+            font-size: 1.25rem;
             border-top: 1px solid rgba(148, 163, 184, 0.1);
         }
         
@@ -2976,7 +2976,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
-            font-size: 1.2rem;
+            font-size: 1.35rem;
         }
         
         .milestone-badges {
@@ -3037,7 +3037,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         /* RIGHT: Recent Activity Cards */
         .recent-activity {
-            flex: 0 0 40%;
+            flex: 0 0 28%;
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
@@ -3099,7 +3099,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .card-dr-num {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
@@ -3111,13 +3111,13 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .card-milestone-icon {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
         }
         
         .card-milestone-icon.parts {
@@ -3136,7 +3136,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
             display: grid;
             grid-template-columns: auto 1fr;
             gap: 0.4rem 1rem;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             margin-bottom: 0.75rem;
         }
         
@@ -3241,7 +3241,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         :fullscreen #recent-cards {
             display: grid;
-            grid-template-rows: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
             gap: 0.5rem;
             overflow-y: hidden;
         }
@@ -3477,17 +3477,17 @@ def render_dr_milestone_dashboard(tv_mode=False):
             const tbody = document.getElementById('dr-table-body');
             const now = Date.now();
             
-            // Get top 4 most recently touched for the right side
+            // Get top 3 most recently touched for the right side
             const recentDRs = [...allDRs]
                 .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
-                .slice(0, 4);
+                .slice(0, 3);
             
             const recentDRNumbers = new Set(recentDRs.map(dr => dr.deviation_number));
             
-            // Get next 20 DRs after the top 4 for the table
+            // Get next 15 DRs after the top 3 for the table
             const tableDRs = allDRs
                 .filter(dr => !recentDRNumbers.has(dr.deviation_number))
-                .slice(0, 20);
+                .slice(0, 15);
             
             tbody.innerHTML = tableDRs.map(dr => {
                 const hasParts = dr.parts_info && dr.parts_info.unique_parts > 0;
@@ -3540,10 +3540,10 @@ def render_dr_milestone_dashboard(tv_mode=False):
             const container = document.getElementById('recent-cards');
             const now = Date.now();
             
-            // Get the 4 most recently touched DRs
+            // Get the 3 most recently touched DRs
             const recent = [...allDRs]
                 .sort((a, b) => (b.touched_ms || 0) - (a.touched_ms || 0))
-                .slice(0, 4);
+                .slice(0, 3);
             
             container.innerHTML = recent.map(dr => {
                 const hasParts = dr.parts_info && dr.parts_info.unique_parts > 0;
