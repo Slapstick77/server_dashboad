@@ -829,10 +829,10 @@ class SyncApp(tk.Tk):
             
             # Safety limits based on window size
             if window_days <= 2:
-                max_drs = 50
+                max_drs = 100
                 throttle_sec = 0.1
             elif window_days <= 7:
-                max_drs = 150
+                max_drs = 200
                 throttle_sec = 0.2
             else:  # 30 days
                 max_drs = 500
