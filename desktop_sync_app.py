@@ -498,6 +498,8 @@ class AutoScheduler:
                 else:
                     max_drs, throttle = 500, 0.5
                 
+                print(f"[DEBUG] Days={days}, max_drs={max_drs}, throttle={throttle}")
+                
                 DEFAULT_BASE_URL = 'http://service1.ahu.jci.com/MOM_WCF/ServiceManufacturingDeviationSystem/ServiceManufacturingDeviationSystem.svc'
                 base_url = os.getenv('MOM_BASE_URL', DEFAULT_BASE_URL)
                 app_name = os.getenv('MOM_APP_NAME', 'ManufacturingDeviationSystem')
