@@ -5,6 +5,17 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-01-20
+
+### Changed
+- **TV DR dashboard readability**: Rebalanced layout for 20‑ft viewing
+  - COM numbers promoted and significantly enlarged on cards and table
+  - DR numbers moved to secondary positions with simpler labels
+  - Age/In Route timers moved to top-right of cards
+  - Table rows taller with larger text and wider routing badges
+  - Comment truncation relaxed to show more text
+  - Reduced right-side table rows from 15 to 10
+
 ## [1.4.3] - 2026-01-20
 
 ### Fixed

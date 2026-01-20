@@ -3005,8 +3005,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .dr-table tbody td {
-            padding: 0.8rem 0.7rem;
-            font-size: 1.35rem;
+            padding: 1.35rem 1rem;
+            font-size: 1.7rem;
             border-top: 1px solid rgba(148, 163, 184, 0.1);
         }
         
@@ -3014,7 +3014,14 @@ def render_dr_milestone_dashboard(tv_mode=False):
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
-            font-size: 1.45rem;
+            font-size: 1.6rem;
+        }
+
+        .com-num {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #e2e8f0;
+            font-size: 1.85rem;
         }
         
         .comment-text {
@@ -3022,10 +3029,10 @@ def render_dr_milestone_dashboard(tv_mode=False):
             color: #cbd5e1;
             font-style: italic;
             opacity: 0.9;
-            display: block;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         
         .milestone-badges {
@@ -3069,13 +3076,13 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         .routing-badge {
             background: rgba(100, 116, 139, 0.3);
-            padding: 0.3rem 0.6rem;
+            padding: 0.4rem 0.85rem;
             border-radius: 4px;
-            font-size: 0.95rem;
+            font-size: 1.15rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 150px;
+            max-width: 360px;
         }
         
         .time-elapsed {
@@ -3144,14 +3151,15 @@ def render_dr_milestone_dashboard(tv_mode=False):
             display: flex;
             justify-content: space-between;
             align-items: start;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.9rem;
+            gap: 1rem;
         }
         
-        .card-dr-num {
-            font-size: 2.2rem;
+        .card-com-num {
+            font-size: 3.2rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
-            color: #60a5fa;
+            color: #e2e8f0;
         }
         
         .card-milestones {
@@ -3184,9 +3192,9 @@ def render_dr_milestone_dashboard(tv_mode=False):
         .card-info {
             display: grid;
             grid-template-columns: auto 1fr;
-            gap: 0.4rem 1rem;
-            font-size: 1.3rem;
-            margin-bottom: 0.75rem;
+            gap: 0.5rem 1.1rem;
+            font-size: 1.4rem;
+            margin-bottom: 0.85rem;
         }
         
         .card-label {
@@ -3201,12 +3209,12 @@ def render_dr_milestone_dashboard(tv_mode=False):
         .card-comment {
             background: rgba(15, 23, 42, 0.6);
             border-radius: 6px;
-            padding: 0.8rem;
-            font-size: 1rem;
-            line-height: 1.5;
+            padding: 0.95rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
             border-left: 3px solid #3b82f6;
             margin-top: 0.5rem;
-            max-height: 5.5rem;
+            max-height: 6.2rem;
             overflow: hidden;
         }
         
@@ -3217,10 +3225,17 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         .card-timers {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.9rem;
             margin-top: 0.75rem;
             padding-top: 0.75rem;
             border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .card-timers-top {
+            display: grid;
+            gap: 0.35rem;
+            justify-items: end;
+            text-align: right;
         }
         
         .card-timer {
@@ -3236,7 +3251,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .card-timer-value {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
             color: #60a5fa;
@@ -3308,20 +3323,20 @@ def render_dr_milestone_dashboard(tv_mode=False):
             flex-shrink: 0;
         }
         
-        :fullscreen .card-dr-num {
-            font-size: 1.4rem;
+        :fullscreen .card-com-num {
+            font-size: 1.45rem;
         }
         
         :fullscreen .card-info {
             gap: 0.2rem 0.75rem;
-            font-size: 0.95rem;
+            font-size: 1rem;
             margin-bottom: 0.5rem;
             flex-shrink: 0;
         }
         
         :fullscreen .card-comment {
-            font-size: 0.9rem;
-            line-height: 1.3;
+            font-size: 0.95rem;
+            line-height: 1.35;
             margin-top: 0.3rem !important;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -3355,18 +3370,21 @@ def render_dr_milestone_dashboard(tv_mode=False):
             font-size: 1.2rem;
         }
         body.tv-mode .table-header {
-            font-size: 1.8rem;
+            font-size: 2rem;
         }
         body.tv-mode .dr-table thead th {
-            font-size: 1rem;
-            padding: 0.9rem 0.75rem;
+            font-size: 1.25rem;
+            padding: 1.2rem 1rem;
         }
         body.tv-mode .dr-table tbody td {
-            font-size: 1.1rem;
-            padding: 0.75rem;
+            font-size: 1.55rem;
+            padding: 1.25rem 1rem;
         }
         body.tv-mode .dr-num {
-            font-size: 1.2rem;
+            font-size: 1.55rem;
+        }
+        body.tv-mode .com-num {
+            font-size: 1.8rem;
         }
         body.tv-mode .milestone-badge {
             font-size: 0.9rem;
@@ -3377,8 +3395,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
             height: 10px;
         }
         body.tv-mode .routing-badge {
-            font-size: 1rem;
-            max-width: 180px;
+            font-size: 1.25rem;
+            max-width: 420px;
         }
         body.tv-mode .time-elapsed {
             font-size: 1rem;
@@ -3386,8 +3404,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
         body.tv-mode .activity-header h2 {
             font-size: 1.8rem;
         }
-        body.tv-mode .card-dr-num {
-            font-size: 2rem;
+        body.tv-mode .card-com-num {
+            font-size: 3.6rem;
         }
         body.tv-mode .card-milestone-icon {
             width: 36px;
@@ -3395,18 +3413,18 @@ def render_dr_milestone_dashboard(tv_mode=False):
             font-size: 1.4rem;
         }
         body.tv-mode .card-info {
-            font-size: 1.1rem;
-            gap: 0.5rem 1rem;
+            font-size: 1.3rem;
+            gap: 0.7rem 1.2rem;
         }
         body.tv-mode .card-comment {
-            font-size: 1rem;
-            padding: 0.9rem;
+            font-size: 1.1rem;
+            padding: 1rem;
         }
         body.tv-mode .card-timer-label {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
         }
         body.tv-mode .card-timer-value {
-            font-size: 1.4rem;
+            font-size: 1.55rem;
         }
         """ if tv_mode else "") + """
     </style>
@@ -3447,10 +3465,10 @@ def render_dr_milestone_dashboard(tv_mode=False):
             <table class="dr-table">
                 <thead>
                     <tr>
-                        <th>DR#</th>
+                        <th>COM#</th>
                         <th>Routing</th>
                         <th>Comment</th>
-                        <th>COM#</th>
+                        <th>DR#</th>
                         <th>Age</th>
                         <th>Latest Activity</th>
                     </tr>
@@ -3536,7 +3554,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
             // Get next 15 DRs after the top 3 for the table
             const tableDRs = allDRs
                 .filter(dr => !recentDRNumbers.has(dr.deviation_number))
-                .slice(0, 15);
+                .slice(0, 10);
             
             tbody.innerHTML = tableDRs.map(dr => {
                 const hasParts = dr.parts_info && dr.parts_info.unique_parts > 0;
@@ -3572,7 +3590,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 
                 // Truncate comment if too long
                 const comment = dr.creator_comment || '';
-                const truncatedComment = comment.length > 60 ? comment.substring(0, 60) + '...' : comment;
+                const truncatedComment = comment.length > 90 ? comment.substring(0, 90) + '...' : comment;
                 
                 // Combine milestones and comment in one cell
                 let commentCell = '';
@@ -3588,10 +3606,10 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 
                 return `
                     <tr class="${hasMilestones ? 'has-milestones' : ''}">
-                        <td><span class="dr-num">#${dr.deviation_number}</span></td>
+                        <td><span class="com-num">${dr.com ? `${dr.com}` : '—'}</span></td>
                         <td><span class="routing-badge" title="${dr.current_routing || 'Unknown'}">${dr.current_routing || 'Unknown'}</span></td>
                         <td>${commentCell}</td>
-                        <td>${dr.com || '—'}</td>
+                        <td><span class="dr-num">${dr.deviation_number}</span></td>
                         <td><span class="time-elapsed">${age}</span></td>
                         <td><span class="time-elapsed">${lastTouch}</span></td>
                     </tr>
@@ -3638,11 +3656,25 @@ def render_dr_milestone_dashboard(tv_mode=False):
                 return `
                     <div class="activity-card ${isComplete ? 'has-completion' : ''}">
                         <div class="card-header">
-                            <div class="card-dr-num">DR #${dr.deviation_number}</div>
-                            <div class="card-milestones">${milestoneIcons}</div>
+                            <div>
+                                <div class="card-com-num">${dr.com ? `${dr.com}` : '—'}</div>
+                            </div>
+                            <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                                <div class="card-milestones">${milestoneIcons}</div>
+                                <div class="card-timers-top">
+                                    <div class="card-timer">
+                                        <div class="card-timer-label">Age</div>
+                                        <div class="card-timer-value">${age}</div>
+                                    </div>
+                                    <div class="card-timer">
+                                        <div class="card-timer-label">In Route</div>
+                                        <div class="card-timer-value">${inRoute}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-info">
-                            ${dr.com ? `<span class="card-label">COM:</span><span class="card-value">${dr.com}</span>` : ''}
+                            <span class="card-label">DR#:</span><span class="card-value">${dr.deviation_number}</span>
                             ${dr.urgency ? `<span class="card-label">Urgency:</span><span class="card-value">${dr.urgency}</span>` : ''}
                             <span class="card-label">Routing:</span><span class="card-value">${dr.current_routing || 'Unknown'}</span>
                             ${hasParts ? `<span class="card-label">Parts Made:</span><span class="card-value">${dr.parts_info.unique_parts} on ${dr.parts_info.racks}</span>` : ''}
@@ -3659,16 +3691,6 @@ def render_dr_milestone_dashboard(tv_mode=False):
                                 ${dr.latest_comment}
                             </div>
                         ` : ''}
-                        <div class="card-timers">
-                            <div class="card-timer">
-                                <div class="card-timer-label">Age</div>
-                                <div class="card-timer-value">${age}</div>
-                            </div>
-                            <div class="card-timer">
-                                <div class="card-timer-label">In Route</div>
-                                <div class="card-timer-value">${inRoute}</div>
-                            </div>
-                        </div>
                     </div>
                 `;
             }).join('');
