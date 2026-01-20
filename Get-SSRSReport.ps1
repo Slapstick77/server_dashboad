@@ -98,6 +98,11 @@ function Write-Info($msg){ Write-Host "[INFO ] $msg" -ForegroundColor Cyan }
 function Write-Warn($msg){ Write-Warning $msg }
 function Write-Err ($msg){ Write-Error $msg }
 
+$UseBasicParsingFlag = $false
+if($PSVersionTable -and $PSVersionTable.PSVersion){
+    $UseBasicParsingFlag = ($PSVersionTable.PSVersion.Major -lt 6)
+}
+
 function Join-Url([string]$a,[string]$b){
     return ("{0}/{1}" -f $a.TrimEnd('/'), $b.TrimStart('/'))
 }
@@ -171,7 +176,7 @@ function List-SSRSFolderSoap([string]$folder){
 </soap:Envelope>
 "@
     $auth = Get-WebClientParams
-    $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Body $envelope -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/ListChildren'} @auth
+    $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Body $envelope -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/ListChildren'} @auth -UseBasicParsing:$UseBasicParsingFlag
     [xml]$xml = $resp.Content
     # Build namespace manager properly
     $nsMgr = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
@@ -209,7 +214,7 @@ function Get-SSRSReportParameters([string]$path){
 "@
     try {
         $auth = Get-WebClientParams
-        $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Body $envelope -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/GetItemParameters'} @auth -ErrorAction Stop
+    $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Body $envelope -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/GetItemParameters'} @auth -UseBasicParsing:$UseBasicParsingFlag -ErrorAction Stop
         [xml]$xml = $resp.Content
         $nsMgr = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
         $nsMgr.AddNamespace('rs','http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer')
@@ -256,7 +261,7 @@ function Download-SSRSReportUrlAccess(){
     Write-Info "Rendering via URL access: $renderUrl"
     $auth = Get-WebClientParams
         try {
-            $bytes = Invoke-WebRequest -Uri $renderUrl -Method Get -OutFile $OutputFile @auth -PassThru
+            $bytes = Invoke-WebRequest -Uri $renderUrl -Method Get -OutFile $OutputFile @auth -PassThru -UseBasicParsing:$UseBasicParsingFlag
             if(Test-Path $OutputFile){ Write-Info "Saved: $OutputFile (Size: $((Get-Item $OutputFile).Length) bytes)" }
         } catch {
             $msg = $_.Exception.Message
@@ -281,7 +286,7 @@ function Download-SSRSReportUrlAccess(){
                         $retryUrl = Join-Url $ReportServerRoot ("?{0}&rs:Command=Render&rs:Format={1}{2}" -f $encPath, $OutputFormat, $paramQuery)
                         Write-Info "Retry with format '$fmt': $retryUrl"
                         try {
-                            Invoke-WebRequest -Uri $retryUrl -Method Get -OutFile $OutputFile @auth -PassThru | Out-Null
+                            Invoke-WebRequest -Uri $retryUrl -Method Get -OutFile $OutputFile @auth -PassThru -UseBasicParsing:$UseBasicParsingFlag | Out-Null
                             if(Test-Path $OutputFile){ Write-Info "Saved after retry format '$fmt': $OutputFile"; return }
                         } catch { Write-Warn "Retry format '$fmt' failed: $($_.Exception.Message)" }
                     }
@@ -301,7 +306,7 @@ function Download-SSRSReportRest(){
     $id = $item.Id
     $renderUrl = Join-Url $restBase "Reports($id)/Export/$OutputFormat"
     Write-Info "Rendering via REST: $renderUrl"
-    Invoke-WebRequest -Uri $renderUrl -Method Get -OutFile $OutputFile @auth | Out-Null
+    Invoke-WebRequest -Uri $renderUrl -Method Get -OutFile $OutputFile @auth -UseBasicParsing:$UseBasicParsingFlag | Out-Null
     if(Test-Path $OutputFile){ Write-Info "Saved: $OutputFile (Size: $((Get-Item $OutputFile).Length) bytes)" }
 }
 

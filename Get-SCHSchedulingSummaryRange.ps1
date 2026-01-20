@@ -22,6 +22,10 @@ if(Test-Path $constFile){
 function Info($m){ Write-Host "[INFO ] $m" -ForegroundColor Cyan }
 function Warn($m){ Write-Warning $m }
 function Fail($m){ throw $m }
+$UseBasicParsingFlag = $false
+if($PSVersionTable -and $PSVersionTable.PSVersion){
+  $UseBasicParsingFlag = ($PSVersionTable.PSVersion.Major -lt 6)
+}
 if($EndDate -lt $StartDate){ Fail 'EndDate must be >= StartDate' }
 if((Test-Path $OutFile) -and -not $Force){ Fail "OutFile exists: $OutFile (use -Force)" }
 if(Test-Path $OutFile){ Remove-Item $OutFile -Force }
@@ -41,7 +45,7 @@ $env = @"
 </soap:Envelope>
 "@
 try {
-  $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/GetItemParameters'} -Body $env -UseDefaultCredentials -ErrorAction Stop
+  $resp = Invoke-WebRequest -Uri $svc -Method Post -ContentType 'text/xml; charset=utf-8' -Headers @{SOAPAction='http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer/GetItemParameters'} -Body $env -UseDefaultCredentials -UseBasicParsing:$UseBasicParsingFlag -ErrorAction Stop
   [xml]$xml = $resp.Content
   $nsMgr = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
   $nsMgr.AddNamespace('rs','http://schemas.microsoft.com/sqlserver/reporting/2010/03/01/ReportServer')

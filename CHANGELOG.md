@@ -5,6 +5,16 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-01-20
+
+### Fixed
+- **SSRS PowerShell prompt**: Suppress the PowerShell 5.1 "Script Execution Risk" prompt during report downloads
+  - Added `-UseBasicParsing` for `Invoke-WebRequest` when running on PowerShell 5.1
+  - Added a PowerShell version guard so PowerShell 7+ skips `-UseBasicParsing`
+
+### Documentation
+- **DATA_SYNC_EXPLANATION.txt**: Simplified the data sync explanation for non-technical users
+
 ## [1.4.2] - 2025-11-05
 
 ### Fixed

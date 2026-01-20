@@ -257,7 +257,7 @@ def dash():
             <header>
                 <div class='header-row'>
                     <h1>Production Dashboard</h1>
-                    <div style='font-size:.75rem;opacity:.7;'>Version {{ version }} ({{ version_date }}) • <a href='/changelog' style='color:#8fb9ff;text-decoration:none;'>Changelog</a></div>
+                    <div style='font-size:.75rem;opacity:.7;'>Version {{ version }} ({{ version_date }}) • <a href='/changelog' target='_blank' rel='noopener' style='color:#8fb9ff;text-decoration:none;' title='View changelog'>Changelog</a></div>
                 </div>
                 <p class='alpha-banner'><strong>Alpha testing preview</strong>These dashboards are experimental. Data may be incomplete or inaccurate—do not rely on them for operational or business decisions.</p>
             </header>
@@ -1146,26 +1146,50 @@ def hours_chart():
             });
         }
         
-        function movingAverage(data, window) {
-            if (window === 1) return data;
-            const result = [];
-            for (let i = 0; i < data.length; i++) {
-                let sum = 0, count = 0;
-                for (let j = Math.max(0, i - window + 1); j <= i; j++) {
-                    if (data[j] != null) {
-                        sum += data[j];
-                        count++;
-                    }
-                }
-                result.push(count > 0 ? sum / count : null);
-            }
-            return result;
-        }
-        
         let chartData = null;
         let currentPeriod = 90;
         let currentView = 'ma7';
         let seriesState = [];
+        let weekdayMask = []; // Track which indices are weekdays (Mon-Fri)
+        
+        function movingAverage(data, window, excludeWeekends = true) {
+            if (window === 1) return data;
+            const result = [];
+            
+            if (excludeWeekends && weekdayMask.length > 0) {
+                // Use last N *weekday* values (exclude Sat/Sun)
+                for (let i = 0; i < data.length; i++) {
+                    let sum = 0, count = 0;
+                    // Look backwards to find N weekdays
+                    for (let j = i; j >= 0 && count < window; j--) {
+                        if (weekdayMask[j] && data[j] != null) {
+                            sum += data[j];
+                            count++;
+                        }
+                    }
+                    const avg = count > 0 ? sum / count : null;
+                    result.push(avg);
+                    // Debug for MA3
+                    if (window === 3 && i >= data.length - 5 && i < data.length) {
+                        console.log(`MA3 at i=${i}: weekday=${weekdayMask[i]}, value=${data[i]?.toFixed(1)}, avg=${avg?.toFixed(1)}`);
+                    }
+                }
+            } else {
+                // Original calendar-based moving average (all days)
+                for (let i = 0; i < data.length; i++) {
+                    let sum = 0, count = 0;
+                    for (let j = Math.max(0, i - window + 1); j <= i; j++) {
+                        if (data[j] != null) {
+                            sum += data[j];
+                            count++;
+                        }
+                    }
+                    const avg = count > 0 ? sum / count : null;
+                    result.push(avg);
+                }
+            }
+            return result;
+        }
         
         function updateChart() {
             if (!chartData) return;
@@ -1174,8 +1198,13 @@ def hours_chart():
             Object.keys(chartData.per_dept).forEach(dept => {
                 allDeptData[dept] = chartData.per_dept[dept].slice(0, -1);
             });
-            const maxWindow = 30;
-            const extraDays = maxWindow - 1;
+            // Determine the actual window size based on current view
+            let actualWindow = 1;
+            if (currentView === 'ma30') actualWindow = 30;
+            else if (currentView === 'ma7') actualWindow = 7;
+            else if (currentView === 'ma3') actualWindow = 3;
+            
+            const extraDays = actualWindow - 1;
             const displayStartIdx = Math.max(0, allDates.length - currentPeriod);
             const calcStartIdx = Math.max(0, displayStartIdx - extraDays);
             let calcDates = allDates.slice(calcStartIdx);
@@ -1261,7 +1290,7 @@ def hours_chart():
             });
         });
         
-        fetch('/api/metrics/daily_hours?days=365').then(r => r.json()).then(m => {
+        fetch('/api/metrics/daily_hours?days=425').then(r => r.json()).then(m => {
             chartData = {
                 dates: m.dates,
                 per_dept: {}
@@ -1269,6 +1298,15 @@ def hours_chart():
             Object.keys(m.per_dept).forEach(dept => {
                 chartData.per_dept[dept] = m.per_dept[dept].hours;
             });
+            // Build weekday mask (true for Mon-Fri, false for Sat-Sun)
+            weekdayMask = chartData.dates.map(dateStr => {
+                const d = new Date(dateStr);
+                const day = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+                return day >= 1 && day <= 5; // Mon-Fri
+            });
+            const weekdayCount = weekdayMask.filter(x => x).length;
+            const weekendCount = weekdayMask.length - weekdayCount;
+            console.log(`Total days: ${weekdayMask.length}, Weekdays: ${weekdayCount}, Weekends: ${weekendCount}`);
             updateChart();
         }).catch(err => {
             console.error('Chart error:', err);
