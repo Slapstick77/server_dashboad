@@ -2,6 +2,6 @@
 Application version information
 """
 
-VERSION = "1.4.4"
+VERSION = "1.4.5"
 VERSION_DATE = "2026-01-20"
-VERSION_NAME = "TV Dashboard Readability"
+VERSION_NAME = "Fullscreen Readability"

@@ -3025,7 +3025,7 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         .comment-text {
-            font-size: 1.2rem;
+            font-size: 1.6rem;
             color: #cbd5e1;
             font-style: italic;
             opacity: 0.9;
@@ -3076,13 +3076,13 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         .routing-badge {
             background: rgba(100, 116, 139, 0.3);
-            padding: 0.4rem 0.85rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 4px;
-            font-size: 1.15rem;
+            font-size: 0.95rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 360px;
+            max-width: 280px;
         }
         
         .time-elapsed {
@@ -3209,12 +3209,12 @@ def render_dr_milestone_dashboard(tv_mode=False):
         .card-comment {
             background: rgba(15, 23, 42, 0.6);
             border-radius: 6px;
-            padding: 0.95rem;
-            font-size: 1.1rem;
-            line-height: 1.6;
+            padding: 1rem;
+            font-size: 1.6rem;
+            line-height: 1.7;
             border-left: 3px solid #3b82f6;
             margin-top: 0.5rem;
-            max-height: 6.2rem;
+            max-height: 9.5rem;
             overflow: hidden;
         }
         
@@ -3324,20 +3324,20 @@ def render_dr_milestone_dashboard(tv_mode=False):
         }
         
         :fullscreen .card-com-num {
-            font-size: 1.45rem;
+            font-size: 2.8rem;
         }
         
         :fullscreen .card-info {
-            gap: 0.2rem 0.75rem;
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+            gap: 0.4rem 0.9rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.6rem;
             flex-shrink: 0;
         }
         
         :fullscreen .card-comment {
-            font-size: 0.95rem;
-            line-height: 1.35;
-            margin-top: 0.3rem !important;
+            font-size: 1.4rem;
+            line-height: 1.55;
+            margin-top: 0.4rem !important;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
@@ -3353,6 +3353,14 @@ def render_dr_milestone_dashboard(tv_mode=False):
         
         :fullscreen .card-timer {
             gap: 0.2rem;
+        }
+
+        :fullscreen .card-timer-label {
+            font-size: 0.9rem;
+        }
+
+        :fullscreen .card-timer-value {
+            font-size: 1.5rem;
         }
         
         """ + ("""
@@ -3395,8 +3403,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
             height: 10px;
         }
         body.tv-mode .routing-badge {
-            font-size: 1.25rem;
-            max-width: 420px;
+            font-size: 1rem;
+            max-width: 300px;
         }
         body.tv-mode .time-elapsed {
             font-size: 1rem;
@@ -3417,8 +3425,8 @@ def render_dr_milestone_dashboard(tv_mode=False):
             gap: 0.7rem 1.2rem;
         }
         body.tv-mode .card-comment {
-            font-size: 1.1rem;
-            padding: 1rem;
+            font-size: 1.7rem;
+            padding: 1.1rem;
         }
         body.tv-mode .card-timer-label {
             font-size: 0.95rem;

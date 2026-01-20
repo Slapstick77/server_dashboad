@@ -5,6 +5,13 @@ All notable changes to the SCH Labor Dashboard project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-01-20
+
+### Changed
+- **TV DR dashboard fullscreen**: Keep left card text large in fullscreen mode
+  - Fullscreen card COM, info, comment, and timer sizes no longer shrink
+  - Comments enlarged for better long-distance readability
+
 ## [1.4.4] - 2026-01-20
 
 ### Changed
